@@ -1,0 +1,70 @@
+﻿{
+   "CodeGenerationMode": 6,
+   "ContextClassName": "KnowledgeBaseContext",
+   "ContextNamespace": "",
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "IrregularWords": null,
+   "MinimumProductVersion": "2.6.1378",
+   "ModelNamespace": null,
+   "OutputContextPath": "EFModels",
+   "OutputPath": "EFModels",
+   "PluralRules": null,
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "DataIngestionLib",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "SingularRules": null,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[RemoteRAG]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Search_FullText]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Search_Hybrid]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Search_SemanticKeyPhrases]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Search_Vector]",
+         "ObjectType": 1
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": true,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false,
+   "UseTypedTvpParameters": true
+}
