@@ -1,19 +1,31 @@
-﻿using System.Diagnostics;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         SystemService.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Diagnostics;
 
 using RAGDataIngestionWPF.Contracts.Services;
 
+
+
+
 namespace RAGDataIngestionWPF.Services;
+
+
+
+
 
 public class SystemService : ISystemService
 {
-    public SystemService()
-    {
-    }
 
     public void OpenInWebBrowser(string url)
     {
         // For more info see https://github.com/dotnet/corefx/issues/10361
-        var psi = new ProcessStartInfo
+        ProcessStartInfo psi = new()
         {
             FileName = url,
             UseShellExecute = true

@@ -1,4 +1,12 @@
-﻿using System.Windows.Controls;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         PageService.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Windows.Controls;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -6,12 +14,26 @@ using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.ViewModels;
 using RAGDataIngestionWPF.Views;
 
+
+
+
 namespace RAGDataIngestionWPF.Services;
+
+
+
+
 
 public class PageService : IPageService
 {
-    private readonly Dictionary<string, Type> _pages = new Dictionary<string, Type>();
+    private readonly Dictionary<string, Type> _pages = [];
     private readonly IServiceProvider _serviceProvider;
+
+
+
+
+
+
+
 
     public PageService(IServiceProvider serviceProvider)
     {
@@ -23,6 +45,13 @@ public class PageService : IPageService
         Configure<WebViewViewModel, WebViewPage>();
         Configure<SettingsViewModel, SettingsPage>();
     }
+
+
+
+
+
+
+
 
     public Type GetPageType(string key)
     {
@@ -38,25 +67,39 @@ public class PageService : IPageService
         return pageType;
     }
 
+
+
+
+
+
+
+
     public Page GetPage(string key)
     {
-        var pageType = GetPageType(key);
+        Type pageType = GetPageType(key);
         return _serviceProvider.GetService(pageType) as Page;
     }
 
+
+
+
+
+
+
+
     private void Configure<VM, V>()
-        where VM : ObservableObject
-        where V : Page
+            where VM : ObservableObject
+            where V : Page
     {
         lock (_pages)
         {
-            var key = typeof(VM).FullName;
+            string key = typeof(VM).FullName;
             if (_pages.ContainsKey(key))
             {
                 throw new ArgumentException($"The key {key} is already configured in PageService");
             }
 
-            var type = typeof(V);
+            Type type = typeof(V);
             if (_pages.Any(p => p.Value == type))
             {
                 throw new ArgumentException($"This type is already configured with key {_pages.First(p => p.Value == type).Key}");

@@ -1,25 +1,46 @@
-﻿using System.IO;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF.Core
+//  File:         FileService.cs
+//   Author: Kyle L. Crowder
+
+
+
 using System.Text;
 
 using Newtonsoft.Json;
 
 using RAGDataIngestionWPF.Core.Contracts.Services;
 
+
+
+
 namespace RAGDataIngestionWPF.Core.Services;
+
+
+
+
 
 public class FileService : IFileService
 {
     public T Read<T>(string folderPath, string fileName)
     {
-        var path = Path.Combine(folderPath, fileName);
+        string path = Path.Combine(folderPath, fileName);
         if (File.Exists(path))
         {
-            var json = File.ReadAllText(path);
+            string json = File.ReadAllText(path);
             return JsonConvert.DeserializeObject<T>(json);
         }
 
         return default;
     }
+
+
+
+
+
+
+
 
     public void Save<T>(string folderPath, string fileName, T content)
     {
@@ -28,9 +49,16 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         }
 
-        var fileContent = JsonConvert.SerializeObject(content);
+        string fileContent = JsonConvert.SerializeObject(content);
         File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
     }
+
+
+
+
+
+
+
 
     public void Delete(string folderPath, string fileName)
     {

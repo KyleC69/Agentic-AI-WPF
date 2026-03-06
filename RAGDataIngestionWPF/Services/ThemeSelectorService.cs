@@ -1,4 +1,12 @@
-﻿using System.Windows;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         ThemeSelectorService.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Windows;
 
 using ControlzEx.Theming;
 
@@ -7,16 +15,26 @@ using MahApps.Metro.Theming;
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Models;
 
+
+
+
 namespace RAGDataIngestionWPF.Services;
+
+
+
+
 
 public class ThemeSelectorService : IThemeSelectorService
 {
     private const string HcDarkTheme = "pack://application:,,,/Styles/Themes/HC.Dark.Blue.xaml";
     private const string HcLightTheme = "pack://application:,,,/Styles/Themes/HC.Light.Blue.xaml";
 
-    public ThemeSelectorService()
-    {
-    }
+
+
+
+
+
+
 
     public void InitializeTheme()
     {
@@ -26,9 +44,16 @@ public class ThemeSelectorService : IThemeSelectorService
         ThemeManager.Current.AddLibraryTheme(new LibraryTheme(new Uri(HcDarkTheme), MahAppsLibraryThemeProvider.DefaultInstance));
         ThemeManager.Current.AddLibraryTheme(new LibraryTheme(new Uri(HcLightTheme), MahAppsLibraryThemeProvider.DefaultInstance));
 
-        var theme = GetCurrentTheme();
+        AppTheme theme = GetCurrentTheme();
         SetTheme(theme);
     }
+
+
+
+
+
+
+
 
     public void SetTheme(AppTheme theme)
     {
@@ -47,11 +72,18 @@ public class ThemeSelectorService : IThemeSelectorService
         App.Current.Properties["Theme"] = theme.ToString();
     }
 
+
+
+
+
+
+
+
     public AppTheme GetCurrentTheme()
     {
         if (App.Current.Properties.Contains("Theme"))
         {
-            var themeName = App.Current.Properties["Theme"].ToString();
+            string themeName = App.Current.Properties["Theme"].ToString();
             Enum.TryParse(themeName, out AppTheme theme);
             return theme;
         }

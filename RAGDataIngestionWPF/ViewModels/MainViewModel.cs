@@ -1,4 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         MainViewModel.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Collections.ObjectModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -6,16 +14,27 @@ using CommunityToolkit.Mvvm.Input;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
+
+
+
 namespace RAGDataIngestionWPF.ViewModels;
+
+
+
+
 
 public class MainViewModel : ObservableObject
 {
     private readonly IChatConversationService _chatConversationService;
-    private ChatSessionState _sessionState;
     private CancellationTokenSource _responseCancellationTokenSource;
-    private string _messageInput = string.Empty;
-    private bool _isGenerating;
-    private int _contextTokenCount;
+    private ChatSessionState _sessionState;
+
+
+
+
+
+
+
 
     public MainViewModel(IChatConversationService chatConversationService)
     {
@@ -25,7 +44,7 @@ public class MainViewModel : ObservableObject
         _sessionState = _chatConversationService.LoadSession();
         Messages = [];
 
-        foreach (var message in _sessionState.History)
+        foreach (ChatMessage message in _sessionState.History)
         {
             Messages.Add(message);
         }
@@ -36,26 +55,34 @@ public class MainViewModel : ObservableObject
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
     }
 
-    public ObservableCollection<ChatMessage> Messages { get; }
 
-    public string MessageInput
+
+
+
+
+
+
+    public IRelayCommand CancelMessageCommand { get; }
+
+
+
+
+
+    public int ContextTokenCount
     {
-        get => _messageInput;
-        set
-        {
-            if (SetProperty(ref _messageInput, value))
-            {
-                SendMessageCommand.NotifyCanExecuteChanged();
-            }
-        }
+        get; set => SetProperty(ref field, value);
     }
+
+
+
+
 
     public bool IsGenerating
     {
-        get => _isGenerating;
+        get;
         set
         {
-            if (SetProperty(ref _isGenerating, value))
+            if (SetProperty(ref field, value))
             {
                 SendMessageCommand.NotifyCanExecuteChanged();
                 CancelMessageCommand.NotifyCanExecuteChanged();
@@ -63,25 +90,86 @@ public class MainViewModel : ObservableObject
         }
     }
 
-    public int ContextTokenCount
+
+
+
+
+    public string MessageInput
     {
-        get => _contextTokenCount;
-        set => SetProperty(ref _contextTokenCount, value);
-    }
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                SendMessageCommand.NotifyCanExecuteChanged();
+            }
+        }
+    } = string.Empty;
+
+
+
+
+
+    public ObservableCollection<ChatMessage> Messages { get; }
+
+
+
+
 
     public IAsyncRelayCommand SendMessageCommand { get; }
 
-    public IRelayCommand CancelMessageCommand { get; }
 
-    private bool CanSendMessage()
-        => !IsGenerating && !string.IsNullOrWhiteSpace(MessageInput);
+
+
+
+
+
+
+    private void AppendMessage(ChatMessage message)
+    {
+        _sessionState = _chatConversationService.AppendMessage(_sessionState, message);
+        Messages.Add(message);
+        ContextTokenCount = _sessionState.ContextTokenCount;
+        PersistSession();
+    }
+
+
+
+
+
+
+
 
     private bool CanCancelMessage()
-        => IsGenerating;
+    {
+        return IsGenerating;
+    }
+
+    private void CancelMessage()
+    {
+        _responseCancellationTokenSource?.Cancel();
+    }
+
+    private bool CanSendMessage()
+    {
+        return !IsGenerating && !string.IsNullOrWhiteSpace(MessageInput);
+    }
+
+    private void PersistSession()
+    {
+        _chatConversationService.SaveSession(_sessionState);
+    }
+
+
+
+
+
+
+
 
     private async Task SendMessageAsync()
     {
-        var content = MessageInput.Trim();
+        string content = MessageInput.Trim();
         if (string.IsNullOrWhiteSpace(content))
         {
             return;
@@ -94,7 +182,7 @@ public class MainViewModel : ObservableObject
 
         try
         {
-            var assistantMessage = await _chatConversationService.GenerateAssistantMessageAsync(content, ContextTokenCount, _responseCancellationTokenSource.Token);
+            ChatMessage assistantMessage = await _chatConversationService.GenerateAssistantMessageAsync(content, ContextTokenCount, _responseCancellationTokenSource.Token);
             AppendMessage(assistantMessage);
         }
         catch (OperationCanceledException)
@@ -108,18 +196,4 @@ public class MainViewModel : ObservableObject
             _responseCancellationTokenSource = null;
         }
     }
-
-    private void CancelMessage()
-        => _responseCancellationTokenSource?.Cancel();
-
-    private void AppendMessage(ChatMessage message)
-    {
-        _sessionState = _chatConversationService.AppendMessage(_sessionState, message);
-        Messages.Add(message);
-        ContextTokenCount = _sessionState.ContextTokenCount;
-        PersistSession();
-    }
-
-    private void PersistSession()
-        => _chatConversationService.SaveSession(_sessionState);
 }

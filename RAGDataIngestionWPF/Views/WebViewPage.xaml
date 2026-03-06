@@ -23,7 +23,7 @@
         <wv2:WebView2
             x:Name="webView"
             Source="{Binding Source}"
-            NavigationCompleted="OnNavigationCompleted"/>
+            NavigationCompleted="OnNavigationCompleted" />
         <Grid
             VerticalAlignment="Bottom"
             Grid.Row="1"
@@ -50,7 +50,7 @@
                         Style="{StaticResource SmallIconStyle}"
                         Text="&#xE72A;" />
                 </Button>
-            </StackPanel >
+            </StackPanel>
 
             <TextBlock
                 Grid.Column="1"

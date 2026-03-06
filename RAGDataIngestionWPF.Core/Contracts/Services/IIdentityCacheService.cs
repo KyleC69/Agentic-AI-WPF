@@ -1,8 +1,22 @@
-﻿namespace RAGDataIngestionWPF.Core.Contracts.Services;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF.Core
+//  File:         IIdentityCacheService.cs
+//   Author: Kyle L. Crowder
+
+
+
+namespace RAGDataIngestionWPF.Core.Contracts.Services;
+
+
+
+
 
 public interface IIdentityCacheService
 {
-    void SaveMsalToken(byte[] token);
 
     byte[] ReadMsalToken();
+
+
+    void SaveMsalToken(byte[] token);
 }

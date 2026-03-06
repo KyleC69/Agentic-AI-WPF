@@ -1,34 +1,46 @@
-﻿using System.Windows.Media.Imaging;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         UserViewModel.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Windows.Media.Imaging;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
+
+
+
 namespace RAGDataIngestionWPF.ViewModels;
+
+
+
+
 
 public class UserViewModel : ObservableObject
 {
-    private string _name;
-    private string _userPrincipalName;
-    private BitmapImage _photo;
-
     public string Name
     {
-        get => _name;
-        set => SetProperty(ref _name, value);
+        get; set => SetProperty(ref field, value);
     }
 
-    public string UserPrincipalName
-    {
-        get => _userPrincipalName;
-        set => SetProperty(ref _userPrincipalName, value);
-    }
+
+
+
 
     public BitmapImage Photo
     {
-        get => _photo;
-        set => SetProperty(ref _photo, value);
+        get; set => SetProperty(ref field, value);
     }
 
-    public UserViewModel()
+
+
+
+
+    public string UserPrincipalName
     {
+        get; set => SetProperty(ref field, value);
     }
 }

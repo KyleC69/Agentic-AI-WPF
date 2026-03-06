@@ -1,5 +1,10 @@
-﻿using System.Net.Http;
-using System.Net.Http.Headers;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF.Core
+//  File:         MicrosoftGraphService.cs
+//   Author: Kyle L. Crowder
+
+
 
 using Newtonsoft.Json;
 
@@ -7,10 +12,18 @@ using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Core.Helpers;
 using RAGDataIngestionWPF.Core.Models;
 
+
+
+
 namespace RAGDataIngestionWPF.Core.Services;
+
+
+
+
 
 public class MicrosoftGraphService : IMicrosoftGraphService
 {
+    private readonly HttpClient _client;
     /*
     For more information about Get-User Service, refer to the following documentation
     https://docs.microsoft.com/graph/api/user-get?view=graph-rest-1.0
@@ -20,20 +33,33 @@ public class MicrosoftGraphService : IMicrosoftGraphService
 
     private const string _apiServiceMe = "me/";
     private const string _apiServiceMePhoto = "me/photo/$value";
-    private readonly HttpClient _client;
+
+
+
+
+
+
+
 
     public MicrosoftGraphService(IHttpClientFactory client)
     {
         _client = client.CreateClient("msgraph");
     }
 
+
+
+
+
+
+
+
     public async Task<User> GetUserInfoAsync(string accessToken)
     {
         User user = null;
-        var httpContent = await GetDataAsync($"{_apiServiceMe}", accessToken);
+        HttpContent httpContent = await GetDataAsync($"{_apiServiceMe}", accessToken);
         if (httpContent != null)
         {
-            var userData = await httpContent.ReadAsStringAsync();
+            string userData = await httpContent.ReadAsStringAsync();
             if (!string.IsNullOrEmpty(userData))
             {
                 user = JsonConvert.DeserializeObject<User>(userData);
@@ -43,34 +69,45 @@ public class MicrosoftGraphService : IMicrosoftGraphService
         return user;
     }
 
+
+
+
+
+
+
+
     public async Task<string> GetUserPhoto(string accessToken)
     {
-        var httpContent = await GetDataAsync($"{_apiServiceMePhoto}", accessToken);
+        HttpContent httpContent = await GetDataAsync($"{_apiServiceMePhoto}", accessToken);
 
         if (httpContent == null)
         {
             return string.Empty;
         }
 
-        var stream = await httpContent.ReadAsStreamAsync();
+        Stream stream = await httpContent.ReadAsStreamAsync();
         return stream.ToBase64String();
     }
+
+
+
+
+
+
+
 
     private async Task<HttpContent> GetDataAsync(string url, string accessToken)
     {
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            var response = await _client.SendAsync(request);
+            HttpRequestMessage request = new(HttpMethod.Get, url);
+            request.Headers.Authorization = new("Bearer", accessToken);
+            HttpResponseMessage response = await _client.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 return response.Content;
             }
-            else
-            {
-                // TODO: Please handle other status codes as appropriate to your scenario
-            }
+            // TODO: Please handle other status codes as appropriate to your scenario
         }
         catch (HttpRequestException)
         {

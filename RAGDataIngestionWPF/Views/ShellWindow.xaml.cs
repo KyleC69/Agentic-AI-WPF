@@ -1,11 +1,26 @@
-﻿using System.Windows.Controls;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         ShellWindow.xaml.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Windows.Controls;
 
 using MahApps.Metro.Controls;
 
 using RAGDataIngestionWPF.Contracts.Views;
 using RAGDataIngestionWPF.ViewModels;
 
+
+
+
 namespace RAGDataIngestionWPF.Views;
+
+
+
+
 
 public partial class ShellWindow : MetroWindow, IShellWindow
 {
@@ -15,12 +30,25 @@ public partial class ShellWindow : MetroWindow, IShellWindow
         DataContext = viewModel;
     }
 
+
+
+
+
+
+
+
     public Frame GetNavigationFrame()
-        => shellFrame;
+    {
+        return shellFrame;
+    }
 
     public void ShowWindow()
-        => Show();
+    {
+        Show();
+    }
 
     public void CloseWindow()
-        => Close();
+    {
+        Close();
+    }
 }

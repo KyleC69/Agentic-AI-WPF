@@ -1,16 +1,22 @@
-﻿namespace System.Windows.Controls;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         FrameExtensions.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RAGDataIngestionWPF.Helpers;
+
+
+
+
 
 public static class FrameExtensions
 {
-    public static object GetDataContext(this Frame frame)
-    {
-        if (frame.Content is FrameworkElement element)
-        {
-            return element.DataContext;
-        }
-
-        return null;
-    }
 
     public static void CleanNavigation(this Frame frame)
     {
@@ -18,5 +24,18 @@ public static class FrameExtensions
         {
             frame.RemoveBackEntry();
         }
+    }
+
+
+
+
+
+
+
+
+    public static object GetDataContext(this Frame frame)
+    {
+        return frame.Content is FrameworkElement element ? element.DataContext : null;
+
     }
 }

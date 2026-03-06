@@ -1,9 +1,24 @@
-﻿using System.Windows;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         MenuItemTemplateSelector.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Windows;
 using System.Windows.Controls;
 
 using MahApps.Metro.Controls;
 
+
+
+
 namespace RAGDataIngestionWPF.TemplateSelectors;
+
+
+
+
 
 public class MenuItemTemplateSelector : DataTemplateSelector
 {
@@ -11,18 +26,17 @@ public class MenuItemTemplateSelector : DataTemplateSelector
 
     public DataTemplate ImageDataTemplate { get; set; }
 
+
+
+
+
+
+
+
     public override DataTemplate SelectTemplate(object item, DependencyObject container)
     {
-        if (item is HamburgerMenuGlyphItem)
-        {
-            return GlyphDataTemplate;
-        }
-
-        if (item is HamburgerMenuImageItem)
-        {
-            return ImageDataTemplate;
-        }
-
-        return base.SelectTemplate(item, container);
+        return item is HamburgerMenuGlyphItem
+            ? GlyphDataTemplate
+            : item is HamburgerMenuImageItem ? ImageDataTemplate : base.SelectTemplate(item, container);
     }
 }

@@ -1,4 +1,12 @@
-﻿using System.Windows;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         ToastNotificationActivationHandler.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Windows;
 
 using Microsoft.Extensions.Configuration;
 
@@ -6,18 +14,32 @@ using RAGDataIngestionWPF.Contracts.Activation;
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.Views;
 
+
+
+
 namespace RAGDataIngestionWPF.Activation;
+
+
+
+
 
 // For more information about sending a local toast notification from C# apps, see
 // https://docs.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast?tabs=desktop
 // and https://github.com/microsoft/TemplateStudio/blob/main/docs/WPF/features/toast-notifications.md
 public class ToastNotificationActivationHandler : IActivationHandler
 {
-    public const string ActivationArguments = "ToastNotificationActivationArguments";
 
     private readonly IConfiguration _config;
-    private readonly IServiceProvider _serviceProvider;
     private readonly INavigationService _navigationService;
+    private readonly IServiceProvider _serviceProvider;
+    public const string ActivationArguments = "ToastNotificationActivationArguments";
+
+
+
+
+
+
+
 
     public ToastNotificationActivationHandler(IConfiguration config, IServiceProvider serviceProvider, INavigationService navigationService)
     {
@@ -26,10 +48,24 @@ public class ToastNotificationActivationHandler : IActivationHandler
         _navigationService = navigationService;
     }
 
+
+
+
+
+
+
+
     public bool CanHandle()
     {
         return !string.IsNullOrEmpty(_config[ActivationArguments]);
     }
+
+
+
+
+
+
+
 
     public async Task HandleAsync()
     {

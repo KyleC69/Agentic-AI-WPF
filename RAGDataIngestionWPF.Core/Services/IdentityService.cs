@@ -1,42 +1,91 @@
-﻿using RAGDataIngestionWPF.Core.Contracts.Services;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF.Core
+//  File:         IdentityService.cs
+//   Author: Kyle L. Crowder
+
+
+
+using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Core.Helpers;
+
+
+
 
 namespace RAGDataIngestionWPF.Core.Services;
 
+
+
+
+
 public class IdentityService : IIdentityService
 {
-    private bool _isLoggedIn;
     private string _accountUserName = string.Empty;
+    private bool _isLoggedIn;
 
     public event EventHandler LoggedIn;
 
     public event EventHandler LoggedOut;
 
-    public IdentityService()
-    {
-    }
+
+
+
+
+
+
 
     public void InitializeWithAadAndPersonalMsAccounts(string clientId, string redirectUri = null)
     {
         // No-op: identity client removed
     }
 
+
+
+
+
+
+
+
     public void InitializeWithPersonalMsAccounts(string clientId, string redirectUri = null)
     {
         // No-op: identity client removed
     }
+
+
+
+
+
+
+
 
     public void InitializeWithAadMultipleOrgs(string clientId, bool integratedAuth = false, string redirectUri = null)
     {
         // No-op: identity client removed
     }
 
+
+
+
+
+
+
+
     public void InitializeWithAadSingleOrg(string clientId, string tenant, bool integratedAuth = false, string redirectUri = null)
     {
         // No-op: identity client removed
     }
 
-    public bool IsLoggedIn() => _isLoggedIn;
+
+
+
+
+
+
+
+    public bool IsLoggedIn()
+    {
+        return _isLoggedIn;
+    }
 
     public async Task<LoginResultType> LoginAsync()
     {
@@ -46,12 +95,29 @@ public class IdentityService : IIdentityService
         return await Task.FromResult(LoginResultType.Success);
     }
 
-    public bool IsAuthorized() => true;
+
+
+
+
+
+
+
+    public bool IsAuthorized()
+    {
+        return true;
+    }
 
     public string GetAccountUserName()
     {
         return _accountUserName;
     }
+
+
+
+
+
+
+
 
     public async Task LogoutAsync()
     {
@@ -64,7 +130,17 @@ public class IdentityService : IIdentityService
         await Task.CompletedTask;
     }
 
-    public async Task<string> GetAccessTokenForGraphAsync() => await GetAccessTokenAsync(Array.Empty<string>());
+
+
+
+
+
+
+
+    public async Task<string> GetAccessTokenForGraphAsync()
+    {
+        return await GetAccessTokenAsync(Array.Empty<string>());
+    }
 
     public async Task<string> GetAccessTokenAsync(string[] scopes)
     {
@@ -72,7 +148,17 @@ public class IdentityService : IIdentityService
         return string.Empty;
     }
 
-    public async Task<bool> AcquireTokenSilentAsync() => await AcquireTokenSilentAsync(Array.Empty<string>());
+
+
+
+
+
+
+
+    public async Task<bool> AcquireTokenSilentAsync()
+    {
+        return await AcquireTokenSilentAsync(Array.Empty<string>());
+    }
 
     private async Task<bool> AcquireTokenSilentAsync(string[] scopes)
     {

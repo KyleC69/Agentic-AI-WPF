@@ -44,7 +44,6 @@
                             AutomationProperties.Name="Detail icon" />
                         <TextBlock
                             Margin="{StaticResource SmallLeftMargin}"
-                            VerticalAlignment="Center"
                             Text="{Binding Company, Mode=OneWay}"
                             Style="{StaticResource PageTitleStyle}" />
                     </StackPanel>
@@ -121,7 +120,6 @@
             </Grid.RowDefinitions>
             <TextBlock
                 Style="{StaticResource PageTitleStyle}"
-                Margin="{StaticResource MediumLeftMargin}"
                 Text="{x:Static properties:Resources.ListDetailsPageTitle}" />
             <ListView
                 Grid.Row="1"

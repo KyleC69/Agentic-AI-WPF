@@ -1,8 +1,22 @@
-﻿namespace RAGDataIngestionWPF.Contracts.Services;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         IPersistAndRestoreService.cs
+//   Author: Kyle L. Crowder
+
+
+
+namespace RAGDataIngestionWPF.Contracts.Services;
+
+
+
+
 
 public interface IPersistAndRestoreService
 {
-    void RestoreData();
 
     void PersistData();
+
+
+    void RestoreData();
 }

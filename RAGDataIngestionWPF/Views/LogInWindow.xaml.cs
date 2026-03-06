@@ -1,9 +1,24 @@
-﻿using MahApps.Metro.Controls;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         LogInWindow.xaml.cs
+//   Author: Kyle L. Crowder
+
+
+
+using MahApps.Metro.Controls;
 
 using RAGDataIngestionWPF.Contracts.Views;
 using RAGDataIngestionWPF.ViewModels;
 
+
+
+
 namespace RAGDataIngestionWPF.Views;
+
+
+
+
 
 public partial class LogInWindow : MetroWindow, ILogInWindow
 {
@@ -13,9 +28,20 @@ public partial class LogInWindow : MetroWindow, ILogInWindow
         DataContext = viewModel;
     }
 
+
+
+
+
+
+
+
     public void ShowWindow()
-        => Show();
+    {
+        Show();
+    }
 
     public void CloseWindow()
-        => Close();
+    {
+        Close();
+    }
 }

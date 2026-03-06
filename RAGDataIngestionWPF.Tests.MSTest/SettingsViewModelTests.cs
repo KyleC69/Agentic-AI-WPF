@@ -1,4 +1,12 @@
-﻿using Microsoft.Extensions.Options;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF.Tests.MSTest
+//  File:         SettingsViewModelTests.cs
+//   Author: Kyle L. Crowder
+
+
+
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
@@ -7,25 +15,29 @@ using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Models;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class SettingsViewModelTests
 {
-    public SettingsViewModelTests()
-    {
-    }
 
     [TestMethod]
     public void TestSettingsViewModel_SetCurrentTheme()
     {
-        var mockThemeSelectorService = new Mock<IThemeSelectorService>();
+        Mock<IThemeSelectorService> mockThemeSelectorService = new();
         mockThemeSelectorService.Setup(mock => mock.GetCurrentTheme()).Returns(AppTheme.Light);
-        var mockAppConfig = new Mock<IOptions<AppConfig>>();
-        var mockSystemService = new Mock<ISystemService>();
-        var mockApplicationInfoService = new Mock<IApplicationInfoService>();
-        var mockUserDataService = new Mock<IUserDataService>();
-        var mockIdentityService = new Mock<IIdentityService>();
+        Mock<IOptions<AppConfig>> mockAppConfig = new();
+        Mock<ISystemService> mockSystemService = new();
+        Mock<IApplicationInfoService> mockApplicationInfoService = new();
+        Mock<IUserDataService> mockUserDataService = new();
+        Mock<IIdentityService> mockIdentityService = new();
 
         //   var settingsVm = new SettingsViewModel(mockAppConfig.Object, mockThemeSelectorService.Object, mockSystemService.Object, mockApplicationInfoService.Object, mockUserDataService.Object, mockIdentityService.Object);
         //     settingsVm.OnNavigatedTo(null);
@@ -33,16 +45,23 @@ public class SettingsViewModelTests
         //     Assert.AreEqual(AppTheme.Light, settingsVm.Theme);
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public void TestSettingsViewModel_SetCurrentVersion()
     {
-        var mockThemeSelectorService = new Mock<IThemeSelectorService>();
-        var mockAppConfig = new Mock<IOptions<AppConfig>>();
-        var mockSystemService = new Mock<ISystemService>();
-        var mockApplicationInfoService = new Mock<IApplicationInfoService>();
-        var mockUserDataService = new Mock<IUserDataService>();
-        var mockIdentityService = new Mock<IIdentityService>();
-        var testVersion = new Version(1, 2, 3, 4);
+        Mock<IThemeSelectorService> mockThemeSelectorService = new();
+        Mock<IOptions<AppConfig>> mockAppConfig = new();
+        Mock<ISystemService> mockSystemService = new();
+        Mock<IApplicationInfoService> mockApplicationInfoService = new();
+        Mock<IUserDataService> mockUserDataService = new();
+        Mock<IIdentityService> mockIdentityService = new();
+        Version testVersion = new(1, 2, 3, 4);
         mockApplicationInfoService.Setup(mock => mock.GetVersion()).Returns(testVersion);
 
         //     var settingsVm = new SettingsViewModel(mockAppConfig.Object, mockThemeSelectorService.Object, mockSystemService.Object, mockApplicationInfoService.Object, mockUserDataService.Object, mockIdentityService.Object);
@@ -51,15 +70,22 @@ public class SettingsViewModelTests
         //      Assert.AreEqual($"RAGDataIngestionWPF - {testVersion}", settingsVm.VersionDescription);
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public void TestSettingsViewModel_SetThemeCommand()
     {
-        var mockThemeSelectorService = new Mock<IThemeSelectorService>();
-        var mockAppConfig = new Mock<IOptions<AppConfig>>();
-        var mockSystemService = new Mock<ISystemService>();
-        var mockApplicationInfoService = new Mock<IApplicationInfoService>();
-        var mockUserDataService = new Mock<IUserDataService>();
-        var mockIdentityService = new Mock<IIdentityService>();
+        Mock<IThemeSelectorService> mockThemeSelectorService = new();
+        Mock<IOptions<AppConfig>> mockAppConfig = new();
+        Mock<ISystemService> mockSystemService = new();
+        Mock<IApplicationInfoService> mockApplicationInfoService = new();
+        Mock<IUserDataService> mockUserDataService = new();
+        Mock<IIdentityService> mockIdentityService = new();
 
         //      var settingsVm = new SettingsViewModel(mockAppConfig.Object, mockThemeSelectorService.Object, mockSystemService.Object, mockApplicationInfoService.Object, mockUserDataService.Object, mockIdentityService.Object);
         //    settingsVm.SetThemeCommand.Execute(AppTheme.Light.ToString());

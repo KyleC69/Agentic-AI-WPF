@@ -1,4 +1,12 @@
-﻿using System.Windows;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         WebViewViewModel.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Windows;
 using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -9,71 +17,30 @@ using Microsoft.Web.WebView2.Wpf;
 
 using RAGDataIngestionWPF.Contracts.Services;
 
+
+
+
 namespace RAGDataIngestionWPF.ViewModels;
+
+
+
+
 
 public class WebViewViewModel : ObservableObject
 {
+
+    private readonly ISystemService _systemService;
+    private WebView2 _webView;
+
     // TODO: Set the URI of the page to show by default
     private const string DefaultUrl = "https://docs.microsoft.com/windows/apps/";
 
-    private readonly ISystemService _systemService;
 
-    private string _source;
-    private bool _isLoading = true;
-    private bool _isShowingFailedMessage;
-    private Visibility _isLoadingVisibility = Visibility.Visible;
-    private Visibility _failedMesageVisibility = Visibility.Collapsed;
-    private ICommand _refreshCommand;
-    private RelayCommand _browserBackCommand;
-    private RelayCommand _browserForwardCommand;
-    private ICommand _openInBrowserCommand;
-    private WebView2 _webView;
 
-    public string Source
-    {
-        get { return _source; }
-        set { SetProperty(ref _source, value); }
-    }
 
-    public bool IsLoading
-    {
-        get => _isLoading;
-        set
-        {
-            SetProperty(ref _isLoading, value);
-            IsLoadingVisibility = value ? Visibility.Visible : Visibility.Collapsed;
-        }
-    }
 
-    public bool IsShowingFailedMessage
-    {
-        get => _isShowingFailedMessage;
-        set
-        {
-            SetProperty(ref _isShowingFailedMessage, value);
-            FailedMesageVisibility = value ? Visibility.Visible : Visibility.Collapsed;
-        }
-    }
 
-    public Visibility IsLoadingVisibility
-    {
-        get { return _isLoadingVisibility; }
-        set { SetProperty(ref _isLoadingVisibility, value); }
-    }
 
-    public Visibility FailedMesageVisibility
-    {
-        get { return _failedMesageVisibility; }
-        set { SetProperty(ref _failedMesageVisibility, value); }
-    }
-
-    public ICommand RefreshCommand => _refreshCommand ?? (_refreshCommand = new RelayCommand(OnRefresh));
-
-    public RelayCommand BrowserBackCommand => _browserBackCommand ?? (_browserBackCommand = new RelayCommand(() => _webView?.GoBack(), () => _webView?.CanGoBack ?? false));
-
-    public RelayCommand BrowserForwardCommand => _browserForwardCommand ?? (_browserForwardCommand = new RelayCommand(() => _webView?.GoForward(), () => _webView?.CanGoForward ?? false));
-
-    public ICommand OpenInBrowserCommand => _openInBrowserCommand ?? (_openInBrowserCommand = new RelayCommand(OnOpenInBrowser));
 
     public WebViewViewModel(ISystemService systemService)
     {
@@ -81,10 +48,106 @@ public class WebViewViewModel : ObservableObject
         Source = DefaultUrl;
     }
 
+
+
+
+
+
+
+
+    public RelayCommand BrowserBackCommand => field ??= new RelayCommand(() => _webView?.GoBack(), () => _webView?.CanGoBack ?? false);
+
+
+
+
+
+    public RelayCommand BrowserForwardCommand => field ??= new RelayCommand(() => _webView?.GoForward(), () => _webView?.CanGoForward ?? false);
+
+
+
+
+
+    public Visibility FailedMesageVisibility
+    {
+        get; set => SetProperty(ref field, value);
+    } = Visibility.Collapsed;
+
+
+
+
+
+    public bool IsLoading
+    {
+        get;
+        set
+        {
+            SetProperty(ref field, value);
+            IsLoadingVisibility = value ? Visibility.Visible : Visibility.Collapsed;
+        }
+    } = true;
+
+
+
+
+
+    public Visibility IsLoadingVisibility
+    {
+        get; set => SetProperty(ref field, value);
+    } = Visibility.Visible;
+
+
+
+
+
+    public bool IsShowingFailedMessage
+    {
+        get;
+        set
+        {
+            SetProperty(ref field, value);
+            FailedMesageVisibility = value ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
+
+
+
+
+    public ICommand OpenInBrowserCommand => field ??= new RelayCommand(OnOpenInBrowser);
+
+
+
+
+
+    public ICommand RefreshCommand => field ??= new RelayCommand(OnRefresh);
+
+
+
+
+
+    public string Source
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+
+
+
+
     public void Initialize(WebView2 webView)
     {
         _webView = webView;
     }
+
+
+
+
+
+
+
 
     public void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
     {
@@ -99,13 +162,22 @@ public class WebViewViewModel : ObservableObject
         BrowserForwardCommand.NotifyCanExecuteChanged();
     }
 
+
+
+
+
+
+
+
+    private void OnOpenInBrowser()
+    {
+        _systemService.OpenInWebBrowser(Source);
+    }
+
     private void OnRefresh()
     {
         IsShowingFailedMessage = false;
         IsLoading = true;
         _webView?.Reload();
     }
-
-    private void OnOpenInBrowser()
-        => _systemService.OpenInWebBrowser(Source);
 }

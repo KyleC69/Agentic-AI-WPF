@@ -1,12 +1,30 @@
-﻿using System.Windows.Controls;
+﻿// 2026/03/05
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         IShellWindow.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Windows.Controls;
+
+
+
 
 namespace RAGDataIngestionWPF.Contracts.Views;
 
+
+
+
+
 public interface IShellWindow
 {
-    Frame GetNavigationFrame();
-
-    void ShowWindow();
 
     void CloseWindow();
+
+
+    Frame GetNavigationFrame();
+
+
+    void ShowWindow();
 }
