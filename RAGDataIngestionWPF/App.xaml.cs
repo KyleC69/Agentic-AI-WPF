@@ -8,11 +8,11 @@
 
 using System.IO;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 
+using DataIngestionLib.Agents;
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Options;
 using DataIngestionLib.Services;
@@ -95,6 +95,7 @@ public partial class App : Application
         services.AddSingleton<IOllamaApiClient>(_ => new OllamaApiClient(OllamaEndpoint, OllamaModel));
         services.AddSingleton<IChatClient>(sp => (IChatClient)sp.GetRequiredService<IOllamaApiClient>());
         services.AddSingleton(sp => sp.GetRequiredService<IChatClient>().AsAIAgent());
+        services.AddSingleton<IAgentFactory, AgentFactory>();
     }
 
     private static void RegisterActivationHandlers(IServiceCollection services)

@@ -12,13 +12,13 @@ using Microsoft.Extensions.AI;
 
 
 
-namespace DataIngestionLib.Services;
+namespace DataIngestionLib.Contracts.Services;
 
 
 
 
 
-internal interface IVectorChatHistoryProvider
+public interface IVectorChatHistoryProvider
 {
     IReadOnlyList<string> StateKeys { get; }
 

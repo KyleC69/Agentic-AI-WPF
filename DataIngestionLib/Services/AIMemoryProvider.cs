@@ -1,4 +1,9 @@
+using System.Text.Json;
+
+using DataIngestionLib.Contracts.Services;
+
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 
 using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
@@ -6,11 +11,27 @@ using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 namespace DataIngestionLib.Services;
 
-internal sealed class ChatHistoryMemoryProvider : MessageAIContextProvider
+
+
+
+
+
+
+
+
+
+public sealed class AIMemoryProvider : MessageAIContextProvider
 {
     private const string SessionStateKey = nameof(ChatHistoryMemoryProvider);
-    private const int MaxStoredMessagesPerSession = 40;
     private const int MaxContextMessages = 8;
+
+    private readonly ISqlVectorStore _sqlVectorStore;
+
+    public AIMemoryProvider(ISqlVectorStore sqlVectorStore)
+    {
+        ArgumentNullException.ThrowIfNull(sqlVectorStore);
+        _sqlVectorStore = sqlVectorStore;
+    }
 
     private readonly Dictionary<string, List<AIChatMessage>> _historyBySession = [];
 
@@ -33,15 +54,17 @@ internal sealed class ChatHistoryMemoryProvider : MessageAIContextProvider
     protected override ValueTask<IEnumerable<AIChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(context);
 
         string sessionKey = GetOrCreateSessionKey(context.Session);
 
-        lock (_historyBySession)
-        {
-            return !_historyBySession.TryGetValue(sessionKey, out List<AIChatMessage>? sessionMessages) || sessionMessages.Count == 0
-                ? ValueTask.FromResult<IEnumerable<AIChatMessage>>([])
-                : ValueTask.FromResult<IEnumerable<AIChatMessage>>(sessionMessages.TakeLast(MaxContextMessages).ToArray());
-        }
+        IEnumerable<(string Message, DateTime Timestamp)> history = _sqlVectorStore.GetChatHistory(sessionKey);
+        AIChatMessage[] contextMessages = history
+                .TakeLast(MaxContextMessages)
+                .Select(static item => DeserializeMessage(item.Message))
+                .ToArray();
+
+        return ValueTask.FromResult<IEnumerable<AIChatMessage>>(contextMessages);
     }
 
 
@@ -65,11 +88,8 @@ internal sealed class ChatHistoryMemoryProvider : MessageAIContextProvider
     /// </remarks>
     protected override ValueTask StoreAIContextAsync(AIContextProvider.InvokedContext context, CancellationToken cancellationToken = default)
     {
-        // In a perfect world, I wouldn't want to limit the context messages, I want to model to remember what it was doing, it is so frustrating to have to remind the model of what it just generated.
-        //
-        //However, this is an in-memory provider, this may cause OOM. Does this double memory usage? Memory to store and the memory used in the model?
-        // TODO: This will be changed to sql Vector DB, so we can store more messages and not worry about OOM. For now, we will limit the messages to avoid OOM.
         cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.InvokeException is not null)
         {
@@ -86,24 +106,55 @@ internal sealed class ChatHistoryMemoryProvider : MessageAIContextProvider
             return ValueTask.CompletedTask;
         }
 
-        lock (_historyBySession)
+        DateTime timestamp = DateTime.UtcNow;
+        for (int index = 0; index < messagesToStore.Count; index++)
         {
-            if (!_historyBySession.TryGetValue(sessionKey, out List<AIChatMessage>? sessionMessages))
-            {
-                sessionMessages = [];
-                _historyBySession[sessionKey] = sessionMessages;
-            }
-
-            sessionMessages.AddRange(messagesToStore);
-
-            if (sessionMessages.Count > MaxStoredMessagesPerSession)
-            {
-                int removeCount = sessionMessages.Count - MaxStoredMessagesPerSession;
-                sessionMessages.RemoveRange(0, removeCount);
-            }
+            cancellationToken.ThrowIfCancellationRequested();
+            AIChatMessage message = messagesToStore[index];
+            _sqlVectorStore.SaveChatHistory(sessionKey, SerializeMessage(message), timestamp.AddTicks(index));
         }
 
         return ValueTask.CompletedTask;
+    }
+
+    private static string SerializeMessage(AIChatMessage message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        StoredChatMessage storedMessage = new(message.Role.ToString(), message.Text ?? string.Empty);
+        return JsonSerializer.Serialize(storedMessage);
+    }
+
+    private static AIChatMessage DeserializeMessage(string persistedValue)
+    {
+        if (string.IsNullOrWhiteSpace(persistedValue))
+        {
+            return new AIChatMessage(ChatRole.Assistant, string.Empty);
+        }
+
+        try
+        {
+            StoredChatMessage? storedMessage = JsonSerializer.Deserialize<StoredChatMessage>(persistedValue);
+            return storedMessage is null
+                ? new AIChatMessage(ChatRole.Assistant, persistedValue)
+                : new AIChatMessage(ParseRole(storedMessage.Role), storedMessage.Text ?? string.Empty);
+        }
+        catch (JsonException)
+        {
+            return new AIChatMessage(ChatRole.Assistant, persistedValue);
+        }
+    }
+
+    private static ChatRole ParseRole(string? value)
+    {
+        return value?.Trim().ToLowerInvariant() switch
+        {
+            "user" => ChatRole.User,
+            "assistant" => ChatRole.Assistant,
+            "system" => ChatRole.System,
+            "tool" => ChatRole.Tool,
+            _ => ChatRole.Assistant,
+        };
     }
 
     private static string GetOrCreateSessionKey(AgentSession session)
@@ -118,4 +169,6 @@ internal sealed class ChatHistoryMemoryProvider : MessageAIContextProvider
         session.StateBag.SetValue(SessionStateKey, sessionKey);
         return sessionKey;
     }
+
+    private sealed record StoredChatMessage(string Role, string Text);
 }

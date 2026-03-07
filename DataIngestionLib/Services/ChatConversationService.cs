@@ -9,6 +9,7 @@
 using System.IO;
 using System.Text.Json;
 
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Options;
@@ -33,6 +34,9 @@ public sealed class ChatConversationService : IChatConversationService
     private readonly string _localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     private readonly ChatSessionOptions _options;
     private readonly ISqlVectorStore _sqlVectorStore;
+    private readonly AIAgent _agent;
+    private AgentSession? _agentSession;
+    private CancellationTokenSource _cts;
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = false };
 
 
@@ -42,11 +46,12 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public ChatConversationService(ChatSessionOptions options, IChatClient client, ILoggerFactory factory)
+    public ChatConversationService(ChatSessionOptions options, IChatClient client, ILoggerFactory factory, IAgentFactory agentFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(factory);
+        ArgumentNullException.ThrowIfNull(agentFactory);
 
         if (string.IsNullOrWhiteSpace(options.ConfigurationsFolder))
         {
@@ -63,9 +68,9 @@ public sealed class ChatConversationService : IChatConversationService
             throw new ArgumentOutOfRangeException(nameof(options), "Maximum context tokens must be a positive value.");
         }
 
-
-
-
+        _options = options;
+        _agent = agentFactory.GetCodingAssistantAgent();
+        _agentSession = _agent.CreateSessionAsync().Result;
 
 
 
@@ -74,52 +79,6 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-
-
-
-
-    /// <summary>
-    ///     Loads the persisted chat session for the current local user profile.
-    /// </summary>
-    /// <returns>The loaded chat session or a new empty session when no persisted state is available.</returns>
-    public ChatSessionState LoadSession()
-    {
-        string path = GetSessionFilePath();
-        if (!File.Exists(path))
-        {
-            return new();
-        }
-
-        string json = File.ReadAllText(path);
-        ChatSessionState? state = JsonSerializer.Deserialize<ChatSessionState>(json, SerializerOptions);
-        ChatSessionState normalizedState = state ?? new ChatSessionState();
-
-        return NormalizeState(normalizedState);
-    }
-
-
-
-
-
-
-
-
-    /// <summary>
-    ///     Persists the provided chat session state to local storage.
-    /// </summary>
-    /// <param name="sessionState">The session state to persist.</param>
-    public void SaveSession(ChatSessionState sessionState)
-    {
-        ArgumentNullException.ThrowIfNull(sessionState);
-
-        ChatSessionState normalizedState = NormalizeState(sessionState);
-        string folder = GetStorageFolderPath();
-        Directory.CreateDirectory(folder);
-
-        string json = JsonSerializer.Serialize(normalizedState, SerializerOptions);
-        File.WriteAllText(GetSessionFilePath(), json);
-    }
 
 
 
@@ -177,28 +136,12 @@ public sealed class ChatConversationService : IChatConversationService
         }
 
 
-
-        /*
-
-                var b = new AIAgentBuilder(_innerclient.AsAIAgent())
-                        .UseLogging(_factory)
-                        .UseAIContextProviders(new TextSearchProvider(), new ChatHistoryMemoryProvider(vectorStore), new MessageAIContextProvider())
-                        .Build();
-
-
-                // The AI agent is configured to use the following providers for context:
-                // - TextSearchProvider: Allows the agent to search for text.
-                // - ChatHistoryMemoryProvider: Provides access to the chat history.
-                // - MessageAIContextProvider: Provides access to the current message.
-                // The agent is also configured to use a tool invocation mechanism.
-                // The _client2 represents the actual AI model that will be used for generation.
-                // This setup is likely part of a more complex agent orchestration where
-                // _innerclient might be a builder or a different type of client.
-        */
+        AgentResponse message = await _agent.RunAsync(userMessage, _agentSession, null, cancellationToken);
 
 
 
-        return CreateAssistantMessage($"Echo: {userMessage}");
+
+        return CreateAssistantMessage(message.Text);
     }
 
 
@@ -374,18 +317,6 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-
-
-    private string GetSessionFilePath()
-    {
-        return Path.Combine(GetStorageFolderPath(), _options.ChatSessionFileName);
-    }
-
-    private string GetStorageFolderPath()
-    {
-        return Path.Combine(_localAppDataPath, _options.ConfigurationsFolder);
-    }
 
     private static ChatMessage NormalizeMessage(ChatMessage message)
     {

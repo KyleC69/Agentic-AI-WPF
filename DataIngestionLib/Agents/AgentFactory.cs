@@ -1,4 +1,7 @@
-﻿using DataIngestionLib.ToolFunctions;
+﻿using DataIngestionLib.Contracts;
+using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Services;
+using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -15,7 +18,7 @@ namespace DataIngestionLib.Agents;
 
 
 //This class is intended to be an Agent Factory that will create and configure agents.
-internal class AgentFactory
+public class AgentFactory : IAgentFactory
 {
     private IChatClient _innerclient;
     private ILoggerFactory _factory;
@@ -72,11 +75,7 @@ internal class AgentFactory
 
 
 
-
-
-
-
-        ChatHistoryMemoryProvider chatHistoryMemoryProvider = new(_sqlVectorStore);
+        AIMemoryProvider chatHistoryMemoryProvider = new(_sqlVectorStore);
 
         outer = outer.AsBuilder()
                 .UseAIContextProviders(chatHistoryMemoryProvider)

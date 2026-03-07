@@ -51,7 +51,7 @@ public class MainViewModel : ObservableObject
 
         ContextTokenCount = _sessionState.ContextTokenCount;
 
-        SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
+        SendMessageCommand = new AsyncRelayCommand(TestSendMessageAsync, CanSendMessage);
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
     }
 
@@ -196,4 +196,47 @@ public class MainViewModel : ObservableObject
             _responseCancellationTokenSource = null;
         }
     }
+
+
+
+    private async Task TestSendMessageAsync()
+    {
+        string content = MessageInput.Trim();
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return;
+        }
+
+        AppendMessage(_chatConversationService.CreateUserMessage(content));
+        MessageInput = string.Empty;
+        IsGenerating = true;
+        _responseCancellationTokenSource = new CancellationTokenSource();
+
+        try
+        {
+            List<string> testList = ContextWindowContinuityTests.GetList();
+            foreach (string test in testList)
+            {
+                ChatMessage assistantMessage = await _chatConversationService.GenerateAssistantMessageAsync(test, ContextTokenCount, _responseCancellationTokenSource.Token);
+                AppendMessage(assistantMessage);
+                await Task.Delay(5000);
+            }
+            ////       ChatMessage assistantMessage = await _chatConversationService.GenerateAssistantMessageAsync(content, ContextTokenCount, _responseCancellationTokenSource.Token);
+            //     AppendMessage(assistantMessage);
+        }
+        catch (OperationCanceledException)
+        {
+            AppendMessage(_chatConversationService.CreateAssistantMessage("Response canceled."));
+        }
+        finally
+        {
+            IsGenerating = false;
+            _responseCancellationTokenSource?.Dispose();
+            _responseCancellationTokenSource = null;
+        }
+    }
+
+
+
+
 }
