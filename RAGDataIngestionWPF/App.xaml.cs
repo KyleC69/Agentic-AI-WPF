@@ -1,4 +1,5 @@
-﻿// 2026/03/05
+﻿#nullable enable
+// 2026/03/05
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         App.xaml.cs
@@ -78,6 +79,7 @@ public partial class App : Application
 
         // Configuration
         services.Configure<AppConfig>(context.Configuration.GetSection(nameof(AppConfig)));
+        services.Configure<ChatHistoryOptions>(context.Configuration.GetSection(ChatHistoryOptions.ConfigurationSectionName));
     }
 
     private static void RegisterHostServices(IServiceCollection services)
@@ -85,6 +87,7 @@ public partial class App : Application
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddHostedService<ApplicationHostService>();
+        services.AddHostedService<ChatHistoryInitializationService>();
         services.AddHttpClient("ollama", client => { client.BaseAddress = new Uri(OllamaEndpoint); });
     }
 
@@ -95,6 +98,13 @@ public partial class App : Application
         services.AddSingleton<IOllamaApiClient>(_ => new OllamaApiClient(OllamaEndpoint, OllamaModel));
         services.AddSingleton<IChatClient>(sp => (IChatClient)sp.GetRequiredService<IOllamaApiClient>());
         services.AddSingleton(sp => sp.GetRequiredService<IChatClient>().AsAIAgent());
+        services.AddSingleton<IChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
+        services.AddSingleton<IChatHistoryProvider, ChatHistoryProvider>();
+        services.AddSingleton<IChatHistoryMemoryProvider, ChatHistoryMemoryProvider>();
+        services.AddSingleton<IRagContextSource, NullRagContextSource>();
+        services.AddSingleton<AIHistoryProvider>();
+        services.AddSingleton<TheMessageAIContextProvider>();
+        services.AddSingleton<RAGAIContextProvider>();
         services.AddSingleton<IAgentFactory, AgentFactory>();
     }
 

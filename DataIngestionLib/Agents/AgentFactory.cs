@@ -7,23 +7,17 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
-using OllamaSharp;
-using OllamaSharp.Models;
-
-
-
-
 namespace DataIngestionLib.Agents;
-
-
 
 //This class is intended to be an Agent Factory that will create and configure agents.
 public class AgentFactory : IAgentFactory
 {
-    private IChatClient _innerclient;
-    private ILoggerFactory _factory;
-    private AIAgent _agent;
-    private string modelInstructions = """
+    private readonly IChatClient _innerclient;
+    private readonly ILoggerFactory _factory;
+    private readonly AIHistoryProvider _memoryProvider;
+    private IChatHistoryMemoryProvider _chatHistoryMemoryProvider;
+    private readonly RAGAIContextProvider _ragContextProvider;
+    private readonly string _modelInstructions = """
                                            -- Your name is Maxx, using a name helps personalize the experience and allows users to refer to you in a more natural way. It also helps establish a consistent identity for you as an AI agent.
                                            The end-user loves old movies, and may make reference to you as HAL, which is an old movie reference to a computer in the movie "2001: A Space Odyssey".
                                            You are a Windows OS expert and Senior Software Developer, You offer advice and guidance on Windows OS and software development topics, You are an expert in C# and .NET development, You have extensive experience with AI agents and tool integration,
@@ -40,65 +34,42 @@ public class AgentFactory : IAgentFactory
 
                                            """;
 
-    private readonly ISqlVectorStore _sqlVectorStore;
-
-
-
-
-
-
-
-
-    public AgentFactory(IChatClient innerclient, ILoggerFactory factory, ISqlVectorStore sqlVectorStore)
+    public AgentFactory(
+        IChatClient innerclient,
+        ILoggerFactory factory,
+        AIHistoryProvider memoryProvider
+        )
     {
+        ArgumentNullException.ThrowIfNull(innerclient);
+        ArgumentNullException.ThrowIfNull(factory);
+        ArgumentNullException.ThrowIfNull(memoryProvider);
+        //   ArgumentNullException.ThrowIfNull(ragContextProvider);
+
         _innerclient = innerclient;
         _factory = factory;
-        _sqlVectorStore = sqlVectorStore;
+        _memoryProvider = memoryProvider;
+        //   _ragContextProvider = ragContextProvider;
     }
 
     // returns a preconfigured ChatClientAgent with Ollama as the underlying inference mechanism, configured for coding assistance.
     public AIAgent GetCodingAssistantAgent()
     {
-        //Set clients context to the model's max and let the Agent's ChatHistory Providers handle the sliding window logic.
-        //This ensures that tools have maximum context available when invoked and that the session state is always normalized and persisted on disk.
-        ChatOptions clioptions = new ChatOptions().AddOllamaOption(OllamaOption.NumCtx, 130000).AddOllamaOption(OllamaOption.NumThread, 4);
-
         IChatClient outer = new ChatClientBuilder(_innerclient).UseLogging(_factory)
                 .UseFunctionInvocation()
                 .ConfigureOptions(chatOptions =>
                 {
+                    chatOptions.Instructions = _modelInstructions;
                     chatOptions.Tools = ToolBuilder.GetAiTools();
-
                     chatOptions.Temperature = 0.7f;
                 })
                 .Build();
 
 
-
-        AIMemoryProvider chatHistoryMemoryProvider = new(_sqlVectorStore);
-
+        // Context providers removed for easier testing will implement one by one when needed.
         outer = outer.AsBuilder()
-                .UseAIContextProviders(chatHistoryMemoryProvider)
+                .UseAIContextProviders((AIContextProvider)_chatHistoryMemoryProvider)
                 .Build();
 
-        _agent = outer.AsAIAgent(modelInstructions, "Max", "Max is helpful AI Agent", ToolBuilder.GetAiTools(), _factory);
-
-
-
-
-
-        // Configure the agent as needed (e.g., set up memory providers, tools, etc.)
-
-        return _agent;
+        return outer.AsAIAgent();
     }
-
-
-
-
-
-
-
-
-
-
 }

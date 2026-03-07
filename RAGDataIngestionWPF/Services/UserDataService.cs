@@ -34,12 +34,7 @@ public class UserDataService : IUserDataService
     private readonly string _localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     private UserViewModel _user;
 
-
-
-
-
-
-
+    public event EventHandler<UserViewModel> UserDataUpdated;
 
     public UserDataService(IFileService fileService, IOptions<AppConfig> appConfig)
     {
@@ -49,12 +44,6 @@ public class UserDataService : IUserDataService
 
 
 
-
-
-
-
-
-    public event EventHandler<UserViewModel> UserDataUpdated;
 
 
 

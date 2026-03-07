@@ -7,6 +7,8 @@
   <Folder Name="/.github/prompts/" />
   <Project Path="DataIngestionLib/DataIngestionLib.csproj" Id="97bc46f4-56f4-4b86-a9c0-360849204bd7" />
   <Project Path="RAGDataIngestionWPF.Core/RAGDataIngestionWPF.Core.csproj" />
-  <Project Path="RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj" />
+  <Project Path="RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
   <Project Path="RAGDataIngestionWPF/RAGDataIngestionWPF.csproj" />
 </Solution>

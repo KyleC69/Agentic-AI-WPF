@@ -1,11 +1,11 @@
-using System.Text.Json;
-
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Models;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
-using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
+using BaseMessageAIContextProvider = Microsoft.Agents.AI.MessageAIContextProvider;
+using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 
 
@@ -20,20 +20,27 @@ namespace DataIngestionLib.Services;
 
 
 
-public sealed class AIMemoryProvider : MessageAIContextProvider
+public sealed class AIHistoryProvider : BaseMessageAIContextProvider
 {
-    private const string SessionStateKey = nameof(ChatHistoryMemoryProvider);
-    private const int MaxContextMessages = 8;
+    private const string DefaultAgentId = "default-agent";
+    private const string DefaultApplicationId = "RAGDataIngestionWPF";
 
-    private readonly ISqlVectorStore _sqlVectorStore;
+    private readonly IChatHistoryMemoryProvider _chatHistoryMemoryProvider;
+    private readonly string _applicationId;
 
-    public AIMemoryProvider(ISqlVectorStore sqlVectorStore)
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="chatHistoryMemoryProvider"></param>
+    /// <param name="applicationId"></param>
+    public AIHistoryProvider(IChatHistoryMemoryProvider chatHistoryMemoryProvider, string? applicationId = null)
     {
-        ArgumentNullException.ThrowIfNull(sqlVectorStore);
-        _sqlVectorStore = sqlVectorStore;
-    }
+        ArgumentNullException.ThrowIfNull(chatHistoryMemoryProvider);
 
-    private readonly Dictionary<string, List<AIChatMessage>> _historyBySession = [];
+        _chatHistoryMemoryProvider = chatHistoryMemoryProvider;
+        _applicationId = string.IsNullOrWhiteSpace(applicationId) ? DefaultApplicationId : applicationId.Trim();
+    }
 
 
 
@@ -51,20 +58,17 @@ public sealed class AIMemoryProvider : MessageAIContextProvider
     /// This method retrieves the most recent chat messages from the session's history, limited to a maximum
     /// number of context messages. If no messages are available for the session, an empty collection is returned.
     /// </remarks>
-    protected override ValueTask<IEnumerable<AIChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
+    protected override async ValueTask<IEnumerable<ChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(context);
 
-        string sessionKey = GetOrCreateSessionKey(context.Session);
+        string conversationId = ChatHistorySessionState.GetOrCreateConversationId(context.Session);
+        ChatHistory requestMessages = context.RequestMessages.ToArray();
 
-        IEnumerable<(string Message, DateTime Timestamp)> history = _sqlVectorStore.GetChatHistory(sessionKey);
-        AIChatMessage[] contextMessages = history
-                .TakeLast(MaxContextMessages)
-                .Select(static item => DeserializeMessage(item.Message))
-                .ToArray();
-
-        return ValueTask.FromResult<IEnumerable<AIChatMessage>>(contextMessages);
+        return await _chatHistoryMemoryProvider
+            .BuildContextMessagesAsync(conversationId, requestMessages, cancellationToken)
+            .ConfigureAwait(false);
     }
 
 
@@ -96,79 +100,23 @@ public sealed class AIMemoryProvider : MessageAIContextProvider
             return ValueTask.CompletedTask;
         }
 
-        string sessionKey = GetOrCreateSessionKey(context.Session);
-        List<AIChatMessage> messagesToStore = context.RequestMessages
-                .Concat(context.ResponseMessages ?? [])
-                .ToList();
+        string conversationId = ChatHistorySessionState.GetOrCreateConversationId(context.Session);
+        string sessionId = ChatHistorySessionState.GetOrCreateSessionId(context.Session);
+        string agentId = ChatHistorySessionState.GetOrCreateAgentId(context.Session, DefaultAgentId);
+        string userId = ChatHistorySessionState.GetOrCreateUserId(context.Session);
+        string applicationId = ChatHistorySessionState.GetOrCreateApplicationId(context.Session, _applicationId);
 
-        if (messagesToStore.Count == 0)
-        {
-            return ValueTask.CompletedTask;
-        }
+        ChatHistory requestMessages = context.RequestMessages.ToArray();
+        ChatHistory responseMessages = (context.ResponseMessages ?? []).ToArray();
 
-        DateTime timestamp = DateTime.UtcNow;
-        for (int index = 0; index < messagesToStore.Count; index++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            AIChatMessage message = messagesToStore[index];
-            _sqlVectorStore.SaveChatHistory(sessionKey, SerializeMessage(message), timestamp.AddTicks(index));
-        }
-
-        return ValueTask.CompletedTask;
+        return _chatHistoryMemoryProvider.StoreMessagesAsync(
+            conversationId,
+            sessionId,
+            agentId,
+            userId,
+            applicationId,
+            requestMessages,
+            responseMessages,
+            cancellationToken);
     }
-
-    private static string SerializeMessage(AIChatMessage message)
-    {
-        ArgumentNullException.ThrowIfNull(message);
-
-        StoredChatMessage storedMessage = new(message.Role.ToString(), message.Text ?? string.Empty);
-        return JsonSerializer.Serialize(storedMessage);
-    }
-
-    private static AIChatMessage DeserializeMessage(string persistedValue)
-    {
-        if (string.IsNullOrWhiteSpace(persistedValue))
-        {
-            return new AIChatMessage(ChatRole.Assistant, string.Empty);
-        }
-
-        try
-        {
-            StoredChatMessage? storedMessage = JsonSerializer.Deserialize<StoredChatMessage>(persistedValue);
-            return storedMessage is null
-                ? new AIChatMessage(ChatRole.Assistant, persistedValue)
-                : new AIChatMessage(ParseRole(storedMessage.Role), storedMessage.Text ?? string.Empty);
-        }
-        catch (JsonException)
-        {
-            return new AIChatMessage(ChatRole.Assistant, persistedValue);
-        }
-    }
-
-    private static ChatRole ParseRole(string? value)
-    {
-        return value?.Trim().ToLowerInvariant() switch
-        {
-            "user" => ChatRole.User,
-            "assistant" => ChatRole.Assistant,
-            "system" => ChatRole.System,
-            "tool" => ChatRole.Tool,
-            _ => ChatRole.Assistant,
-        };
-    }
-
-    private static string GetOrCreateSessionKey(AgentSession session)
-    {
-        if (session.StateBag.TryGetValue<string>(SessionStateKey, out string? existingSessionKey) &&
-            !string.IsNullOrWhiteSpace(existingSessionKey))
-        {
-            return existingSessionKey;
-        }
-
-        string sessionKey = Guid.NewGuid().ToString("N");
-        session.StateBag.SetValue(SessionStateKey, sessionKey);
-        return sessionKey;
-    }
-
-    private sealed record StoredChatMessage(string Role, string Text);
 }

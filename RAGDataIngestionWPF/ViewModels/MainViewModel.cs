@@ -6,14 +6,12 @@
 
 
 
-using System.Collections.ObjectModel;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
-
+using Microsoft.Extensions.AI;
 
 
 
@@ -27,7 +25,6 @@ public class MainViewModel : ObservableObject
 {
     private readonly IChatConversationService _chatConversationService;
     private CancellationTokenSource _responseCancellationTokenSource;
-    private ChatSessionState _sessionState;
 
 
 
@@ -41,17 +38,10 @@ public class MainViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(chatConversationService);
 
         _chatConversationService = chatConversationService;
-        _sessionState = _chatConversationService.LoadSession();
         Messages = [];
+        ContextTokenCount = _chatConversationService.ContextTokenCount;
 
-        foreach (ChatMessage message in _sessionState.History)
-        {
-            Messages.Add(message);
-        }
-
-        ContextTokenCount = _sessionState.ContextTokenCount;
-
-        SendMessageCommand = new AsyncRelayCommand(TestSendMessageAsync, CanSendMessage);
+        SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
     }
 
@@ -110,7 +100,7 @@ public class MainViewModel : ObservableObject
 
 
 
-    public ObservableCollection<ChatMessage> Messages { get; }
+    public ChatHistory Messages { get; }
 
 
 
@@ -127,10 +117,8 @@ public class MainViewModel : ObservableObject
 
     private void AppendMessage(ChatMessage message)
     {
-        _sessionState = _chatConversationService.AppendMessage(_sessionState, message);
         Messages.Add(message);
-        ContextTokenCount = _sessionState.ContextTokenCount;
-        PersistSession();
+        ContextTokenCount = _chatConversationService.ContextTokenCount;
     }
 
 
@@ -155,11 +143,6 @@ public class MainViewModel : ObservableObject
         return !IsGenerating && !string.IsNullOrWhiteSpace(MessageInput);
     }
 
-    private void PersistSession()
-    {
-        _chatConversationService.SaveSession(_sessionState);
-    }
-
 
 
 
@@ -174,20 +157,29 @@ public class MainViewModel : ObservableObject
         {
             return;
         }
+        //Add Users message to UI collection
+        Messages.AddUserMessage(content);
 
-        AppendMessage(_chatConversationService.CreateUserMessage(content));
+        // AppendMessage(_chatConversationService.AddUserMessage(content)); 
+        //Message is being sent to service already we don't need to add it to the collection again here. The service will add the message to the conversation and then return the assistant response which we will add to the collection in the next step.
+
+
+        //Clear UI input
         MessageInput = string.Empty;
+        //Set UI state to busy TODO: add bool IsBusy prop
         IsGenerating = true;
+        //TODO: need to refactor all cancellation token and ensure they are all linked to lifecycle of view model and application lifetime.
         _responseCancellationTokenSource = new CancellationTokenSource();
 
         try
         {
-            ChatMessage assistantMessage = await _chatConversationService.GenerateAssistantMessageAsync(content, ContextTokenCount, _responseCancellationTokenSource.Token);
+            ChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _responseCancellationTokenSource.Token);
             AppendMessage(assistantMessage);
         }
         catch (OperationCanceledException)
         {
-            AppendMessage(_chatConversationService.CreateAssistantMessage("Response canceled."));
+            
+         //   AppendMessage(_chatConversationService.AddAssistantMessage("Response canceled."));
         }
         finally
         {
@@ -198,43 +190,6 @@ public class MainViewModel : ObservableObject
     }
 
 
-
-    private async Task TestSendMessageAsync()
-    {
-        string content = MessageInput.Trim();
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return;
-        }
-
-        AppendMessage(_chatConversationService.CreateUserMessage(content));
-        MessageInput = string.Empty;
-        IsGenerating = true;
-        _responseCancellationTokenSource = new CancellationTokenSource();
-
-        try
-        {
-            List<string> testList = ContextWindowContinuityTests.GetList();
-            foreach (string test in testList)
-            {
-                ChatMessage assistantMessage = await _chatConversationService.GenerateAssistantMessageAsync(test, ContextTokenCount, _responseCancellationTokenSource.Token);
-                AppendMessage(assistantMessage);
-                await Task.Delay(5000);
-            }
-            ////       ChatMessage assistantMessage = await _chatConversationService.GenerateAssistantMessageAsync(content, ContextTokenCount, _responseCancellationTokenSource.Token);
-            //     AppendMessage(assistantMessage);
-        }
-        catch (OperationCanceledException)
-        {
-            AppendMessage(_chatConversationService.CreateAssistantMessage("Response canceled."));
-        }
-        finally
-        {
-            IsGenerating = false;
-            _responseCancellationTokenSource?.Dispose();
-            _responseCancellationTokenSource = null;
-        }
-    }
 
 
 
