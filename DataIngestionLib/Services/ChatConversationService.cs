@@ -85,12 +85,12 @@ public sealed class ChatConversationService : IChatConversationService
 
 
     /// <summary>
-    ///     Generates an assistant response for a user message and appends it to Semantic Kernel chat history.
+    ///     Sends request to LLM and waits for a responsel chat history.
     /// </summary>
     /// <param name="userMessage">The user message content to answer.</param>
     /// <param name="cancellationToken">The cancellation token for interrupting generation.</param>
     /// <returns>The generated assistant chat message.</returns>
-    public async ValueTask<ChatMessage> SendRequestToModelAsync(string userMessage, CancellationToken cancellationToken)
+    public async ValueTask<AIChatMessage> SendRequestToModelAsync(string userMessage, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(userMessage))
         {
@@ -101,8 +101,23 @@ public sealed class ChatConversationService : IChatConversationService
         ChatHistory.AddUserMessage(userMessage);
         AgentResponse response = await _agent.RunAsync(userMessage, _agentSession, null, cancellationToken);
         string assistantText = response.Text?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(assistantText))
+        {
+            assistantText = string.Join(
+                Environment.NewLine,
+                response.Messages
+                    .Where(static message => message.Role == ChatRole.Assistant)
+                    .Select(static message => message.Text?.Trim())
+                    .Where(static text => !string.IsNullOrWhiteSpace(text)));
+        }
 
-        return new ChatMessage(ChatRole.Assistant, assistantText);
+        AIChatMessage assistantMessage = new(ChatRole.Assistant, assistantText);
+        if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
+        {
+            ChatHistory.Add(assistantMessage);
+        }
+
+        return assistantMessage;
     }
 
 

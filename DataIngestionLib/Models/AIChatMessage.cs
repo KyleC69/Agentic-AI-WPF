@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.AI;
@@ -89,7 +90,19 @@ public class AIChatMessage
     /// This property concatenates the text of all <see cref="TextContent"/> objects in <see cref="Contents"/>.
     /// </remarks>
     [JsonIgnore]
-    public string Text => string.Concat(Contents.OfType<TextContent>().Select(c => c.Text));
+    public string Text
+    {
+        get
+        {
+
+            string vb = string.Concat(Contents.OfType<TextContent>().Select(c => c.Text));
+            return vb;
+        }
+    }
+
+
+
+
 
     /// <summary>Gets or sets the chat message content items.</summary>
     [AllowNull]
@@ -117,7 +130,7 @@ public class AIChatMessage
     /// <inheritdoc/>
     public override string ToString()
     {
-        return Text;
+        return MediaTypeNames.Text.Plain;
     }
 
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
@@ -126,7 +139,7 @@ public class AIChatMessage
     {
         get
         {
-            string text = Text;
+            string text = MediaTypeNames.Text.Plain;
             return
                 !string.IsNullOrWhiteSpace(text) ? new TextContent(text) :
                 _contents is { Count: > 0 } ? _contents[0] :

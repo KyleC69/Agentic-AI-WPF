@@ -20,14 +20,20 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 
-public class MainViewModel : ObservableObject
+public sealed class MainViewModel : ObservableObject
 {
     private readonly IChatConversationService _chatConversationService;
     private CancellationTokenSource _responseCancellationTokenSource;
 
 
 
-
+    public MainViewModel()
+    {
+        Messages = [];
+        ContextTokenCount = 0;
+        SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
+        CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
+    }
 
 
 

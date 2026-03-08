@@ -71,14 +71,12 @@ public sealed class AIHistoryProvider : BaseMessageAIContextProvider
         ArgumentNullException.ThrowIfNull(context);
 
         string conversationId = ChatHistorySessionState.GetOrCreateConversationId(context.Session);
-        ChatHistory requestMessages = [];
-        foreach (Microsoft.Extensions.AI.ChatMessage m in context.RequestMessages)
-        {
-            requestMessages.Add(m.Role, m.Text);
+        ChatHistory requestMessages = ToChatHistory(context.RequestMessages);
+        IEnumerable<AIChatMessage> historyMessages = await _chatHistoryMemoryProvider
+            .BuildContextMessagesAsync(conversationId, requestMessages, cancellationToken)
+            .ConfigureAwait(false);
 
-        }
-
-        return (IEnumerable<Microsoft.Extensions.AI.ChatMessage>)await _chatHistoryMemoryProvider.BuildContextMessagesAsync(conversationId, requestMessages, cancellationToken).ConfigureAwait(false);
+        return ToFrameworkChatMessages(historyMessages);
     }
 
 
@@ -116,8 +114,8 @@ public sealed class AIHistoryProvider : BaseMessageAIContextProvider
         string userId = ChatHistorySessionState.GetOrCreateUserId(context.Session);
         string applicationId = ChatHistorySessionState.GetOrCreateApplicationId(context.Session, _applicationId);
 
-        ChatHistory requestMessages = [.. context.RequestMessages.Cast<AIChatMessage>()];
-        ChatHistory responseMessages = [.. context.ResponseMessages.Cast<AIChatMessage>()];
+        ChatHistory requestMessages = ToChatHistory(context.RequestMessages);
+        ChatHistory responseMessages = ToChatHistory(context.ResponseMessages);
 
         return _chatHistoryMemoryProvider.StoreMessagesAsync(
             conversationId,
@@ -128,5 +126,28 @@ public sealed class AIHistoryProvider : BaseMessageAIContextProvider
             requestMessages,
             responseMessages,
             cancellationToken);
+    }
+
+    private static ChatHistory ToChatHistory(IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages)
+    {
+        ArgumentNullException.ThrowIfNull(messages);
+
+        ChatHistory chatHistory = [];
+        foreach (Microsoft.Extensions.AI.ChatMessage message in messages)
+        {
+            chatHistory.Add(new AIChatMessage(message.Role, message.Text));
+        }
+
+        return chatHistory;
+    }
+
+    private static IEnumerable<Microsoft.Extensions.AI.ChatMessage> ToFrameworkChatMessages(IEnumerable<AIChatMessage> messages)
+    {
+        ArgumentNullException.ThrowIfNull(messages);
+
+        foreach (AIChatMessage message in messages)
+        {
+            yield return new Microsoft.Extensions.AI.ChatMessage(message.Role, message.Text);
+        }
     }
 }

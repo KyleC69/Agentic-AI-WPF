@@ -6,8 +6,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
+    xmlns:vm="clr-namespace:RAGDataIngestionWPF.ViewModels"
     mc:Ignorable="d"
     d:DesignHeight="750" d:DesignWidth="1100">
+   
     <Grid>
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -32,6 +34,7 @@
             Margin="{StaticResource MediumLeftRightMargin}"
             Background="{DynamicResource MahApps.Brushes.Gray60}">
             <Grid Margin="{StaticResource SmallTopBottomMargin}">
+            
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="733*"/>
                     <ColumnDefinition Width="19*"/>
@@ -44,17 +47,18 @@
                 </Grid.RowDefinitions>
 
                 <TextBlock
-                    Margin="12,0,0,279"
+                    Grid.ColumnSpan="3"
+                    Margin="12,0,0,6"
                     Style="{StaticResource BodyTextStyle}"
-                    Text="{Binding ContextTokenCount, StringFormat=Context tokens: {0} / 120000}" Grid.ColumnSpan="2" Grid.RowSpan="2" />
+                    Text="{Binding ContextTokenCount, StringFormat=Context tokens: {0} / 120000}" />
 
-                <ListBox
-                    x:Name="MessagesListBox"
-                    Margin="6,9,-5,17"
-                    BorderThickness="0"
-                    Background="Transparent"
-                    ItemsSource="{Binding Messages}"
-                    ScrollViewer.VerticalScrollBarVisibility="Auto" d:ItemsSource="{d:SampleData ItemCount=5}" Grid.RowSpan="2" Grid.ColumnSpan="3" IsManipulationEnabled="True" SelectionMode="Extended">
+                <ListBox Grid.Row="1" Grid.ColumnSpan="3"
+                         x:Name="MessagesListBox"
+                         Margin="6,0,6,0"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ItemsSource="{Binding Messages}"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"  IsManipulationEnabled="True" SelectionMode="Multiple">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Border
@@ -68,7 +72,7 @@
                                         <Setter Property="HorizontalAlignment" Value="Left" />
                                         <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Gray8}" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsUser}" Value="True">
+                                            <DataTrigger Binding="{Binding Path=IsUser}" Value="True">
                                                 <Setter Property="HorizontalAlignment" Value="Right" />
                                                 <Setter Property="Background"
                                                         Value="{DynamicResource MahApps.Brushes.Gray6}" />
@@ -80,13 +84,10 @@
                                     <TextBlock
                                         FontWeight="SemiBold"
                                         Text="{Binding Role}" />
-                                    <TextBox
+                                    <TextBlock
                                         Margin="0,6,0,0"
-                                        IsReadOnly="True"
-                                        BorderThickness="0"
-                                        Background="Transparent"
                                         TextWrapping="Wrap"
-                                        Text="{Binding Text}" />
+                                        Text="{Binding Text, Mode=OneWay}" />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

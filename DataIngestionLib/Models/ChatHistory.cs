@@ -363,7 +363,6 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     public void AddAssistantMessage(string content)
     {
         AddMessage(ChatRole.Assistant, content);
-        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new AIChatMessage(ChatRole.Assistant, content)));
     }
 
 
@@ -380,7 +379,6 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     public void AddAssistantMessages(IEnumerable<AIChatMessage> messages)
     {
         AddMessagesByRole(messages, ChatRole.Assistant, nameof(messages));
-        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, messages));
     }
 
 
@@ -493,7 +491,6 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     public void AddUserMessage(string content)
     {
         AddMessage(ChatRole.User, content);
-        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new AIChatMessage(ChatRole.User, content)));
     }
 
 
@@ -510,7 +507,6 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     public void AddUserMessages(IEnumerable<AIChatMessage> messages)
     {
         AddMessagesByRole(messages, ChatRole.User, nameof(messages));
-        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, messages));
     }
 
 

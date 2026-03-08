@@ -39,7 +39,7 @@
 - If navigation does nothing, verify `NavigationService.Initialize` called and key matches `ViewModel.FullName`.
 - Startup issues often stem from missing DI registrations or `PageService` mappings; replicate test host configuration (`PagesTests`) to compare.
 
-# Expert .NET software engineer mode instructions
+## Expert .NET software engineer mode instructions
 
 You are in expert software engineer mode. Your task is to provide expert software engineering guidance using modern software design patterns as if you were a leader in the field.
 
@@ -84,6 +84,9 @@ You are in expert software engineer mode. Your task is to provide expert softwar
    - Tables enforce semantic ID and Versioning for all ingested data, with a focus on immutability and append-only patterns.
    - RAG system incorporates a hybrid search approach, utilizing vector search, semantic search, and full text search. RAG uses remote knowledge bases with local indexing and caching for performance and reliability. Due to the rapidly evolving AI frameworks and tools, local harvest is not practical, but local indexing and caching is critical for performance and reliability. EF Core 10.0 is used for data access, with a focus on efficient querying and proper use of DbContext lifetimes to ensure performance and scalability. Some ADO exists and is being replaced when time permits.
    - Unit testing will be done with MS Test Framework, with a focus on high code coverage and edge cases. Private methods are exposed for testing through the use of InternalsVisibleTo attribute and careful design of internal APIs. Direct testing of methods is preferred, and failed tests should also be considered successful when testing for expected error conditions; both positive and negative test cases should be included to ensure robustness and reliability of the codebase.
+
+## Agent Provider Boundary
+- For agent provider boundary code, use `DataIngestionLib.Models.AIChatMessage` as the preferred internal message type, with explicit mappings at overridden provider boundaries to `Microsoft.Extensions.AI.ChatMessage`.
 
 
 

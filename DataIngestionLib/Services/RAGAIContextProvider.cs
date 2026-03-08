@@ -50,7 +50,8 @@ public sealed class RAGAIContextProvider : BaseMessageAIContextProvider
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(context);
 
-        ChatHistory requestMessages = [.. context.RequestMessages.Cast<AIChatMessage>()];
+        ChatHistory requestMessages = [.. context.RequestMessages
+            .Select(m => new AIChatMessage(m.Role, m.Text))];
         if (_sources.Count == 0)
         {
             return [];
@@ -72,7 +73,10 @@ public sealed class RAGAIContextProvider : BaseMessageAIContextProvider
             aggregatedContext.AddRange(sourceMessages.Where(static message => !string.IsNullOrWhiteSpace(message.Text)));
         }
 
-        return aggregatedContext as IEnumerable<ChatMessage>;
+        return aggregatedContext
+            .Where(m => !string.IsNullOrWhiteSpace(m.Text))
+            .Select(m => new ChatMessage(m.Role, m.Text))
+            .ToArray();
     }
 
 

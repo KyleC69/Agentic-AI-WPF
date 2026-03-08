@@ -297,8 +297,5 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
         return $"{role}\u001F{text}";
     }
 
-    public ValueTask StoreMessagesAsync(string conversationId, string sessionId, string agentId, string userId, string applicationId, ChatHistory requestMessages, ChatHistory responseMessages, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
+
 }
