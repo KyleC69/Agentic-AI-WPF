@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/07
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         AgentRunMiddleWare.cs
@@ -97,8 +97,8 @@ internal class AgentRunMiddleWare
 
         ChatOptions options = new()
         {
-            Tools = ToolBuilder.GetAiTools(),
-            Instructions = """
+                Tools = ToolBuilder.GetAiTools(),
+                Instructions = """
 
                                """
 

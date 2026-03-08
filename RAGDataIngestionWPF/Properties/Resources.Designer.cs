@@ -149,7 +149,7 @@ namespace RAGDataIngestionWPF.Properties {
                 return ResourceManager.GetString("SettingsPageAboutTitle", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Choose Theme.
         /// </summary>

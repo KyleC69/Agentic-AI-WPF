@@ -2,10 +2,9 @@ using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
 using Microsoft.Agents.AI;
-using Microsoft.Extensions.AI;
 
 using BaseMessageAIContextProvider = Microsoft.Agents.AI.MessageAIContextProvider;
-using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
+
 
 
 
@@ -22,24 +21,32 @@ namespace DataIngestionLib.Services;
 
 public sealed class AIHistoryProvider : BaseMessageAIContextProvider
 {
-    private const string DefaultAgentId = "default-agent";
-    private const string DefaultApplicationId = "RAGDataIngestionWPF";
+    //We need get the actual Agent id. Where can we get it from???
+    private string DefaultAgentId = "default-agent";
 
     private readonly IChatHistoryMemoryProvider _chatHistoryMemoryProvider;
     private readonly string _applicationId;
+    private readonly IRuntimeContextAccessor _runtimeAccessor;
 
-    
+
+
+
+
+
+
+
     /// <summary>
     /// 
     /// </summary>
     /// <param name="chatHistoryMemoryProvider"></param>
     /// <param name="applicationId"></param>
-    public AIHistoryProvider(IChatHistoryMemoryProvider chatHistoryMemoryProvider, string? applicationId = null)
+    public AIHistoryProvider(IChatHistoryMemoryProvider chatHistoryMemoryProvider, IRuntimeContextAccessor accessor)
     {
         ArgumentNullException.ThrowIfNull(chatHistoryMemoryProvider);
 
         _chatHistoryMemoryProvider = chatHistoryMemoryProvider;
-        _applicationId = string.IsNullOrWhiteSpace(applicationId) ? DefaultApplicationId : applicationId.Trim();
+        _runtimeAccessor = accessor;
+        _applicationId = accessor.GetCurrent().ApplicationId.ToString();
     }
 
 
@@ -58,17 +65,20 @@ public sealed class AIHistoryProvider : BaseMessageAIContextProvider
     /// This method retrieves the most recent chat messages from the session's history, limited to a maximum
     /// number of context messages. If no messages are available for the session, an empty collection is returned.
     /// </remarks>
-    protected override async ValueTask<IEnumerable<ChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
+    protected override async ValueTask<IEnumerable<Microsoft.Extensions.AI.ChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(context);
 
         string conversationId = ChatHistorySessionState.GetOrCreateConversationId(context.Session);
-        ChatHistory requestMessages = context.RequestMessages.ToArray();
+        ChatHistory requestMessages = [];
+        foreach (Microsoft.Extensions.AI.ChatMessage m in context.RequestMessages)
+        {
+            requestMessages.Add(m.Role, m.Text);
 
-        return await _chatHistoryMemoryProvider
-            .BuildContextMessagesAsync(conversationId, requestMessages, cancellationToken)
-            .ConfigureAwait(false);
+        }
+
+        return (IEnumerable<Microsoft.Extensions.AI.ChatMessage>)await _chatHistoryMemoryProvider.BuildContextMessagesAsync(conversationId, requestMessages, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -106,8 +116,8 @@ public sealed class AIHistoryProvider : BaseMessageAIContextProvider
         string userId = ChatHistorySessionState.GetOrCreateUserId(context.Session);
         string applicationId = ChatHistorySessionState.GetOrCreateApplicationId(context.Session, _applicationId);
 
-        ChatHistory requestMessages = context.RequestMessages.ToArray();
-        ChatHistory responseMessages = (context.ResponseMessages ?? []).ToArray();
+        ChatHistory requestMessages = [.. context.RequestMessages.Cast<AIChatMessage>()];
+        ChatHistory responseMessages = [.. context.ResponseMessages.Cast<AIChatMessage>()];
 
         return _chatHistoryMemoryProvider.StoreMessagesAsync(
             conversationId,

@@ -63,6 +63,25 @@
                     </StackPanel>
                 </StackPanel>
 
+                <TextBlock
+                    Style="{StaticResource BodyTextStyle}"
+                    Text="ApplicationId" />
+                <Grid Margin="{StaticResource XSmallTopMargin}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox
+                        Grid.Column="0"
+                        IsReadOnly="True"
+                        Text="{Binding ApplicationId, Mode=OneWay}" />
+                    <Button
+                        Grid.Column="1"
+                        Margin="{StaticResource SmallLeftMargin}"
+                        Command="{Binding RenewApplicationIdCommand}"
+                        Content="Renew" />
+                </Grid>
+
 
                 <TextBlock
                     Text="{x:Static properties:Resources.SettingsPageUserTitle}"

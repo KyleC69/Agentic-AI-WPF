@@ -1,4 +1,4 @@
-// 2026/03/05
+// 2026/03/07
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         WebSearchPlugin.cs
@@ -45,10 +45,6 @@ public sealed class WebSearchPlugin : IAsyncDisposable
 
 
 
-
-
-
-
     public async ValueTask DisposeAsync()
     {
         await Task.CompletedTask;
@@ -82,7 +78,7 @@ public sealed class WebSearchPlugin : IAsyncDisposable
             using HttpRequestMessage request = new(HttpMethod.Post, _endPointUrl);
 
             request.Headers.UserAgent.ParseAdd("IT-Companion-WebSearchPlugin/1.0-AIAgentAssistant");
-            string? apiKey = Environment.GetEnvironmentVariable("LANGAPI_KEY");
+            var apiKey = Environment.GetEnvironmentVariable("LANGAPI_KEY");
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 return JsonSerializer.Serialize("Error: Missing LANGAPI_KEY environment variable.");
@@ -92,30 +88,30 @@ public sealed class WebSearchPlugin : IAsyncDisposable
 
             var body = new
             {
-                query = strquery,
-                count = maxResults,
-                freshness = "oneMonth",
-                summary = false
+                    query = strquery,
+                    count = maxResults,
+                    freshness = "oneMonth",
+                    summary = false
             };
 
 
             JsonSerializerOptions options = new()
             {
-                PropertyNameCaseInsensitive = true,
-                WriteIndented = true
+                    PropertyNameCaseInsensitive = true,
+                    WriteIndented = true
             };
 
-            string jsonBody = JsonSerializer.Serialize(body, options);
+            var jsonBody = JsonSerializer.Serialize(body, options);
             request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
-                string errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
                 return JsonSerializer.Serialize($"Error: HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {errorBody}");
             }
 
-            string jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
+            var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
             string jsonNorm;
             try
             {
@@ -137,9 +133,9 @@ public sealed class WebSearchPlugin : IAsyncDisposable
             }
 
             // 3. Pretty-print
-            string pretty = JsonSerializer.Serialize(doc, new JsonSerializerOptions
+            var pretty = JsonSerializer.Serialize(doc, new JsonSerializerOptions
             {
-                WriteIndented = true
+                    WriteIndented = true
             });
 
             return pretty;

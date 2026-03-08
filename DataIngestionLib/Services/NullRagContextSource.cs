@@ -1,9 +1,24 @@
+// 2026/03/07
+//  Solution: RAGDataIngestionWPF
+//  Project:   DataIngestionLib
+//  File:         NullRagContextSource.cs
+//   Author: Kyle L. Crowder
+
+
+
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
 using Microsoft.Agents.AI;
 
+
+
+
 namespace DataIngestionLib.Services;
+
+
+
+
 
 public sealed class NullRagContextSource : IRagContextSource
 {

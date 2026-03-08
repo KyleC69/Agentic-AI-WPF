@@ -1,4 +1,4 @@
-// 2026/03/05
+// 2026/03/07
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         IChatConversationService.cs
@@ -8,7 +8,6 @@
 
 using DataIngestionLib.Models;
 
-using Microsoft.Extensions.AI;
 
 
 
@@ -31,9 +30,6 @@ public interface IChatConversationService
 
 
 
-
-
-
     /// <summary>
     ///     Gets the current context token count for the active chat history.
     /// </summary>
@@ -41,8 +37,8 @@ public interface IChatConversationService
 
 
 
-    ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
+    ValueTask<AIChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
 
 
- //   ChatMessage AddAssistantMessage(string responseCanceled);
+    //   ChatMessage AddAssistantMessage(string responseCanceled);
 }

@@ -3,11 +3,12 @@ using System.Text.Json;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
+using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
 
 namespace DataIngestionLib.Services;
 
-public sealed class ChatHistoryProvider : IChatHistoryProvider
+public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistoryProvider
 {
     private const int ConversationKeyLength = 128;
     private const int PartitionKeyLength = 128;
@@ -15,7 +16,7 @@ public sealed class ChatHistoryProvider : IChatHistoryProvider
 
     private readonly IChatHistoryConnectionFactory _connectionFactory;
 
-    public ChatHistoryProvider(IChatHistoryConnectionFactory connectionFactory)
+    public CustomChatHistoryProvider(IChatHistoryConnectionFactory connectionFactory)
     {
         ArgumentNullException.ThrowIfNull(connectionFactory);
         _connectionFactory = connectionFactory;

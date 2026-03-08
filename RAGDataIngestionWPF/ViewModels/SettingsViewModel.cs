@@ -30,18 +30,20 @@ namespace RAGDataIngestionWPF.ViewModels;
 public class SettingsViewModel : ObservableObject, INavigationAware
 {
     private readonly AppConfig _appConfig;
+    private readonly IApplicationIdService _applicationIdService;
     private readonly IApplicationInfoService _applicationInfoService;
     private readonly ISystemService _systemService;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IUserDataService _userDataService;
 
-    public SettingsViewModel(IOptions<AppConfig> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService)
+    public SettingsViewModel(IOptions<AppConfig> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IApplicationIdService applicationIdService)
     {
         _appConfig = appConfig.Value;
         _themeSelectorService = themeSelectorService;
         _systemService = systemService;
         _applicationInfoService = applicationInfoService;
         _userDataService = userDataService;
+        _applicationIdService = applicationIdService;
     }
 
 
@@ -58,6 +60,12 @@ public class SettingsViewModel : ObservableObject, INavigationAware
 
 
     public ICommand SetThemeCommand => field ??= new RelayCommand<string>(OnSetTheme);
+
+
+
+
+
+    public ICommand RenewApplicationIdCommand => field ??= new RelayCommand(OnRenewApplicationId);
 
 
 
@@ -90,12 +98,22 @@ public class SettingsViewModel : ObservableObject, INavigationAware
 
 
 
+    public Guid ApplicationId
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+
 
 
 
     public void OnNavigatedTo(object parameter)
     {
         VersionDescription = $"{Properties.Resources.AppDisplayName} - {_applicationInfoService.GetVersion()}";
+        ApplicationId = _applicationIdService.GetApplicationId();
         Theme = _themeSelectorService.GetCurrentTheme();
         if (Theme == AppTheme.Default)
         {
@@ -135,6 +153,11 @@ public class SettingsViewModel : ObservableObject, INavigationAware
     {
         AppTheme theme = (AppTheme)Enum.Parse(typeof(AppTheme), themeName);
         _themeSelectorService.SetTheme(theme);
+    }
+
+    private void OnRenewApplicationId()
+    {
+        ApplicationId = _applicationIdService.RenewApplicationId();
     }
 
 

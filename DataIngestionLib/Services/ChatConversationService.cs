@@ -1,8 +1,9 @@
-// 2026/03/05
+// 2026/03/07
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         ChatConversationService.cs
 //   Author: Kyle L. Crowder
+
 
 
 using DataIngestionLib.Contracts;
@@ -17,8 +18,6 @@ using Microsoft.Extensions.Logging;
 
 
 
-
-
 namespace DataIngestionLib.Services;
 
 
@@ -27,16 +26,25 @@ namespace DataIngestionLib.Services;
 
 public sealed class ChatConversationService : IChatConversationService
 {
-    private readonly ChatSessionOptions _options;
     private readonly AIAgent _agent;
     private readonly AgentSession _agentSession;
+    private readonly ChatSessionOptions _options;
+    private readonly IRuntimeContextAccessor _contextAccessor;
 
-    public ChatConversationService(ChatSessionOptions options, IChatClient client, ILoggerFactory factory, IAgentFactory agentFactory)
+
+
+
+
+
+
+
+    public ChatConversationService(ChatSessionOptions options, IChatClient client, ILoggerFactory factory, IAgentFactory agentFactory, IRuntimeContextAccessor runtimeContextAccessor)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(agentFactory);
+        ArgumentNullException.ThrowIfNull(runtimeContextAccessor);
 
         if (options.MaxContextTokens <= 0)
         {
@@ -46,6 +54,7 @@ public sealed class ChatConversationService : IChatConversationService
         _options = options;
         _agent = agentFactory.GetCodingAssistantAgent();
         _agentSession = _agent.CreateSessionAsync().GetAwaiter().GetResult();
+        _contextAccessor = runtimeContextAccessor;
 
 
 
@@ -53,10 +62,8 @@ public sealed class ChatConversationService : IChatConversationService
     }
 
 
-
-
-
-
+    public string ApplicationId => _contextAccessor.GetCurrent().ApplicationId.ToString();
+    public string UserId => _contextAccessor.GetCurrent().UserPrincipalName.ToString();
 
 
 
@@ -68,18 +75,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-
-
     public int ContextTokenCount => CalculateContextTokenCount();
-
-
-
-
-
-
-
-
 
 
 
@@ -100,6 +96,7 @@ public sealed class ChatConversationService : IChatConversationService
         {
             throw new ArgumentException("User message cannot be empty.", nameof(userMessage));
         }
+
         //Add user message to ChatHistory
         ChatHistory.AddUserMessage(userMessage);
         AgentResponse response = await _agent.RunAsync(userMessage, _agentSession, null, cancellationToken);
@@ -146,6 +143,13 @@ public sealed class ChatConversationService : IChatConversationService
         return string.IsNullOrWhiteSpace(content) ? 0 : Math.Max(1, content.Length / 4);
     }
 
+
+
+
+
+
+
+
     private static string FormatMarkdownLite(string content)
     {
         string normalized = content.Replace("\r\n", "\n", StringComparison.Ordinal)
@@ -183,6 +187,4 @@ public sealed class ChatConversationService : IChatConversationService
 
         return string.Join(Environment.NewLine, lines);
     }
-
-
 }

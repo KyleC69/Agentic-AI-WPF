@@ -11,7 +11,6 @@ using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
-using Microsoft.Extensions.AI;
 
 
 
@@ -115,10 +114,10 @@ public class MainViewModel : ObservableObject
 
 
 
-    private void AppendMessage(ChatMessage message)
+    private void AppendMessage(AIChatMessage message)
     {
         Messages.Add(message);
-        ContextTokenCount = _chatConversationService.ContextTokenCount;
+
     }
 
 
@@ -173,20 +172,25 @@ public class MainViewModel : ObservableObject
 
         try
         {
-            ChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _responseCancellationTokenSource.Token);
-            AppendMessage(assistantMessage);
+            AIChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _responseCancellationTokenSource.Token);
+            Messages.Add(assistantMessage);
         }
         catch (OperationCanceledException)
         {
-            
-         //   AppendMessage(_chatConversationService.AddAssistantMessage("Response canceled."));
+
+            //   AppendMessage(_chatConversationService.AddAssistantMessage("Response canceled."));
         }
         finally
         {
             IsGenerating = false;
             _responseCancellationTokenSource?.Dispose();
             _responseCancellationTokenSource = null;
+            //update token count last
+            ContextTokenCount = _chatConversationService.ContextTokenCount;
         }
+
+
+
     }
 
 

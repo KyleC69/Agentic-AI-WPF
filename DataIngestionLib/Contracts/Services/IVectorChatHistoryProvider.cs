@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/07
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         IVectorChatHistoryProvider.cs
@@ -23,17 +23,17 @@ public interface IVectorChatHistoryProvider
     IReadOnlyList<string> StateKeys { get; }
 
 
+    object? GetService(Type serviceType, object? serviceKey);
+
+
+    T? GetService<T>(T? serviceKey);
+
+
     string GetSessionDbKey(AgentSession session);
-
-
-    ValueTask<IEnumerable<ChatMessage>> InvokingAsync(ChatHistoryProvider.InvokingContext context, CancellationToken cancellationToken);
 
 
     ValueTask InvokedAsync(ChatHistoryProvider.InvokedContext context, CancellationToken cancellationToken);
 
 
-    object? GetService(Type serviceType, object? serviceKey);
-
-
-    T? GetService<T>(T? serviceKey);
+    ValueTask<IEnumerable<ChatMessage>> InvokingAsync(ChatHistoryProvider.InvokingContext context, CancellationToken cancellationToken);
 }

@@ -2,6 +2,7 @@ using System.Text.Json;
 
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
+using DataIngestionLib.Models.Extensions;
 using DataIngestionLib.Options;
 
 using Microsoft.Agents.AI;
@@ -12,16 +13,17 @@ using Microsoft.Extensions.Options;
 
 namespace DataIngestionLib.Services;
 
+
+
+
+
 public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
 {
     private readonly IChatHistoryProvider _chatHistoryProvider;
     private readonly IOptionsMonitor<ChatHistoryOptions> _optionsMonitor;
     private readonly IChatHistorySummarizer? _summarizer;
 
-    public ChatHistoryMemoryProvider(
-        IChatHistoryProvider chatHistoryProvider,
-        IOptionsMonitor<ChatHistoryOptions> optionsMonitor,
-        IChatHistorySummarizer? summarizer = null)
+    public ChatHistoryMemoryProvider(IChatHistoryProvider chatHistoryProvider, IOptionsMonitor<ChatHistoryOptions> optionsMonitor, IChatHistorySummarizer? summarizer = null)
     {
         ArgumentNullException.ThrowIfNull(chatHistoryProvider);
         ArgumentNullException.ThrowIfNull(optionsMonitor);
@@ -31,7 +33,7 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
         _summarizer = summarizer;
     }
 
-    public async ValueTask<ChatHistory> BuildContextMessagesAsync(
+    public async ValueTask<IEnumerable<AIChatMessage>> BuildContextMessagesAsync(
         string conversationId,
         ChatHistory currentRequestMessages,
         CancellationToken cancellationToken = default)
@@ -50,13 +52,12 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
 
         HashSet<string> requestMessageKeys = BuildMessageKeySet(currentRequestMessages);
 
-        //TODO: AI Verify cast is correct in this linq
-        ChatHistory historicalMessages = (ChatHistory)persistedMessages
-            .OrderBy(message => message.TimestampUtc)
-            .ThenBy(message => message.MessageId)
-            .Where(message => !string.IsNullOrWhiteSpace(message.Content))
-            .Select(static message => new ChatMessage(ParseRole(message.Role), message.Content.Trim()))
-            .Where(message => !requestMessageKeys.Contains(CreateMessageKey(message)));
+        ChatHistory historicalMessages = [.. persistedMessages
+                .OrderBy(message => message.TimestampUtc)
+                .ThenBy(message => message.MessageId)
+                .Where(message => !string.IsNullOrWhiteSpace(message.Content))
+                .Select(static message => new AIChatMessage(ParseRole(message.Role), message.Content.Trim()))
+                .Where(message => !requestMessageKeys.Contains(CreateMessageKey(message)))];
 
         return await ApplyWindowAsync(conversationId, historicalMessages, options, cancellationToken).ConfigureAwait(false);
     }
@@ -93,7 +94,7 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
         for (int index = 0; index < messagesToStore.Count; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            ChatMessage message = messagesToStore[index];
+            AIChatMessage message = messagesToStore[index];
 
             PersistedChatMessage persistedMessage = new()
             {
@@ -198,12 +199,18 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
 
         if (options.EnableSummarization && _summarizer is not null && prunedMessages.Count > 0)
         {
-            ChatMessage? summary = await _summarizer.SummarizeAsync(conversationId, prunedMessages, cancellationToken).ConfigureAwait(false);
+            AIChatMessage? summary = await _summarizer.SummarizeAsync(conversationId, prunedMessages, cancellationToken).ConfigureAwait(false);
             if (summary is not null && !string.IsNullOrWhiteSpace(summary.Text))
             {
                 window.Insert(0, summary);
                 while (window.Count > maxMessages || EstimateTokens(window) > maxTokens)
                 {
+                    if (window.Count <= 1)
+                    {
+                        window.Clear();
+                        break;
+                    }
+
                     window.RemoveAt(1);
                 }
             }
@@ -212,7 +219,7 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
         return window;
     }
 
-    private static JsonDocument CreateMetadata(ChatMessage message)
+    private static JsonDocument CreateMetadata(AIChatMessage message)
     {
         string sourceType = message.GetAgentRequestMessageSourceType().ToString();
 
@@ -222,20 +229,13 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
         });
     }
 
-    private static int EstimateTokens(IEnumerable<ChatMessage> messages)
+    private static int EstimateTokens(IEnumerable<AIChatMessage> messages)
     {
         return messages.Sum(static message =>
         {
             string text = message.Text ?? string.Empty;
             return string.IsNullOrWhiteSpace(text) ? 0 : Math.Max(1, text.Length / 4);
         });
-    }
-
-    private static string CreateMessageDeduplicationKey(ChatMessage message)
-    {
-        string role = message.Role.Value.Trim().ToLowerInvariant();
-        string text = (message.Text ?? string.Empty).Trim();
-        return $"{role}\u001F{text}";
     }
 
     private static ChatRole ParseRole(string role)
@@ -249,7 +249,7 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
         };
     }
 
-    private static bool ShouldPersistRequestMessage(ChatMessage message)
+    private static bool ShouldPersistRequestMessage(AIChatMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.Text))
         {
@@ -260,7 +260,7 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
         return sourceType == AgentRequestMessageSourceType.External && message.Role != ChatRole.System;
     }
 
-    private static bool ShouldPersistResponseMessage(ChatMessage message)
+    private static bool ShouldPersistResponseMessage(AIChatMessage message)
     {
         return !string.IsNullOrWhiteSpace(message.Text) && message.Role != ChatRole.System;
     }
@@ -282,7 +282,7 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
         }
     }
 
-    private static HashSet<string> BuildMessageKeySet(IEnumerable<ChatMessage> messages)
+    private static HashSet<string> BuildMessageKeySet(IEnumerable<AIChatMessage> messages)
     {
         return messages
             .Where(static message => !string.IsNullOrWhiteSpace(message.Text))
@@ -290,10 +290,15 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
             .ToHashSet(StringComparer.Ordinal);
     }
 
-    private static string CreateMessageKey(ChatMessage message)
+    private static string CreateMessageKey(AIChatMessage message)
     {
-        string role = message.Role.Value;
+        string role = message.Role.Value.Trim().ToLowerInvariant();
         string text = message.Text?.Trim() ?? string.Empty;
         return $"{role}\u001F{text}";
+    }
+
+    public ValueTask StoreMessagesAsync(string conversationId, string sessionId, string agentId, string userId, string applicationId, ChatHistory requestMessages, ChatHistory responseMessages, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

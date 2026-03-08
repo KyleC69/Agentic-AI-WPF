@@ -1,7 +1,19 @@
-﻿using System.Collections;
+﻿// 2026/03/07
+//  Solution: RAGDataIngestionWPF
+//  Project:   DataIngestionLib
+//  File:         ChatHistory.cs
+//   Author: Kyle L. Crowder
+
+
+
+using System.Collections;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.AI;
+
 
 
 
@@ -10,17 +22,20 @@ namespace DataIngestionLib.Models;
 
 
 
+
 /// <summary>
-/// Represents a mutable list of <see cref="ChatMessage"/> values with role-focused helpers for agent conversations.
+///     Represents a mutable list of <see cref="AIChatMessage" /> values with role-focused helpers for agent conversations.
 /// </summary>
 /// <remarks>
-/// This type is intended to be directly consumed by Agent Framework and <see cref="IChatClient"/> APIs that operate
-/// on <see cref="ChatMessage"/> sequences. Keep chat manipulation helpers here to avoid duplicating message logic in
-/// service layers.
+///     This type is intended to be directly consumed by Agent Framework and <see cref="IChatClient" /> APIs that operate
+///     on <see cref="AIChatMessage" /> sequences. Keep chat manipulation helpers here to avoid duplicating message logic in
+///     service layers.
 /// </remarks>
-public sealed class ChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>
+public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMessage>, INotifyCollectionChanged, INotifyPropertyChanged
 {
-    private readonly List<ChatMessage> _messages;
+    private readonly List<AIChatMessage> _messages;
+
+
 
 
 
@@ -28,19 +43,30 @@ public sealed class ChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>
 
 
     /// <summary>
-    /// Initializes an empty chat history.
+    ///     Initializes an empty chat history.
     /// </summary>
     public ChatHistory()
     {
         _messages = [];
     }
 
+    public ChatHistory(IEnumerable<(ChatRole Role, string Text)> messages)
+    {
+        ArgumentNullException.ThrowIfNull(messages);
+        _messages = [];
+        foreach ((ChatRole Role, string Text) in messages)
+        {
+            Add(new AIChatMessage(Role, Text));
+        }
+    }
+
+
 
 
 
 
     /// <summary>
-    /// Initializes chat history with a single message.
+    ///     Initializes chat history with a single message.
     /// </summary>
     /// <param name="message">The text message to add to the first message in chat history.</param>
     /// <param name="role">The role to add as the first message.</param>
@@ -48,90 +74,377 @@ public sealed class ChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>
     {
         EnsureNotNullOrWhiteSpace(message, nameof(message));
 
-        _messages = [new ChatMessage(role, message)];
+        _messages = [new AIChatMessage(role, message)];
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Initializes chat history with a single system message.
+    ///     Initializes chat history with a single system message.
     /// </summary>
     /// <param name="systemMessage">The system message to add to the history.</param>
     public ChatHistory(string systemMessage)
-        : this(systemMessage, ChatRole.System)
+            : this(systemMessage, ChatRole.System)
     {
     }
 
+
+
+
+
+
+
+
+
+
     /// <summary>
-    /// Initializes chat history with the provided messages.
+    /// Initializes a new instance of the <see cref="ChatHistory"/> class with a collection of context request messages.
     /// </summary>
-    /// <param name="messages">The messages to copy into the history.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="messages"/> is null.</exception>
-    public ChatHistory(IEnumerable<ChatMessage> messages)
+    /// <param name="contextRequestMessages">
+    /// A collection of <see cref="AIChatMessage"/> instances representing the context request messages.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="contextRequestMessages"/> is <c>null</c>.
+    /// </exception>
+    public ChatHistory(IEnumerable<AIChatMessage> contextRequestMessages)
     {
-        ArgumentNullException.ThrowIfNull(messages);
-
-        _messages = [];
-        AddRange(messages);
+        ArgumentNullException.ThrowIfNull(contextRequestMessages, nameof(contextRequestMessages));
+        _messages = contextRequestMessages.Select(msg => new AIChatMessage(msg.Role, msg.Text)).ToList();
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Implicitly converts a <see cref="ChatMessage"/> array to a <see cref="ChatHistory"/> instance.
+    ///     Gets the newest message in the history, or <see langword="null" /> when history is empty.
     /// </summary>
-    /// <param name="messages">The messages to include in the history.</param>
-    public static implicit operator ChatHistory(ChatMessage[] messages)
-    {
-        ArgumentNullException.ThrowIfNull(messages);
-        return new ChatHistory(messages);
-    }
+    public AIChatMessage? LastMessage => _messages.Count == 0 ? null : _messages[^1];
+
+
+
+
 
     /// <summary>
-    /// Implicitly converts a <see cref="ChatHistory"/> instance to a <see cref="ChatMessage"/> array.
-    /// </summary>
-    /// <param name="history">The history to convert.</param>
-    public static implicit operator ChatMessage[](ChatHistory history)
-    {
-        ArgumentNullException.ThrowIfNull(history);
-        return [.. history._messages];
-    }
-
-    /// <summary>
-    /// Gets the number of messages in the history.
+    ///     Gets the number of messages in the history.
     /// </summary>
     public int Count => _messages.Count;
 
-    /// <summary>
-    /// Gets the newest message in the history, or <see langword="null"/> when history is empty.
-    /// </summary>
-    public ChatMessage? LastMessage => _messages.Count == 0 ? null : _messages[^1];
+
+
+
+
+
+
 
     /// <summary>
-    /// Adds a message using role and text content.
+    ///     Adds a message to the history.
+    /// </summary>
+    /// <param name="item">The message to add.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="item" /> is null.</exception>
+    public void Add(AIChatMessage item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        _messages.Add(item);
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Inserts a message into the history at the specified index.
+    /// </summary>
+    /// <param name="index">The index at which the item should be inserted.</param>
+    /// <param name="item">The message to insert.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="item" /> is null.</exception>
+    public void Insert(int index, AIChatMessage item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        _messages.Insert(index, item);
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Copies all of the messages in the history to an array, starting at the specified destination array index.
+    /// </summary>
+    /// <param name="array">The destination array into which the messages should be copied.</param>
+    /// <param name="arrayIndex">The zero-based index into <paramref name="array" /> at which copying should begin.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="array" /> is null.</exception>
+    /// <exception cref="ArgumentException">
+    ///     The number of messages in the history is greater than the available space from
+    ///     <paramref name="arrayIndex" /> to the end of <paramref name="array" />.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex" /> is less than 0.</exception>
+    public void CopyTo(AIChatMessage[] array, int arrayIndex)
+    {
+        ArgumentNullException.ThrowIfNull(array);
+        _messages.CopyTo(array, arrayIndex);
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Removes all messages from the history.
+    /// </summary>
+    public void Clear()
+    {
+        _messages.Clear();
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Gets or sets the message at the specified index in the history.
+    /// </summary>
+    /// <param name="index">The index of the message to get or set.</param>
+    /// <returns>The message at the specified index.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="value" /> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index" /> was not valid for this history.</exception>
+    public AIChatMessage this[int index]
+    {
+        get => _messages[index];
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            _messages[index] = value;
+        }
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Determines whether a message is in the history.
+    /// </summary>
+    /// <param name="item">The message to locate.</param>
+    /// <returns><see langword="true" /> if the message is found in the history; otherwise, <see langword="false" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="item" /> is null.</exception>
+    public bool Contains(AIChatMessage item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        return _messages.Contains(item);
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Searches for the specified message and returns the index of the first occurrence.
+    /// </summary>
+    /// <param name="item">The message to locate.</param>
+    /// <returns>The index of the first found occurrence of the specified message; -1 if the message could not be found.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="item" /> is null.</exception>
+    public int IndexOf(AIChatMessage item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        return _messages.IndexOf(item);
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Removes the message at the specified index from the history.
+    /// </summary>
+    /// <param name="index">The index of the message to remove.</param>
+    public void RemoveAt(int index)
+    {
+        _messages.RemoveAt(index);
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Removes the first occurrence of the specified message from the history.
+    /// </summary>
+    /// <param name="item">The message to remove from the history.</param>
+    /// <returns><see langword="true" /> if the item was successfully removed; otherwise, <see langword="false" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="item" /> is null.</exception>
+    public bool Remove(AIChatMessage item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        return _messages.Remove(item);
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    bool ICollection<AIChatMessage>.IsReadOnly => false;
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    IEnumerator<AIChatMessage> IEnumerable<AIChatMessage>.GetEnumerator()
+    {
+        return _messages.GetEnumerator();
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _messages.GetEnumerator();
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Adds an assistant message to the chat history.
+    /// </summary>
+    /// <param name="content">Message content.</param>
+    public void AddAssistantMessage(string content)
+    {
+        AddMessage(ChatRole.Assistant, content);
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new AIChatMessage(ChatRole.Assistant, content)));
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Adds multiple assistant messages to chat history.
+    /// </summary>
+    /// <param name="messages">Messages to add, all with <see cref="ChatRole.Assistant" /> role.</param>
+    public void AddAssistantMessages(IEnumerable<AIChatMessage> messages)
+    {
+        AddMessagesByRole(messages, ChatRole.Assistant, nameof(messages));
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, messages));
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Adds a message using role and text content.
     /// </summary>
     /// <param name="authorRole">Role of the message author.</param>
     /// <param name="content">Message text content.</param>
     public void AddMessage(ChatRole authorRole, string content)
     {
         EnsureNotNullOrWhiteSpace(content, nameof(content));
-        Add(new ChatMessage(authorRole, content));
+        Add(new AIChatMessage(authorRole, content));
     }
 
 
 
-    /// <summary>
-    /// Adds a user message to the chat history.
-    /// </summary>
-    /// <param name="content">Message content.</param>
-    public void AddUserMessage(string content)
+
+
+
+
+
+    private void AddMessagesByRole(IEnumerable<AIChatMessage> messages, ChatRole expectedRole, string parameterName)
     {
-        AddMessage(ChatRole.User, content);
+        ArgumentNullException.ThrowIfNull(messages);
+
+        foreach (AIChatMessage message in messages)
+        {
+            ArgumentNullException.ThrowIfNull(message);
+
+            if (message.Role != expectedRole)
+            {
+                throw new ArgumentException($"All messages must have role '{expectedRole.Value}'.", parameterName);
+            }
+
+            Add(message);
+        }
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Adds multiple user messages to chat history.
+    ///     Adds messages to the history.
     /// </summary>
-    /// <param name="messages">Messages to add, all with <see cref="ChatRole.User"/> role.</param>
-    public void AddUserMessages(IEnumerable<ChatMessage> messages)
+    /// <param name="items">The collection whose messages should be added to the history.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="items" /> is null.</exception>
+    public void AddRange(IEnumerable<AIChatMessage> items)
     {
-        AddMessagesByRole(messages, ChatRole.User, nameof(messages));
+        ArgumentNullException.ThrowIfNull(items);
+
+        foreach (AIChatMessage item in items)
+        {
+            Add(item);
+        }
     }
 
 
@@ -142,25 +455,7 @@ public sealed class ChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>
 
 
     /// <summary>
-    /// Adds an assistant message to the chat history.
-    /// </summary>
-    /// <param name="content">Message content.</param>
-    public void AddAssistantMessage(string content)
-    {
-        AddMessage(ChatRole.Assistant, content);
-    }
-
-    /// <summary>
-    /// Adds multiple assistant messages to chat history.
-    /// </summary>
-    /// <param name="messages">Messages to add, all with <see cref="ChatRole.Assistant"/> role.</param>
-    public void AddAssistantMessages(IEnumerable<ChatMessage> messages)
-    {
-        AddMessagesByRole(messages, ChatRole.Assistant, nameof(messages));
-    }
-
-    /// <summary>
-    /// Adds a system message to the chat history.
+    ///     Adds a system message to the chat history.
     /// </summary>
     /// <param name="content">Message content.</param>
     public void AddSystemMessage(string content)
@@ -168,72 +463,80 @@ public sealed class ChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>
         AddMessage(ChatRole.System, content);
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Adds multiple system messages to chat history.
+    ///     Adds multiple system messages to chat history.
     /// </summary>
-    /// <param name="messages">Messages to add, all with <see cref="ChatRole.System"/> role.</param>
-    public void AddSystemMessages(IEnumerable<ChatMessage> messages)
+    /// <param name="messages">Messages to add, all with <see cref="ChatRole.System" /> role.</param>
+    public void AddSystemMessages(IEnumerable<AIChatMessage> messages)
     {
         AddMessagesByRole(messages, ChatRole.System, nameof(messages));
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Attempts to get the most recent message matching the provided role.
+    ///     Adds a user message to the chat history.
     /// </summary>
-    /// <param name="role">Role to search for.</param>
-    /// <param name="message">The latest matching message when found; otherwise <see langword="null"/>.</param>
-    /// <returns><see langword="true"/> when a matching message exists; otherwise <see langword="false"/>.</returns>
-    public bool TryGetLastMessage(ChatRole role, [NotNullWhen(true)] out ChatMessage? message)
+    /// <param name="content">Message content.</param>
+    public void AddUserMessage(string content)
     {
-        for (int index = _messages.Count - 1; index >= 0; index--)
+        AddMessage(ChatRole.User, content);
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new AIChatMessage(ChatRole.User, content)));
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Adds multiple user messages to chat history.
+    /// </summary>
+    /// <param name="messages">Messages to add, all with <see cref="ChatRole.User" /> role.</param>
+    public void AddUserMessages(IEnumerable<AIChatMessage> messages)
+    {
+        AddMessagesByRole(messages, ChatRole.User, nameof(messages));
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, messages));
+    }
+
+
+
+
+
+
+
+
+    private static void EnsureNotNullOrWhiteSpace(string? value, string paramName)
+    {
+        if (string.IsNullOrWhiteSpace(value))
         {
-            if (_messages[index].Role == role)
-            {
-                message = _messages[index];
-                return true;
-            }
+            throw new ArgumentException("Value cannot be null or whitespace.", paramName);
         }
-
-        message = null;
-        return false;
     }
 
-    /// <summary>
-    /// Gets the text from the most recent message for the provided role.
-    /// </summary>
-    /// <param name="role">Role to search for.</param>
-    /// <returns>The message text when found; otherwise an empty string.</returns>
-    public string GetLastMessageText(ChatRole role)
-    {
-        return TryGetLastMessage(role, out ChatMessage? message)
-            ? message.Text
-            : string.Empty;
-    }
+
+
+
+
+
+
 
     /// <summary>
-    /// Estimates token count using a simple 4-chars-per-token heuristic.
-    /// </summary>
-    /// <returns>Estimated token count for all messages.</returns>
-    public int EstimateTokenCount()
-    {
-        int tokenCount = 0;
-
-        foreach (ChatMessage message in _messages)
-        {
-            string text = message.Text;
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                continue;
-            }
-
-            tokenCount += Math.Max(1, text.Length / 4);
-        }
-
-        return tokenCount;
-    }
-
-    /// <summary>
-    /// Estimates token count from newest to oldest using a max token budget.
+    ///     Estimates token count from newest to oldest using a max token budget.
     /// </summary>
     /// <param name="maxTokens">Maximum allowed tokens in the context window.</param>
     /// <returns>Estimated token count that fits in the configured context window.</returns>
@@ -266,130 +569,97 @@ public sealed class ChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>
         return tokenCount;
     }
 
-    /// <summary>
-    /// Adds a message to the history.
-    /// </summary>
-    /// <param name="item">The message to add.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    public void Add(ChatMessage item)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-        _messages.Add(item);
-    }
+
+
+
+
+
+
 
     /// <summary>
-    /// Adds messages to the history.
+    ///     Estimates token count using a simple 4-chars-per-token heuristic.
     /// </summary>
-    /// <param name="items">The collection whose messages should be added to the history.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="items"/> is null.</exception>
-    public void AddRange(IEnumerable<ChatMessage> items)
+    /// <returns>Estimated token count for all messages.</returns>
+    public int EstimateTokenCount()
     {
-        ArgumentNullException.ThrowIfNull(items);
+        int tokenCount = 0;
 
-        foreach (ChatMessage item in items)
+        foreach (AIChatMessage message in _messages)
         {
-            Add(item);
+            string text = message.Text;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                continue;
+            }
+
+            tokenCount += Math.Max(1, text.Length / 4);
         }
+
+        return tokenCount;
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Inserts a message into the history at the specified index.
+    ///     Gets the text from the most recent message for the provided role.
     /// </summary>
-    /// <param name="index">The index at which the item should be inserted.</param>
-    /// <param name="item">The message to insert.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    public void Insert(int index, ChatMessage item)
+    /// <param name="role">Role to search for.</param>
+    /// <returns>The message text when found; otherwise an empty string.</returns>
+    public string GetLastMessageText(ChatRole role)
     {
-        ArgumentNullException.ThrowIfNull(item);
-        _messages.Insert(index, item);
+        return TryGetLastMessage(role, out AIChatMessage? message)
+                ? message.Text
+                : string.Empty;
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Copies all of the messages in the history to an array, starting at the specified destination array index.
+    ///     Implicitly converts a <see cref="AIChatMessage" /> array to a <see cref="ChatHistory" /> instance.
     /// </summary>
-    /// <param name="array">The destination array into which the messages should be copied.</param>
-    /// <param name="arrayIndex">The zero-based index into <paramref name="array"/> at which copying should begin.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="array"/> is null.</exception>
-    /// <exception cref="ArgumentException">The number of messages in the history is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-    public void CopyTo(ChatMessage[] array, int arrayIndex)
+    /// <param name="messages">The messages to include in the history.</param>
+    public static implicit operator ChatHistory(AIChatMessage[] messages)
     {
-        ArgumentNullException.ThrowIfNull(array);
-        _messages.CopyTo(array, arrayIndex);
+        ArgumentNullException.ThrowIfNull(messages);
+        return [.. messages];
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Removes all messages from the history.
+    ///     Implicitly converts a <see cref="ChatHistory" /> instance to a <see cref="AIChatMessage" /> array.
     /// </summary>
-    public void Clear()
+    /// <param name="history">The history to convert.</param>
+    public static implicit operator AIChatMessage[](ChatHistory history)
     {
-        _messages.Clear();
+        ArgumentNullException.ThrowIfNull(history);
+        return [.. history._messages];
     }
 
-    /// <summary>
-    /// Gets or sets the message at the specified index in the history.
-    /// </summary>
-    /// <param name="index">The index of the message to get or set.</param>
-    /// <returns>The message at the specified index.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index"/> was not valid for this history.</exception>
-    public ChatMessage this[int index]
-    {
-        get => _messages[index];
-        set
-        {
-            ArgumentNullException.ThrowIfNull(value);
-            _messages[index] = value;
-        }
-    }
+
+
+
+
+
+
 
     /// <summary>
-    /// Determines whether a message is in the history.
-    /// </summary>
-    /// <param name="item">The message to locate.</param>
-    /// <returns><see langword="true"/> if the message is found in the history; otherwise, <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    public bool Contains(ChatMessage item)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-        return _messages.Contains(item);
-    }
-
-    /// <summary>
-    /// Searches for the specified message and returns the index of the first occurrence.
-    /// </summary>
-    /// <param name="item">The message to locate.</param>
-    /// <returns>The index of the first found occurrence of the specified message; -1 if the message could not be found.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    public int IndexOf(ChatMessage item)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-        return _messages.IndexOf(item);
-    }
-
-    /// <summary>
-    /// Removes the message at the specified index from the history.
-    /// </summary>
-    /// <param name="index">The index of the message to remove.</param>
-    public void RemoveAt(int index)
-    {
-        _messages.RemoveAt(index);
-    }
-
-    /// <summary>
-    /// Removes the first occurrence of the specified message from the history.
-    /// </summary>
-    /// <param name="item">The message to remove from the history.</param>
-    /// <returns><see langword="true"/> if the item was successfully removed; otherwise, <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    public bool Remove(ChatMessage item)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-        return _messages.Remove(item);
-    }
-
-    /// <summary>
-    /// Removes a range of messages from the history.
+    ///     Removes a range of messages from the history.
     /// </summary>
     /// <param name="index">The index of the range of elements to remove.</param>
     /// <param name="count">The number of elements to remove.</param>
@@ -398,43 +668,120 @@ public sealed class ChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>
         _messages.RemoveRange(index, count);
     }
 
-    /// <inheritdoc/>
-    bool ICollection<ChatMessage>.IsReadOnly => false;
 
-    /// <inheritdoc/>
-    IEnumerator<ChatMessage> IEnumerable<ChatMessage>.GetEnumerator()
-    {
-        return _messages.GetEnumerator();
-    }
 
-    /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return _messages.GetEnumerator();
-    }
 
-    private static void EnsureNotNullOrWhiteSpace(string? value, string paramName)
+
+
+
+
+    /// <summary>
+    ///     Attempts to get the most recent message matching the provided role.
+    /// </summary>
+    /// <param name="role">Role to search for.</param>
+    /// <param name="message">The latest matching message when found; otherwise <see langword="null" />.</param>
+    /// <returns><see langword="true" /> when a matching message exists; otherwise <see langword="false" />.</returns>
+    public bool TryGetLastMessage(ChatRole role, [NotNullWhen(true)] out AIChatMessage? message)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        for (int index = _messages.Count - 1; index >= 0; index--)
         {
-            throw new ArgumentException("Value cannot be null or whitespace.", paramName);
-        }
-    }
-
-    private void AddMessagesByRole(IEnumerable<ChatMessage> messages, ChatRole expectedRole, string parameterName)
-    {
-        ArgumentNullException.ThrowIfNull(messages);
-
-        foreach (ChatMessage message in messages)
-        {
-            ArgumentNullException.ThrowIfNull(message);
-
-            if (message.Role != expectedRole)
+            if (_messages[index].Role == role)
             {
-                throw new ArgumentException($"All messages must have role '{expectedRole.Value}'.", parameterName);
+                message = _messages[index];
+                return true;
             }
-
-            Add(message);
         }
+
+        message = null;
+        return false;
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
+
+
+
+
+
+
+
+    private void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+    {
+        CollectionChanged?.Invoke(this, e);
+    }
+
+
+
+
+
+
+
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+
+
+
+
+
+
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+
+
+
+
+
+
+
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+
+        field = value;
+        OnPropertyChanged(propertyName);
+        return true;
+    }
+
+
+
+
+
+
+
+
+    public void Add(Microsoft.Extensions.AI.ChatRole mRole, string mText)
+    {
+        switch (mRole.Value)
+        {
+            case "user":
+                AddUserMessage(mText);
+                break;
+            case "assistant":
+                AddAssistantMessage(mText);
+                break;
+            case "system":
+                AddSystemMessage(mText);
+                break;
+            default:
+                break;
+        }
+
+
     }
 }

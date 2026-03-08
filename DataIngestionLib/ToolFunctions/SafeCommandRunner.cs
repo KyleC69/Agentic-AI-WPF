@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/07
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         SafeCommandRunner.cs
@@ -58,7 +58,7 @@ public sealed class SafeCommandRunner
 
             case "cat":
             case "type":
-                string fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, args));
+                var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, args));
                 if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
                 {
                     return "Access denied.";
@@ -90,9 +90,9 @@ public sealed class SafeCommandRunner
             return "No command provided.";
         }
 
-        string[] parts = input.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-        string cmd = parts[0];
-        string args = parts.Length > 1 ? parts[1] : string.Empty;
+        var parts = input.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+        var cmd = parts[0];
+        var args = parts.Length > 1 ? parts[1] : string.Empty;
 
         return !AllowedCommands.Contains(cmd) ? $"Command '{cmd}' is not allowed." : ExecuteAllowedCommand(cmd, args);
 

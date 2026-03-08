@@ -1,10 +1,24 @@
+// 2026/03/07
+//  Solution: RAGDataIngestionWPF
+//  Project:   DataIngestionLib
+//  File:         IChatHistorySummarizer.cs
+//   Author: Kyle L. Crowder
+
+
+
 using DataIngestionLib.Models;
 
-using Microsoft.Extensions.AI;
+
+
+
 
 namespace DataIngestionLib.Contracts.Services;
 
+
+
+
+
 public interface IChatHistorySummarizer
 {
-    ValueTask<ChatMessage?> SummarizeAsync(string conversationId, ChatHistory messages, CancellationToken cancellationToken = default);
+    ValueTask<AIChatMessage?> SummarizeAsync(string conversationId, ChatHistory messages, CancellationToken cancellationToken = default);
 }

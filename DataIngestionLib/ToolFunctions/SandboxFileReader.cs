@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/07
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         SandboxFileReader.cs
@@ -48,7 +48,7 @@ public sealed class SandboxFileReader
             throw new ArgumentException("Path cannot be empty.");
         }
 
-        string fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
+        var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
 
         return !fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase) ? throw new UnauthorizedAccessException("Access outside sandbox is not allowed.") : !File.Exists(fullPath) ? throw new FileNotFoundException("File not found.", fullPath) : File.ReadAllText(fullPath);
 

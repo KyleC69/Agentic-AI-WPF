@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/07
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         SandboxFileWriter.cs
@@ -48,7 +48,7 @@ public sealed class SandboxFileWriter
             throw new ArgumentException("Path cannot be empty.");
         }
 
-        string fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
+        var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
 
         if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
         {

@@ -98,12 +98,12 @@ public partial class App : Application
         services.AddSingleton<IOllamaApiClient>(_ => new OllamaApiClient(OllamaEndpoint, OllamaModel));
         services.AddSingleton<IChatClient>(sp => (IChatClient)sp.GetRequiredService<IOllamaApiClient>());
         services.AddSingleton(sp => sp.GetRequiredService<IChatClient>().AsAIAgent());
+        //services.AddSingleton<ISqlVectorStore, SqlVectorStore>();
         services.AddSingleton<IChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
-        services.AddSingleton<IChatHistoryProvider, ChatHistoryProvider>();
+        services.AddSingleton<IRuntimeContextAccessor, RuntimeContextAccessor>();
+        services.AddSingleton<IChatHistoryProvider, CustomChatHistoryProvider>();
         services.AddSingleton<IChatHistoryMemoryProvider, ChatHistoryMemoryProvider>();
         services.AddSingleton<IRagContextSource, NullRagContextSource>();
-        services.AddSingleton<AIHistoryProvider>();
-        services.AddSingleton<TheMessageAIContextProvider>();
         services.AddSingleton<RAGAIContextProvider>();
         services.AddSingleton<IAgentFactory, AgentFactory>();
     }
@@ -132,6 +132,7 @@ public partial class App : Application
         services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
         services.AddSingleton<ISystemService, SystemService>();
+        services.AddSingleton<IApplicationIdService, ApplicationIdService>();
         services.AddSingleton<ISampleDataService, SampleDataService>();
         services.AddSingleton(sp =>
         {
