@@ -19,119 +19,121 @@ internal class RegistryReaderTool
     /// Reads a string value from the Windows Registry.
     /// </summary>
     /// <param name="keyPath">The full path to the registry key (e.g., "HKEY_CURRENT_USER\\Software\\MyApplication\\Setting").</param>
-    /// <returns>The string value of the registry entry, or null if the key or value is not found or an error occurs.</returns>
-    public static string? ReadStringValue(string keyPath)
+    /// <returns>A <see cref="ToolResult{T}" /> with the value on success, or an error message on failure.</returns>
+    public static ToolResult<string> ReadStringValue(string keyPath)
     {
         if (string.IsNullOrWhiteSpace(keyPath))
         {
-            _logger.LogError("Registry key path cannot be null or empty.");
-            return null;
+            const string message = "Registry key path cannot be null or empty.";
+            _logger.LogError(message);
+            return ToolResult<string>.Fail(message);
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            const string message = "Registry access is only supported on Windows.";
+            _logger.LogError(message);
+            return ToolResult<string>.Fail(message);
         }
 
         try
         {
-            // Split the key path into the registry hive and the rest of the path
             int separatorIndex = keyPath.IndexOf('\\');
             if (separatorIndex <= 0)
             {
-                _logger.LogError("Invalid registry key path format: {KeyPath}", keyPath);
-                return null;
+                const string message = "Invalid registry key path format.";
+                _logger.LogError("{Message} Path: {KeyPath}", message, keyPath);
+                return ToolResult<string>.Fail(message);
             }
 
-            string hiveName = keyPath.Substring(0, separatorIndex);
-            string subKeyPath = keyPath.Substring(separatorIndex + 1);
-
-            Microsoft.Win32.RegistryKey? baseKey = null;
-            switch (hiveName.ToUpperInvariant())
+            string hiveName = keyPath[..separatorIndex];
+            string keyAndValuePath = keyPath[(separatorIndex + 1)..];
+            if (string.IsNullOrWhiteSpace(keyAndValuePath))
             {
-                case "HKEY_CLASSES_ROOT":
-                    baseKey = Microsoft.Win32.Registry.ClassesRoot;
-                    break;
-                case "HKEY_CURRENT_USER":
-                    baseKey = Microsoft.Win32.Registry.CurrentUser;
-                    break;
-                case "HKEY_LOCAL_MACHINE":
-                    baseKey = Microsoft.Win32.Registry.LocalMachine;
-                    break;
-                case "HKEY_USERS":
-                    baseKey = Microsoft.Win32.Registry.Users;
-                    break;
-                case "HKEY_CURRENT_CONFIG":
-                    baseKey = Microsoft.Win32.Registry.CurrentConfig;
-                    break;
-                default:
-                    _logger.LogError("Unsupported registry hive: {HiveName}", hiveName);
-                    return null;
+                const string message = "Registry subkey path cannot be empty.";
+                _logger.LogError("{Message} Path: {KeyPath}", message, keyPath);
+                return ToolResult<string>.Fail(message);
             }
 
-            // Do not dispose baseKey — root hive handles are static singletons managed by the framework.
-            Microsoft.Win32.RegistryKey? subKey = baseKey.OpenSubKey(subKeyPath);
+            if (!TryResolveBaseKey(hiveName, out Microsoft.Win32.RegistryKey? baseKey))
+            {
+                string message = $"Unsupported registry hive: {hiveName}";
+                _logger.LogError(message);
+                return ToolResult<string>.Fail(message);
+            }
+
+            bool useDefaultValue = keyAndValuePath.EndsWith("\\", StringComparison.Ordinal);
+            string trimmedPath = useDefaultValue ? keyAndValuePath.TrimEnd('\\') : keyAndValuePath;
+
+            int lastSlashIndex = trimmedPath.LastIndexOf('\\');
+            string subKeyPath = useDefaultValue
+                    ? trimmedPath
+                    : lastSlashIndex >= 0 ? trimmedPath[..lastSlashIndex] : trimmedPath;
+            string valueName = useDefaultValue
+                    ? string.Empty
+                    : lastSlashIndex >= 0 ? trimmedPath[(lastSlashIndex + 1)..] : string.Empty;
+
+            if (string.IsNullOrWhiteSpace(subKeyPath))
+            {
+                const string message = "Registry subkey path cannot be empty.";
+                _logger.LogError("{Message} Path: {KeyPath}", message, keyPath);
+                return ToolResult<string>.Fail(message);
+            }
+
+            Microsoft.Win32.RegistryKey? subKey = baseKey!.OpenSubKey(subKeyPath);
             using (subKey)
             {
                 if (subKey == null)
                 {
-                    if (subKey == null)
-                    {
-                        _logger.LogInformation("Registry key not found: {KeyPath}", keyPath);
-                        return null;
-                    }
-
-                    // The last part of the keyPath is the value name
-                    string valueName = "";
-                    int lastSlashIndex = subKeyPath.LastIndexOf('\\');
-                    if (lastSlashIndex != -1)
-                    {
-                        valueName = subKeyPath.Substring(lastSlashIndex + 1);
-                        // If the subKeyPath itself ends with a slash, it might imply a default value,
-                        // but for string values, we usually expect a specific name.
-                        // Here, we assume the value name is the last part.
-                        // If the key path points to the key itself, not a value, "Default" is often implied.
-                    }
-                    else
-                    {
-                        valueName = "Default"; // Default value if no name is specified in the path after the hive
-                    }
-
-                    // If the keyPath ends in a backslash, it implies the default value
-                    if (keyPath.EndsWith("\\"))
-                    {
-                        valueName = "Default";
-                    }
-                    else
-                    {
-                        // Extract the value name from the original keyPath
-                        valueName = keyPath.Substring(keyPath.LastIndexOf('\\') + 1);
-                        if (string.IsNullOrEmpty(valueName)) // Handle cases like HKEY_CURRENT_USER\Software\
-                        {
-                            valueName = "Default";
-                        }
-                    }
-
-                    if (value == null)
-                    {
-                        _logger.LogInformation("Registry value '{ValueName}' not found in key '{KeyPath}'.", valueName, keyPath);
-                        return null;
-                    }
-
+                    string message = $"Registry key not found: {subKeyPath}";
+                    _logger.LogInformation(message);
+                    return ToolResult<string>.Fail(message);
                 }
 
-                return value.ToString();
+                object? value = subKey.GetValue(valueName);
+                if (value == null)
+                {
+                    string effectiveValueName = string.IsNullOrEmpty(valueName) ? "(Default)" : valueName;
+                    string message = $"Registry value '{effectiveValueName}' not found in key '{subKeyPath}'.";
+                    _logger.LogInformation(message);
+                    return ToolResult<string>.Fail(message);
+                }
+
+                string? valueText = value.ToString();
+                if (valueText == null)
+                {
+                    string message = $"Registry value '{valueName}' in key '{subKeyPath}' could not be converted to text.";
+                    _logger.LogInformation(message);
+                    return ToolResult<string>.Fail(message);
+                }
+
+                return ToolResult<string>.Ok(valueText);
             }
         }
         catch (System.Security.SecurityException ex)
         {
             _logger.LogError(ex, "Security exception reading registry key '{KeyPath}'.", keyPath);
-            return null;
+            return ToolResult<string>.Fail("Security exception while reading the registry key.");
         }
         catch (UnauthorizedAccessException ex)
         {
             _logger.LogError(ex, "Unauthorized access exception reading registry key '{KeyPath}'.", keyPath);
-            return null;
+            return ToolResult<string>.Fail("Unauthorized access while reading the registry key.");
         }
-        catch (Exception ex)
+    }
+
+    private static bool TryResolveBaseKey(string hiveName, out Microsoft.Win32.RegistryKey? baseKey)
+    {
+        baseKey = hiveName.ToUpperInvariant() switch
         {
-            _logger.LogError(ex, "An unexpected error occurred reading registry key '{KeyPath}'.", keyPath);
-            return null;
-        }
+                "HKEY_CLASSES_ROOT" => Microsoft.Win32.Registry.ClassesRoot,
+                "HKEY_CURRENT_USER" => Microsoft.Win32.Registry.CurrentUser,
+                "HKEY_LOCAL_MACHINE" => Microsoft.Win32.Registry.LocalMachine,
+                "HKEY_USERS" => Microsoft.Win32.Registry.Users,
+                "HKEY_CURRENT_CONFIG" => Microsoft.Win32.Registry.CurrentConfig,
+                _ => null
+        };
+
+        return baseKey != null;
     }
 }

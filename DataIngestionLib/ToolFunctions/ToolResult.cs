@@ -20,11 +20,17 @@ public sealed class ToolResult<T>
 
     public static ToolResult<T> Ok(T value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         return new() { Success = true, Value = value };
     }
 
     public static ToolResult<T> Fail(string message)
     {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            throw new ArgumentException("Failure message cannot be null or whitespace.", nameof(message));
+        }
+
         return new() { Success = false, Error = message };
     }
 }
