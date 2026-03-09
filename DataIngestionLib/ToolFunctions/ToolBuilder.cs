@@ -23,7 +23,7 @@ internal class ToolBuilder
 
     public static IList<AITool> GetAiTools()
     {
-        FileSystemSearch fileSystemPlugin = new();
+        FileSystemPlugin fileSystemPlugin = new();
         WebSearchPlugin webSearchPlugin = new();
         AgentLogger logger = new(Environment.CurrentDirectory);
 
