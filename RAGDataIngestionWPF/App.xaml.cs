@@ -124,7 +124,7 @@ public partial class App : Application
         RegisterViewsAndViewModels(services);
 
         // Configuration
-        services.Configure<AppConf>(context.Configuration.GetSection(nameof(AppConf)));
+        services.Configure<AppSettings>(context.Configuration.GetSection(AppSettings.ConfigurationSectionName));
         services.Configure<ChatHistoryOptions>(context.Configuration.GetSection(ChatHistoryOptions.ConfigurationSectionName));
     }
 
@@ -340,7 +340,7 @@ public partial class App : Application
         services.AddSingleton<ISampleDataService, SampleDataService>();
         services.AddSingleton(sp =>
         {
-            AppConf appConfig = sp.GetRequiredService<IOptions<AppConf>>().Value;
+            AppSettings appConfig = sp.GetRequiredService<IOptions<AppSettings>>().Value;
             return new ChatSessionOptions
             {
                     ConfigurationsFolder = appConfig.ConfigurationsFolder,

@@ -29,7 +29,7 @@ namespace RAGDataIngestionWPF.Services;
 
 public class UserDataService : IUserDataService
 {
-    private readonly AppConf _appConfig;
+    private readonly AppSettings _appConfig;
     private readonly IFileService _fileService;
     private readonly string _localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     private UserViewModel _user;
@@ -41,7 +41,7 @@ public class UserDataService : IUserDataService
 
 
 
-    public UserDataService(IFileService fileService, IOptions<AppConf> appConfig)
+    public UserDataService(IFileService fileService, IOptions<AppSettings> appConfig)
     {
         _fileService = fileService;
         _appConfig = appConfig.Value;

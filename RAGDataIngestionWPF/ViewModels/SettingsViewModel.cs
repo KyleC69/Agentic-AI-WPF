@@ -27,9 +27,9 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 // TODO: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
-public class SettingsViewModel(IOptions<AppConf> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IApplicationIdService applicationIdService) : ObservableObject, INavigationAware
+public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IApplicationIdService applicationIdService) : ObservableObject, INavigationAware
 {
-    private readonly AppConf _appConfig = appConfig.Value;
+    private readonly AppSettings _appConfig = appConfig.Value;
     private readonly IApplicationIdService _applicationIdService = applicationIdService;
     private readonly IApplicationInfoService _applicationInfoService = applicationInfoService;
     private readonly ISystemService _systemService = systemService;

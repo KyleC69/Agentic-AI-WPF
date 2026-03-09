@@ -32,7 +32,7 @@ public class SettingsViewModelTests
     {
         Mock<IThemeSelectorService> mockThemeSelectorService = new();
         mockThemeSelectorService.Setup(mock => mock.GetCurrentTheme()).Returns(AppTheme.Light);
-        Mock<IOptions<AppConf>> mockAppConfig = new();
+        Mock<IOptions<AppSettings>> mockAppConfig = new();
         Mock<ISystemService> mockSystemService = new();
         Mock<IApplicationInfoService> mockApplicationInfoService = new();
         Mock<IUserDataService> mockUserDataService = new();
@@ -55,7 +55,7 @@ public class SettingsViewModelTests
     public void TestSettingsViewModel_SetCurrentVersion()
     {
         Mock<IThemeSelectorService> mockThemeSelectorService = new();
-        Mock<IOptions<AppConf>> mockAppConfig = new();
+        Mock<IOptions<AppSettings>> mockAppConfig = new();
         Mock<ISystemService> mockSystemService = new();
         Mock<IApplicationInfoService> mockApplicationInfoService = new();
         Mock<IUserDataService> mockUserDataService = new();
@@ -80,7 +80,7 @@ public class SettingsViewModelTests
     public void TestSettingsViewModel_SetThemeCommand()
     {
         Mock<IThemeSelectorService> mockThemeSelectorService = new();
-        Mock<IOptions<AppConf>> mockAppConfig = new();
+        Mock<IOptions<AppSettings>> mockAppConfig = new();
         Mock<ISystemService> mockSystemService = new();
         Mock<IApplicationInfoService> mockApplicationInfoService = new();
         Mock<IUserDataService> mockUserDataService = new();

@@ -365,6 +365,5 @@ The following items are tracked as open issues in this repository:
 - **`RagSearchTool.cs`** — Generic type parameter incorrectly named `IRagRetriever` (shadows the interface of the same name), and `Search()` returns an empty stub.
 - **`FileSystemPlugin.cs`** — ~~Class named `FileSystemSearch` but its `WriteText` method writes files rather than searching; description is misleading.~~ Fixed: class renamed to `FileSystemPlugin` and `WriteText` description corrected.
 - **`appsettings.json`** — Connection string contains a hard-coded machine name (`Server=Desktop-nc01091`). Should use `(localdb)\MSSQLLocalDB` or a placeholder.
-- **`App.xaml.cs`** — `AppConf` is bound with `services.Configure<AppConf>(context.Configuration.GetSection(nameof(AppConf)))`, but `appsettings.json` uses the section key `"AppConfig"`. The `nameof(AppConf)` expression resolves to `"AppConf"`, so the binding silently fails. Fix by renaming the C# model class to `AppConfig` (matching the JSON key) so that `nameof(AppConfig)` resolves to `"AppConfig"` correctly.
 
 See the [Issues tab](../../issues) for full details and status.

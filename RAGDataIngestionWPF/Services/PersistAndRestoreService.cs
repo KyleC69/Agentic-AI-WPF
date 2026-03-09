@@ -26,7 +26,7 @@ namespace RAGDataIngestionWPF.Services;
 
 public class PersistAndRestoreService : IPersistAndRestoreService
 {
-    private readonly AppConf _appConfig;
+    private readonly AppSettings _appConfig;
     private readonly IFileService _fileService;
     private readonly string _localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
@@ -37,7 +37,7 @@ public class PersistAndRestoreService : IPersistAndRestoreService
 
 
 
-    public PersistAndRestoreService(IFileService fileService, IOptions<AppConf> appConfig)
+    public PersistAndRestoreService(IFileService fileService, IOptions<AppSettings> appConfig)
     {
         _fileService = fileService;
         _appConfig = appConfig.Value;
