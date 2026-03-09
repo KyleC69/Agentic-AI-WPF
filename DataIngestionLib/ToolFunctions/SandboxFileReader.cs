@@ -15,42 +15,61 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-
-
 public sealed class SandboxFileReader
 {
     private readonly string _sandboxRoot;
 
-
-
-
-
-
-
-
     public SandboxFileReader(string sandboxRoot)
     {
         _sandboxRoot = Path.GetFullPath(sandboxRoot);
-        Directory.CreateDirectory(_sandboxRoot);
+        _ = Directory.CreateDirectory(_sandboxRoot);
     }
 
-
-
-
-
-
-
-
-    public string ReadFile(string relativePath)
+    public ToolResult<string> ReadFile(string relativePath)
     {
-        if (string.IsNullOrWhiteSpace(relativePath))
+        try
         {
-            throw new ArgumentException("Path cannot be empty.");
+            if (string.IsNullOrWhiteSpace(relativePath))
+            {
+                return ToolResult<string>.Fail("Path cannot be empty.");
+            }
+
+            string fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
+
+            if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                return ToolResult<string>.Fail("Access outside sandbox is not allowed.");
+            }
+
+            if (!File.Exists(fullPath))
+            {
+                return ToolResult<string>.Fail($"File not found: {relativePath}");
+            }
+
+            string content = File.ReadAllText(fullPath);
+
+            return ToolResult<string>.Ok(content);
         }
+        catch (Exception ex)
+        {
+            // Internal exception is captured and returned deterministically
+            return ToolResult<string>.Fail(ex.Message);
+        }
+    }
+}
+public sealed class ToolResult<T>
+{
+    public bool Success { get; init; }
+    public T? Value { get; init; }
+    public string? Error { get; init; }
 
-        var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
+    public static ToolResult<T> Ok(T value)
+    {
+        return new() { Success = true, Value = value };
+    }
 
-        return !fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase) ? throw new UnauthorizedAccessException("Access outside sandbox is not allowed.") : !File.Exists(fullPath) ? throw new FileNotFoundException("File not found.", fullPath) : File.ReadAllText(fullPath);
-
+    public static ToolResult<T> Fail(string message)
+    {
+        return new() { Success = false, Error = message };
     }
 }

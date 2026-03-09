@@ -35,7 +35,7 @@ namespace DataIngestionLib.Services.ContextInjectors;
 ///         the active <see cref="AgentSession" /> and the injected dependencies.
 ///     </para>
 /// </remarks>
-public sealed class AIContextHistoryInjector2 : MessageAIContextProvider
+public sealed class AIContextHistoryInjector2a : MessageAIContextProvider
 {
     private readonly string _applicationId;
     private readonly IAgentIdentityProvider _agentIdentityProvider;
@@ -45,7 +45,7 @@ public sealed class AIContextHistoryInjector2 : MessageAIContextProvider
 
 
     /// <summary>
-    ///     Initializes a new instance of <see cref="AIContextHistoryInjector2" />.
+    ///     Initializes a new instance of <see cref="AIContextHistoryInjector2a" />.
     /// </summary>
     /// <param name="chatHistoryMemoryProvider">
     ///     The provider responsible for reading and writing chat history.
@@ -57,7 +57,7 @@ public sealed class AIContextHistoryInjector2 : MessageAIContextProvider
     /// <param name="agentIdentityProvider">
     ///     Resolves the identifier of the active agent so that stored messages are correctly attributed.
     /// </param>
-    public AIContextHistoryInjector2(
+    public AIContextHistoryInjector2a(
             IChatHistoryMemoryProvider chatHistoryMemoryProvider,
             IRuntimeContextAccessor accessor,
             IAgentIdentityProvider agentIdentityProvider)

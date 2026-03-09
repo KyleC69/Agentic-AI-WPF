@@ -4,7 +4,13 @@
   </Folder>
   <Folder Name="/.github/agents/" />
   <Folder Name="/.github/instructions/" />
-  <Folder Name="/.github/prompts/" />
+  <Folder Name="/.github/prompts/">
+    <File Path=".github/prompts/AnalyzeFile.prompt.md" />
+    <File Path=".github/prompts/AnalyzeSolution.prompt.md" />
+    <File Path=".github/prompts/optimizeModelPrompt.prompt.md" />
+    <File Path=".github/prompts/RefactorProj.prompt.md" />
+    <File Path=".github/prompts/RestructureFile.prompt.md" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
   </Folder>
