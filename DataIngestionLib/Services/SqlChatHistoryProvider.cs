@@ -24,16 +24,6 @@ namespace DataIngestionLib.Services;
 
 
 
-public interface ISQLChatHistoryProvider : IChatHistoryProvider
-{
-    ValueTask<ChatHistorySessionSnapshot?> GetLatestSessionSnapshotAsync(CancellationToken cancellationToken = default);
-}
-
-
-
-
-
-public sealed record ChatHistorySessionSnapshot(string ConversationId, string SessionId);
 
 
 

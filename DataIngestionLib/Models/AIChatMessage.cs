@@ -8,7 +8,6 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Mime;
 using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.AI;
@@ -114,7 +113,7 @@ public class AIChatMessage
     {
         get
         {
-            var text = MediaTypeNames.Text.Plain;
+            string? text = Text;
             return
                     !string.IsNullOrWhiteSpace(text) ? new TextContent(text) :
                     _contents is { Count: > 0 } ? _contents[0] :
@@ -255,6 +254,6 @@ public class AIChatMessage
     /// <inheritdoc />
     public override string ToString()
     {
-        return MediaTypeNames.Text.Plain;
+        return Text ?? string.Empty;
     }
 }

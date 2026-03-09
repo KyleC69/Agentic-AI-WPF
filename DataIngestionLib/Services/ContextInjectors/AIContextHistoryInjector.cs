@@ -1,7 +1,7 @@
 // 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
-//  File:         ChatHistoryMemoryProvider.cs
+//  File:         AIContextHistoryInjector.cs
 //   Author: Kyle L. Crowder
 
 
@@ -13,8 +13,6 @@ using DataIngestionLib.Models;
 using DataIngestionLib.Models.Extensions;
 using DataIngestionLib.Options;
 
-using Microsoft.Agents.AI;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
 
 
@@ -26,78 +24,15 @@ namespace DataIngestionLib.Services.ContextInjectors;
 
 
 /// <summary>
-/// Defines methods for injecting, managing, and manipulating AI chat context history,
-/// including building context messages, storing messages, pruning conversations, 
-/// updating message content, and deleting messages.
+///     SQL-backed implementation of <see cref="IAIContextHistoryInjector" /> that builds windowed
+///     context from persisted history, stores new messages after each interaction, and provides
+///     conversation lifecycle management (pruning, updating, and deleting messages).
 /// </summary>
-public interface IAIContextHistoryInjector
-{
-    ValueTask<IEnumerable<AIChatMessage>> BuildContextMessagesAsync(
-            string conversationId,
-            ChatHistory currentRequestMessages,
-            CancellationToken cancellationToken = default);
-
-
-
-
-
-
-
-
-    ValueTask StoreMessagesAsync(
-            string conversationId,
-            string sessionId,
-            string agentId,
-            string userId,
-            string applicationId,
-            ChatHistory requestMessages,
-            ChatHistory responseMessages,
-            CancellationToken cancellationToken = default);
-
-
-
-
-
-
-
-
-    ValueTask<int> PruneConversationAsync(string conversationId, CancellationToken cancellationToken = default);
-
-
-
-
-
-
-
-
-    /// <summary>
-    /// Updates the content of a specific chat message in the chat history.
-    /// </summary>
-    /// <param name="messageId">The unique identifier of the message to be updated.</param>
-    /// <param name="content">The new content to replace the existing message content.</param>
-    /// <param name="timestampUtc">The timestamp indicating when the update occurred, in UTC.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>
-    /// A task that represents the asynchronous operation. The task result contains the updated 
-    /// <see cref="PersistedChatMessage"/> if the update was successful, or <c>null</c> if the message was not found.
-    /// </returns>
-    ValueTask<PersistedChatMessage?> UpdateMessageContentAsync(Guid messageId, string content, DateTimeOffset timestampUtc, CancellationToken cancellationToken = default);
-
-
-
-
-
-
-
-
-    ValueTask<bool> DeleteMessageAsync(Guid messageId, CancellationToken cancellationToken = default);
-}
-
-
-
-
-
-public sealed class AIContextHistoryInjector :  IAIContextHistoryInjector
+/// <remarks>
+///     This class also implements <see cref="IChatHistoryMemoryProvider" /> so that it can be
+///     injected into context providers that only require the narrower read/write surface.
+/// </remarks>
+public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 {
     private readonly IChatHistoryProvider _chatHistoryProvider;
     private readonly IOptionsMonitor<ChatHistoryOptions> _optionsMonitor;

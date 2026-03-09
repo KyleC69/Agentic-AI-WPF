@@ -1,7 +1,7 @@
 // 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
-//  File:         AIMemoryProvider.cs
+//  File:         AIContextHistoryInjector2.cs
 //   Author: Kyle L. Crowder
 
 
@@ -14,31 +14,62 @@ using Microsoft.Agents.AI;
 
 
 
-
 namespace DataIngestionLib.Services.ContextInjectors;
 
 
-// Looks like this is a partial context injection provider.
-// TODO: this needs to be refactored and concerns re-analyzed
+
 
 /// <summary>
+///     An <see cref="Microsoft.Agents.AI.MessageAIContextProvider" /> that injects and persists chat
+///     history into the agent's invocation pipeline using an <see cref="IChatHistoryMemoryProvider" />.
 /// </summary>
-/// <param name="chatHistoryMemoryProvider"></param>
-/// <param name="applicationId"></param>
-public sealed class AIContextHistoryInjector2(IChatHistoryMemoryProvider chatHistoryMemoryProvider, IRuntimeContextAccessor accessor) : MessageAIContextProvider
+/// <remarks>
+///     <para>
+///         On each <em>invoking</em> turn this provider retrieves the relevant historical messages for
+///         the current conversation and prepends them to the request so the agent has access to prior
+///         context.
+///     </para>
+///     <para>
+///         On each <em>invoked</em> turn (after the agent has responded) the request and response
+///         messages are persisted back to the history store, scoped by the identifiers resolved from
+///         the active <see cref="AgentSession" /> and the injected dependencies.
+///     </para>
+/// </remarks>
+public sealed class AIContextHistoryInjector2 : MessageAIContextProvider
 {
-    private readonly string _applicationId = accessor.GetCurrent().ApplicationId.ToString();
-
-    private readonly IChatHistoryMemoryProvider _chatHistoryMemoryProvider = chatHistoryMemoryProvider;
-
-    private readonly IRuntimeContextAccessor _runtimeAccessor = accessor;
-
-    //We need get the actual Agent id. Where can we get it from???
-    private string DefaultAgentId = "default-agent";
+    private readonly string _applicationId;
+    private readonly IAgentIdentityProvider _agentIdentityProvider;
+    private readonly IChatHistoryMemoryProvider _chatHistoryMemoryProvider;
 
 
 
 
+    /// <summary>
+    ///     Initializes a new instance of <see cref="AIContextHistoryInjector2" />.
+    /// </summary>
+    /// <param name="chatHistoryMemoryProvider">
+    ///     The provider responsible for reading and writing chat history.
+    /// </param>
+    /// <param name="accessor">
+    ///     Supplies the application-level runtime context (e.g., application ID and user identity)
+    ///     used to scope persisted messages.
+    /// </param>
+    /// <param name="agentIdentityProvider">
+    ///     Resolves the identifier of the active agent so that stored messages are correctly attributed.
+    /// </param>
+    public AIContextHistoryInjector2(
+            IChatHistoryMemoryProvider chatHistoryMemoryProvider,
+            IRuntimeContextAccessor accessor,
+            IAgentIdentityProvider agentIdentityProvider)
+    {
+        ArgumentNullException.ThrowIfNull(chatHistoryMemoryProvider);
+        ArgumentNullException.ThrowIfNull(accessor);
+        ArgumentNullException.ThrowIfNull(agentIdentityProvider);
+
+        _chatHistoryMemoryProvider = chatHistoryMemoryProvider;
+        _agentIdentityProvider = agentIdentityProvider;
+        _applicationId = accessor.GetCurrent().ApplicationId.ToString();
+    }
 
 
 
@@ -49,13 +80,14 @@ public sealed class AIContextHistoryInjector2(IChatHistoryMemoryProvider chatHis
     /// <param name="context">The invoking context containing session and other relevant information.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
-    ///     A task that represents the asynchronous operation. The task result contains an enumerable collection
-    ///     of <see cref="Microsoft.Extensions.AI.ChatMessage" /> objects, representing the chat messages
-    ///     associated with the current session.
+    ///     A task that represents the asynchronous operation. The task result contains an enumerable
+    ///     collection of <see cref="Microsoft.Extensions.AI.ChatMessage" /> objects representing the
+    ///     historical chat messages associated with the current session.
     /// </returns>
     /// <remarks>
-    ///     This method retrieves the most recent chat messages from the session's history, limited to a maximum
-    ///     number of context messages. If no messages are available for the session, an empty collection is returned.
+    ///     This method retrieves the most recent chat messages from the session's history, limited to a
+    ///     maximum number of context messages. If no messages are available for the session, an empty
+    ///     collection is returned.
     /// </remarks>
     protected override async ValueTask<IEnumerable<Microsoft.Extensions.AI.ChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
@@ -74,12 +106,9 @@ public sealed class AIContextHistoryInjector2(IChatHistoryMemoryProvider chatHis
 
 
 
-
-
-
-
     /// <summary>
-    ///     Stores the AI context, including request and response messages, into the session's chat history.
+    ///     Stores the AI context, including request and response messages, into the session's chat
+    ///     history.
     /// </summary>
     /// <param name="context">
     ///     The invoked context containing session information, request messages, and response messages.
@@ -91,9 +120,10 @@ public sealed class AIContextHistoryInjector2(IChatHistoryMemoryProvider chatHis
     ///     A task that represents the asynchronous operation.
     /// </returns>
     /// <remarks>
-    ///     This method saves the provided request and response messages into the session's history, ensuring
-    ///     that the total number of stored messages does not exceed the maximum allowed. If the session's
-    ///     history exceeds the limit, the oldest messages are removed to maintain the size constraint.
+    ///     This method saves the provided request and response messages into the session's history,
+    ///     ensuring that the total number of stored messages does not exceed the maximum allowed. If
+    ///     the session's history exceeds the limit, the oldest messages are removed to maintain the
+    ///     size constraint.
     /// </remarks>
     protected override ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = default)
     {
@@ -107,7 +137,7 @@ public sealed class AIContextHistoryInjector2(IChatHistoryMemoryProvider chatHis
 
         string conversationId = ChatHistorySessionState.GetOrCreateConversationId(context.Session);
         string sessionId = ChatHistorySessionState.GetOrCreateSessionId(context.Session);
-        string agentId = ChatHistorySessionState.GetOrCreateAgentId(context.Session, DefaultAgentId);
+        string agentId = ChatHistorySessionState.GetOrCreateAgentId(context.Session, _agentIdentityProvider.GetAgentId());
         string userId = ChatHistorySessionState.GetOrCreateUserId(context.Session);
         string applicationId = ChatHistorySessionState.GetOrCreateApplicationId(context.Session, _applicationId);
 
@@ -128,10 +158,6 @@ public sealed class AIContextHistoryInjector2(IChatHistoryMemoryProvider chatHis
 
 
 
-
-
-
-
     private static ChatHistory ToChatHistory(IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages)
     {
         ArgumentNullException.ThrowIfNull(messages);
@@ -144,10 +170,6 @@ public sealed class AIContextHistoryInjector2(IChatHistoryMemoryProvider chatHis
 
         return chatHistory;
     }
-
-
-
-
 
 
 

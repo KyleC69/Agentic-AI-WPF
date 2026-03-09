@@ -25,6 +25,7 @@ using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Options;
 using DataIngestionLib.Services;
+using DataIngestionLib.Services.ContextInjectors;
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
@@ -307,9 +308,14 @@ public partial class App : Application
         services.AddSingleton(sp => sp.GetRequiredService<IChatClient>().AsAIAgent());
 
         services.AddSingleton<ISqlChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
-        services.AddSingleton<ISQLChatHistoryProvider, SQLChatHistoryProvider>();
+        services.AddSingleton<IChatHistoryProvider, SQLChatHistoryProvider>();
+        services.AddSingleton<ISQLChatHistoryProvider>(sp => (ISQLChatHistoryProvider)sp.GetRequiredService<IChatHistoryProvider>());
         services.AddSingleton<IRuntimeContextAccessor, RuntimeContextAccessor>();
         services.AddSingleton<IAgentFactory, AgentFactory>();
+
+        services.AddSingleton<IAgentIdentityProvider>(new FixedAgentIdentityProvider("coding-assistant"));
+        services.AddSingleton<IAIContextHistoryInjector, AIContextHistoryInjector>();
+        services.AddSingleton<IChatHistoryMemoryProvider>(sp => sp.GetRequiredService<IAIContextHistoryInjector>());
     }
 
 
