@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 using Microsoft.Extensions.Logging;
 
@@ -38,7 +36,7 @@ internal class RegistryReaderTool
             int separatorIndex = keyPath.IndexOf('\\');
             if (separatorIndex <= 0)
             {
-                _logger.LogError($"Invalid registry key path format: {keyPath}");
+                _logger.LogError("Invalid registry key path format: {KeyPath}", keyPath);
                 return null;
             }
 
@@ -64,77 +62,81 @@ internal class RegistryReaderTool
                     baseKey = Microsoft.Win32.Registry.CurrentConfig;
                     break;
                 default:
-                    _logger.LogError($"Unsupported registry hive: {hiveName}");
+                    _logger.LogError("Unsupported registry hive: {HiveName}", hiveName);
                     return null;
             }
 
-            using (baseKey)
+            // Do not dispose baseKey — root hive handles are static singletons managed by the framework.
+            Microsoft.Win32.RegistryKey? subKey = baseKey.OpenSubKey(subKeyPath);
+            using (subKey)
             {
-                Microsoft.Win32.RegistryKey? subKey = baseKey.OpenSubKey(subKeyPath);
-                using (subKey)
+                if (subKey == null)
                 {
                     if (subKey == null)
                     {
-                        _logger.LogInformation($"Registry key not found: {keyPath}");
+                        _logger.LogInformation("Registry key not found: {KeyPath}", keyPath);
                         return null;
                     }
 
-                    // The last part of the keyPath is the value name
-                    string valueName = "";
-                    int lastSlashIndex = subKeyPath.LastIndexOf('\\');
-                    if (lastSlashIndex != -1)
-                    {
-                        valueName = subKeyPath.Substring(lastSlashIndex + 1);
-                        // If the subKeyPath itself ends with a slash, it might imply a default value,
-                        // but for string values, we usually expect a specific name.
-                        // Here, we assume the value name is the last part.
-                        // If the key path points to the key itself, not a value, "Default" is often implied.
-                    }
-                    else
-                    {
-                        valueName = "Default"; // Default value if no name is specified in the path after the hive
-                    }
+                // The last part of the keyPath is the value name
+                string valueName = "";
+                int lastSlashIndex = subKeyPath.LastIndexOf('\\');
+                if (lastSlashIndex != -1)
+                {
+                    valueName = subKeyPath.Substring(lastSlashIndex + 1);
+                    // If the subKeyPath itself ends with a slash, it might imply a default value,
+                    // but for string values, we usually expect a specific name.
+                    // Here, we assume the value name is the last part.
+                    // If the key path points to the key itself, not a value, "Default" is often implied.
+                }
+                else
+                {
+                    valueName = "Default"; // Default value if no name is specified in the path after the hive
+                }
 
-                    // If the keyPath ends in a backslash, it implies the default value
-                    if (keyPath.EndsWith("\\"))
+                // If the keyPath ends in a backslash, it implies the default value
+                if (keyPath.EndsWith("\\"))
+                {
+                    valueName = "Default";
+                }
+                else
+                {
+                    // Extract the value name from the original keyPath
+                    valueName = keyPath.Substring(keyPath.LastIndexOf('\\') + 1);
+                    if (string.IsNullOrEmpty(valueName)) // Handle cases like HKEY_CURRENT_USER\Software\
                     {
                         valueName = "Default";
                     }
-                    else
-                    {
-                        // Extract the value name from the original keyPath
-                        valueName = keyPath.Substring(keyPath.LastIndexOf('\\') + 1);
-                        if (string.IsNullOrEmpty(valueName)) // Handle cases like HKEY_CURRENT_USER\Software\
-                        {
-                            valueName = "Default";
-                        }
-                    }
-
-                    object? value = subKey.GetValue(valueName);
+                }
 
                     if (value == null)
                     {
-                        _logger.LogInformation($"Registry value '{valueName}' not found in key '{keyPath}'.");
+                        _logger.LogInformation("Registry value '{ValueName}' not found in key '{KeyPath}'.", valueName, keyPath);
                         return null;
                     }
 
-                    return value.ToString();
+                if (value == null)
+                {
+                    _logger.LogInformation($"Registry value '{valueName}' not found in key '{keyPath}'.");
+                    return null;
                 }
+
+                return value.ToString();
             }
         }
         catch (System.Security.SecurityException ex)
         {
-            _logger.LogError($"Security exception reading registry key '{keyPath}': {ex.Message}");
+            _logger.LogError(ex, "Security exception reading registry key '{KeyPath}'.", keyPath);
             return null;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogError($"Unauthorized access exception reading registry key '{keyPath}': {ex.Message}");
+            _logger.LogError(ex, "Unauthorized access exception reading registry key '{KeyPath}'.", keyPath);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An unexpected error occurred reading registry key '{keyPath}': {ex.Message}");
+            _logger.LogError(ex, "An unexpected error occurred reading registry key '{KeyPath}'.", keyPath);
             return null;
         }
     }
