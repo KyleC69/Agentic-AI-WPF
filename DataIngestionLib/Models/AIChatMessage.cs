@@ -254,6 +254,6 @@ public class AIChatMessage
     /// <inheritdoc />
     public override string ToString()
     {
-        return Text;
+        return Text ?? string.Empty;
     }
 }

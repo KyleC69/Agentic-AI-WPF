@@ -308,16 +308,14 @@ public partial class App : Application
         services.AddSingleton(sp => sp.GetRequiredService<IChatClient>().AsAIAgent());
 
         services.AddSingleton<ISqlChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
-        services.AddSingleton<SQLChatHistoryProvider>();
-        services.AddSingleton<ISQLChatHistoryProvider>(sp => sp.GetRequiredService<SQLChatHistoryProvider>());
-        services.AddSingleton<IChatHistoryProvider>(sp => sp.GetRequiredService<SQLChatHistoryProvider>());
+        services.AddSingleton<IChatHistoryProvider, SQLChatHistoryProvider>();
+        services.AddSingleton<ISQLChatHistoryProvider>(sp => (ISQLChatHistoryProvider)sp.GetRequiredService<IChatHistoryProvider>());
         services.AddSingleton<IRuntimeContextAccessor, RuntimeContextAccessor>();
         services.AddSingleton<IAgentFactory, AgentFactory>();
 
         services.AddSingleton<IAgentIdentityProvider>(new FixedAgentIdentityProvider("coding-assistant"));
-        services.AddSingleton<AIContextHistoryInjector>();
-        services.AddSingleton<IAIContextHistoryInjector>(sp => sp.GetRequiredService<AIContextHistoryInjector>());
-        services.AddSingleton<IChatHistoryMemoryProvider>(sp => sp.GetRequiredService<AIContextHistoryInjector>());
+        services.AddSingleton<IAIContextHistoryInjector, AIContextHistoryInjector>();
+        services.AddSingleton<IChatHistoryMemoryProvider>(sp => sp.GetRequiredService<IAIContextHistoryInjector>());
     }
 
 
