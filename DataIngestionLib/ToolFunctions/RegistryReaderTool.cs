@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 using Microsoft.Extensions.Logging;
 
@@ -38,7 +36,7 @@ internal class RegistryReaderTool
             int separatorIndex = keyPath.IndexOf('\\');
             if (separatorIndex <= 0)
             {
-                _logger.LogError($"Invalid registry key path format: {keyPath}");
+                _logger.LogError("Invalid registry key path format: {KeyPath}", keyPath);
                 return null;
             }
 
@@ -64,7 +62,7 @@ internal class RegistryReaderTool
                     baseKey = Microsoft.Win32.Registry.CurrentConfig;
                     break;
                 default:
-                    _logger.LogError($"Unsupported registry hive: {hiveName}");
+                    _logger.LogError("Unsupported registry hive: {HiveName}", hiveName);
                     return null;
             }
 
@@ -74,9 +72,11 @@ internal class RegistryReaderTool
             {
                 if (subKey == null)
                 {
-                    _logger.LogInformation($"Registry key not found: {keyPath}");
-                    return null;
-                }
+                    if (subKey == null)
+                    {
+                        _logger.LogInformation("Registry key not found: {KeyPath}", keyPath);
+                        return null;
+                    }
 
                 // The last part of the keyPath is the value name
                 string valueName = "";
@@ -109,7 +109,11 @@ internal class RegistryReaderTool
                     }
                 }
 
-                object? value = subKey.GetValue(valueName);
+                    if (value == null)
+                    {
+                        _logger.LogInformation("Registry value '{ValueName}' not found in key '{KeyPath}'.", valueName, keyPath);
+                        return null;
+                    }
 
                 if (value == null)
                 {
@@ -122,17 +126,17 @@ internal class RegistryReaderTool
         }
         catch (System.Security.SecurityException ex)
         {
-            _logger.LogError($"Security exception reading registry key '{keyPath}': {ex.Message}");
+            _logger.LogError(ex, "Security exception reading registry key '{KeyPath}'.", keyPath);
             return null;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogError($"Unauthorized access exception reading registry key '{keyPath}': {ex.Message}");
+            _logger.LogError(ex, "Unauthorized access exception reading registry key '{KeyPath}'.", keyPath);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An unexpected error occurred reading registry key '{keyPath}': {ex.Message}");
+            _logger.LogError(ex, "An unexpected error occurred reading registry key '{KeyPath}'.", keyPath);
             return null;
         }
     }
