@@ -287,18 +287,30 @@ cd RAGDataIngestionWPF
 
 ### 2. Configure the application
 
-Edit `RAGDataIngestionWPF/appsettings.json` and update:
+The default `appsettings.json` uses `Server=.` (local default SQL Server instance). To override with your own server name, create a **git-ignored** local override file:
+
+```powershell
+# PowerShell (Windows)
+Copy-Item RAGDataIngestionWPF\appsettings.Development.json.example RAGDataIngestionWPF\appsettings.Development.json
+```
+
+Then edit `RAGDataIngestionWPF/appsettings.Development.json` with your SQL Server instance:
 
 ```jsonc
 {
-  "AppConfig": {
-    "configurationsFolder": "RAGDataIngestionWPF\\Configurations"
-  },
   "ChatHistory": {
-    // Update to your SQL Server instance
-    "ConnectionString": "Server=(localdb)\\MSSQLLocalDB;Database=RAGDataIngestionChatHistory;Trusted_Connection=True;"
+    "ConnectionString": "Server=YOUR_SERVER_NAME;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;"
   }
 }
+```
+
+> **Note:** `appsettings.Development.json` is excluded from source control (listed in `.gitignore`). Always use this file for machine-specific overrides — never edit `appsettings.json` directly with a local server name.
+
+Alternatively, override the connection string via an environment variable (no file required):
+
+```powershell
+# PowerShell
+$env:ChatHistory__ConnectionString = "Server=YOUR_SERVER_NAME;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;"
 ```
 
 ### 3. Set the Ollama model
@@ -327,7 +339,7 @@ Or open `RAGDataIngestionWPF.sln` in Visual Studio and press **F5**.
 | `AppConfig` | `configurationsFolder` | `RAGDataIngestionWPF\Configurations` | Local config storage folder |
 | `AppConfig` | `chatSessionFileName` | `ChatSession.json` | Chat session persistence file |
 | `AppConfig` | `userFileName` | `User.json` | User profile file |
-| `ChatHistory` | `ConnectionString` | LocalDB | SQL Server connection for chat history |
+| `ChatHistory` | `ConnectionString` | `Server=.` (local default) | SQL Server connection for chat history |
 | `ChatHistory` | `MaxContextMessages` | `40` | Max messages retained in context window |
 | `ChatHistory` | `MaxContextTokens` | `120000` | Token budget for context |
 | `ChatHistory` | `EnableSummarization` | `false` | Enable automatic history summarization |

@@ -1,0 +1,5 @@
+{
+  "ChatHistory": {
+    "ConnectionString": "Server=YOUR_SERVER_NAME;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;"
+  }
+}

@@ -362,3 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /DataIngestionLib/Services/ContextInjectors/AIContextHistoryInjector2a.cs
+
+# Developer-local appsettings overrides (contain machine-specific connection strings)
+**/appsettings.Development.json
