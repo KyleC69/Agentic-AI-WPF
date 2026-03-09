@@ -26,6 +26,7 @@ using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Options;
 using DataIngestionLib.Services;
 using DataIngestionLib.Services.ContextInjectors;
+using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
@@ -316,6 +317,7 @@ public partial class App : Application
         services.AddSingleton<IAgentIdentityProvider>(new FixedAgentIdentityProvider("coding-assistant"));
         services.AddSingleton<IAIContextHistoryInjector, AIContextHistoryInjector>();
         services.AddSingleton<IChatHistoryMemoryProvider>(sp => sp.GetRequiredService<IAIContextHistoryInjector>());
+        services.AddSingleton<AgentRunMiddleWare>();
     }
 
 

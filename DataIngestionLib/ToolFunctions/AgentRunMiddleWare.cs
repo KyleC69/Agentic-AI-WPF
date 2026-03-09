@@ -21,11 +21,12 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-internal class AgentRunMiddleWare
+public class AgentRunMiddleWare
 {
 
     private readonly IChatClient _baseAgent;
     private readonly ILoggerFactory _factory;
+    private readonly ILogger<AgentRunMiddleWare> _logger;
 
 
 
@@ -34,10 +35,11 @@ internal class AgentRunMiddleWare
 
 
 
-    public AgentRunMiddleWare(IChatClient baseAgent, ILoggerFactory factory)
+    public AgentRunMiddleWare(IChatClient baseAgent, ILoggerFactory factory, ILogger<AgentRunMiddleWare> logger)
     {
         _baseAgent = baseAgent;
         _factory = factory;
+        _logger = logger;
     }
 
 
@@ -54,9 +56,9 @@ internal class AgentRunMiddleWare
             AIAgent innerAgent,
             CancellationToken cancellationToken)
     {
-        Console.WriteLine($"Input: {messages.Count()}");
+        _logger.LogDebug("Input: {MessageCount}", messages.Count());
         AgentResponse response = await innerAgent.RunAsync(messages, thread, options, cancellationToken).ConfigureAwait(false);
-        Console.WriteLine($"Output: {response.Messages.Count}");
+        _logger.LogDebug("Output: {MessageCount}", response.Messages.Count);
         return response;
     }
 
@@ -73,9 +75,9 @@ internal class AgentRunMiddleWare
             IChatClient innerChatClient,
             CancellationToken cancellationToken)
     {
-        Console.WriteLine($"Input: {messages.Count()}");
+        _logger.LogDebug("Input: {MessageCount}", messages.Count());
         ChatResponse response = await innerChatClient.GetResponseAsync(messages, options, cancellationToken);
-        Console.WriteLine($"Output: {response.Messages.Count}");
+        _logger.LogDebug("Output: {MessageCount}", response.Messages.Count);
 
         return response;
     }
@@ -120,7 +122,4 @@ internal class AgentRunMiddleWare
 
 
 
-    public void run2()
-    {
-    }
 }
