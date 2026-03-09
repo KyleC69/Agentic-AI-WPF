@@ -19,10 +19,10 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-public class FileSystemSearch
+public class FileSystemPlugin
 {
 
-    [Description("Search the file system for a specific text pattern. Tool is similar to unix \"ls\" command.")]
+    [Description("Write text content to a file at the specified path. Creates the file if it does not exist, or overwrites it if it does.")]
     public string WriteText(
             [Description("File path")] string path,
             [Description("Text content to write")] string content)
