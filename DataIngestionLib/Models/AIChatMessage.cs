@@ -32,7 +32,7 @@ namespace DataIngestionLib.Models;
 ///     with .NET.
 /// </related>
 [DebuggerDisplay("[{Role}] {ContentForDebuggerDisplay}{EllipsesForDebuggerDisplay,nq}")]
-public class AIChatMessage
+public class AIChatMessage : IEquatable<AIChatMessage>
 {
     private string? _authorName;
     private IList<AIContent>? _contents;
@@ -53,6 +53,15 @@ public class AIChatMessage
 
 
 
+
+
+
+
+
+    public AIChatMessage(AIChatRole role, string? content)
+            : this(role, content is null ? [] : [new TextContent(content)])
+    {
+    }
 
 
 
@@ -82,7 +91,11 @@ public class AIChatMessage
         _contents = contents;
     }
 
-
+    public AIChatMessage(AIChatRole role, IList<AIContent>? contents)
+    {
+        Role = role;
+        _contents = contents;
+    }
 
 
 
@@ -166,7 +179,7 @@ public class AIChatMessage
     /// </remarks>
     public bool IsUser
     {
-        get { return Role == ChatRole.User; }
+        get { return Role == AIChatRole.User; }
     }
 
 
@@ -186,7 +199,7 @@ public class AIChatMessage
     public object? RawRepresentation { get; set; }
 
     /// <summary>Gets or sets the role of the author of the message.</summary>
-    public ChatRole Role { get; set; } = ChatRole.User;
+    public AIChatRole Role { get; set; } = AIChatRole.User;
 
 
 
@@ -242,6 +255,58 @@ public class AIChatMessage
                 Role = Role,
                 MessageId = MessageId
         };
+    }
+
+    public static bool operator ==(AIChatMessage? left, AIChatMessage? right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+
+        if (left is null || right is null)
+        {
+            return false;
+        }
+
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(AIChatMessage? left, AIChatMessage? right)
+    {
+        return !(left == right);
+    }
+
+    /// <inheritdoc />
+    public bool Equals(AIChatMessage? other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return Role == other.Role
+                && string.Equals(Text, other.Text, StringComparison.Ordinal)
+                && string.Equals(AuthorName, other.AuthorName, StringComparison.Ordinal)
+                && Nullable.Equals(CreatedAt, other.CreatedAt)
+                && string.Equals(MessageId, other.MessageId, StringComparison.Ordinal);
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+    {
+        return obj is AIChatMessage other && Equals(other);
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Role, Text, AuthorName, CreatedAt, MessageId);
     }
 
 

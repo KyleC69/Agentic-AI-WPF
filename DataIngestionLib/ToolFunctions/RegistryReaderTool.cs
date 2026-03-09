@@ -1,6 +1,4 @@
-﻿using System;
-
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 
 
@@ -78,36 +76,36 @@ internal class RegistryReaderTool
                         return null;
                     }
 
-                // The last part of the keyPath is the value name
-                string valueName = "";
-                int lastSlashIndex = subKeyPath.LastIndexOf('\\');
-                if (lastSlashIndex != -1)
-                {
-                    valueName = subKeyPath.Substring(lastSlashIndex + 1);
-                    // If the subKeyPath itself ends with a slash, it might imply a default value,
-                    // but for string values, we usually expect a specific name.
-                    // Here, we assume the value name is the last part.
-                    // If the key path points to the key itself, not a value, "Default" is often implied.
-                }
-                else
-                {
-                    valueName = "Default"; // Default value if no name is specified in the path after the hive
-                }
+                    // The last part of the keyPath is the value name
+                    string valueName = "";
+                    int lastSlashIndex = subKeyPath.LastIndexOf('\\');
+                    if (lastSlashIndex != -1)
+                    {
+                        valueName = subKeyPath.Substring(lastSlashIndex + 1);
+                        // If the subKeyPath itself ends with a slash, it might imply a default value,
+                        // but for string values, we usually expect a specific name.
+                        // Here, we assume the value name is the last part.
+                        // If the key path points to the key itself, not a value, "Default" is often implied.
+                    }
+                    else
+                    {
+                        valueName = "Default"; // Default value if no name is specified in the path after the hive
+                    }
 
-                // If the keyPath ends in a backslash, it implies the default value
-                if (keyPath.EndsWith("\\"))
-                {
-                    valueName = "Default";
-                }
-                else
-                {
-                    // Extract the value name from the original keyPath
-                    valueName = keyPath.Substring(keyPath.LastIndexOf('\\') + 1);
-                    if (string.IsNullOrEmpty(valueName)) // Handle cases like HKEY_CURRENT_USER\Software\
+                    // If the keyPath ends in a backslash, it implies the default value
+                    if (keyPath.EndsWith("\\"))
                     {
                         valueName = "Default";
                     }
-                }
+                    else
+                    {
+                        // Extract the value name from the original keyPath
+                        valueName = keyPath.Substring(keyPath.LastIndexOf('\\') + 1);
+                        if (string.IsNullOrEmpty(valueName)) // Handle cases like HKEY_CURRENT_USER\Software\
+                        {
+                            valueName = "Default";
+                        }
+                    }
 
                     if (value == null)
                     {
@@ -115,10 +113,6 @@ internal class RegistryReaderTool
                         return null;
                     }
 
-                if (value == null)
-                {
-                    _logger.LogInformation($"Registry value '{valueName}' not found in key '{keyPath}'.");
-                    return null;
                 }
 
                 return value.ToString();

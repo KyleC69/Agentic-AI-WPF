@@ -13,6 +13,7 @@ using DataIngestionLib.Models;
 using DataIngestionLib.Models.Extensions;
 using DataIngestionLib.Options;
 
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.Options;
 
 
@@ -439,7 +440,7 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
         }
 
         AgentRequestMessageSourceType sourceType = message.GetAgentRequestMessageSourceType();
-        return sourceType == AgentRequestMessageSourceType.External && message.Role != ChatRole.System;
+        return sourceType == AgentRequestMessageSourceType.External && message.Role != AIChatRole.System;
     }
 
 
@@ -451,7 +452,7 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
     private static bool ShouldPersistResponseMessage(AIChatMessage message)
     {
-        return !string.IsNullOrWhiteSpace(message.Text) && message.Role != ChatRole.System;
+        return !string.IsNullOrWhiteSpace(message.Text) && message.Role != AIChatRole.System;
     }
 
 
