@@ -411,14 +411,16 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
 
 
-    private static ChatRole ParseRole(string role)
+    private static AIChatRole ParseRole(string role)
     {
         return role.Trim().ToLowerInvariant() switch
         {
-            "assistant" => ChatRole.Assistant,
-            "system" => ChatRole.System,
-            "tool" => ChatRole.Tool,
-            _ => ChatRole.User
+            "assistant" => AIChatRole.Assistant,
+            "rag_context" => AIChatRole.RAGContext,
+            "context" => AIChatRole.AIContext,
+            "system" => AIChatRole.System,
+            "tool" => AIChatRole.Tool,
+            _ => AIChatRole.User
         };
     }
 

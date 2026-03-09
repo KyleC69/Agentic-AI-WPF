@@ -361,3 +361,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/DataIngestionLib/Services/ContextInjectors/AIContextHistoryInjector2a.cs

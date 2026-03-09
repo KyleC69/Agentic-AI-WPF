@@ -12,6 +12,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Microsoft.Extensions.AI;
+
 
 
 
@@ -26,7 +28,7 @@ namespace DataIngestionLib.Models;
 /// </summary>
 [JsonConverter(typeof(Converter))]
 [DebuggerDisplay("{Value,nq}")]
-public readonly struct AIChatRole : IEquatable<AIChatRole>
+public readonly struct AIChatRole : IEquatable<AIChatRole>,IEquatable<ChatRole>
 {
     /// <summary>Gets the role that instructs or sets the behavior of the system.</summary>
     public static AIChatRole System { get; } = new("system");
@@ -41,8 +43,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>
     public static AIChatRole Tool { get; } = new("tool");
 
     /// <summary>
-    ///     Gets the role that represents additional context that has been added to the conversation, such as RAG, ChatHistory,
-    ///     External Knowledge etc.
+    /// Injected context from chat history or other knowledge source. This is a special role that can be used to differentiate injected context from user/system/assistant messages.
+    /// It allows the system to treat injected context differently, such as by not including it in the conversation history or by applying different processing rules.
+    /// NOTE: Intended for internal filtering and processing of injected context, and not necessarily for end-user display. The value "context" is used to clearly indicate the source and purpose of these messages.
     /// </summary>
     public static AIChatRole AIContext { get; } = new("context");
 
@@ -53,6 +56,12 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>
     ///     The value will be serialized into the "role" message field of the Chat Message format.
     /// </remarks>
     public string Value { get; }
+    /// <summary>
+    /// Injected context from RAG or other knowledge source. This is a special role that can be used to differentiate injected context from user/system/assistant messages.
+    /// It allows the system to treat injected context differently, such as by not including it in the conversation history or by applying different processing rules.
+    /// NOTE: Intended for internal filtering and processing of injected context, and not necessarily for end-user display. The value "rag_context" is used to clearly indicate the source and purpose of these messages.
+    /// </summary>
+    public static AIChatRole RAGContext { get; } = new("rag_context");
 
 
 
@@ -114,6 +123,19 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>
     public static bool operator !=(AIChatRole left, AIChatRole right)
     {
         return !(left == right);
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public bool Equals(ChatRole other)
+    {
+        throw new NotImplementedException();
     }
 
 
