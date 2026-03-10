@@ -383,6 +383,7 @@ public partial class App : Application
         services.AddHostedService<ApplicationHostService>();
         services.AddHostedService<ChatHistoryInitializationService>();
         services.AddHttpClient("ollama", client => { client.BaseAddress = new Uri(OllamaEndpoint); });
+        services.AddHttpClient("langsearch", client => { client.BaseAddress = new Uri("https://api.langsearch.com/"); });
     }
 
 

@@ -11,6 +11,7 @@ using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Agents.AI;
+using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -28,6 +29,7 @@ public class AgentFactory : IAgentFactory
 {
     private readonly ILoggerFactory _factory;
     private readonly IChatClient _innerClient;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     private readonly string _modelInstructions = """
                                                  -- Your name is Maxx, using a name helps personalize the experience and allows users to refer to you in a more natural way. It also helps establish a consistent identity for you as an AI agent.
@@ -56,15 +58,18 @@ public class AgentFactory : IAgentFactory
     public AgentFactory(
             IChatClient innerClient,
             ILoggerFactory factory,
-            IRuntimeContextAccessor accessor
+            IRuntimeContextAccessor accessor,
+            IHttpClientFactory httpClientFactory
     )
     {
         ArgumentNullException.ThrowIfNull(innerClient);
         ArgumentNullException.ThrowIfNull(factory);
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
 
 
         _innerClient = innerClient;
         _factory = factory;
+        _httpClientFactory = httpClientFactory;
         //   _memoryProvider = new AIContextHistoryInjector2(chatHistoryMemoryProvider, accessor);
     }
 
@@ -90,7 +95,7 @@ public class AgentFactory : IAgentFactory
                 .Build();
 
 
-        return outer.AsAIAgent(tools: ToolBuilder.GetAiTools());
+        return outer.AsAIAgent(tools: ToolBuilder.GetAiTools(_httpClientFactory));
 
     }
 }

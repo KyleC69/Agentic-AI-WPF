@@ -9,6 +9,7 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
 
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
@@ -27,6 +28,7 @@ public class AgentRunMiddleWare
     private readonly IChatClient _baseAgent;
     private readonly ILoggerFactory _factory;
     private readonly ILogger<AgentRunMiddleWare> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
 
 
 
@@ -35,11 +37,12 @@ public class AgentRunMiddleWare
 
 
 
-    public AgentRunMiddleWare(IChatClient baseAgent, ILoggerFactory factory, ILogger<AgentRunMiddleWare> logger)
+    public AgentRunMiddleWare(IChatClient baseAgent, ILoggerFactory factory, ILogger<AgentRunMiddleWare> logger, IHttpClientFactory httpClientFactory)
     {
         _baseAgent = baseAgent;
         _factory = factory;
         _logger = logger;
+        _httpClientFactory = httpClientFactory;
     }
 
 
@@ -99,7 +102,7 @@ public class AgentRunMiddleWare
 
         ChatOptions options = new()
         {
-                Tools = ToolBuilder.GetAiTools(),
+                Tools = ToolBuilder.GetAiTools(_httpClientFactory),
                 Instructions = """
 
                                """

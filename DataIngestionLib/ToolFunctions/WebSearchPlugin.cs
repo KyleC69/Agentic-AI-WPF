@@ -20,10 +20,8 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-public sealed class WebSearchPlugin : IAsyncDisposable
+public sealed class WebSearchPlugin
 {
-    private readonly string _endPointUrl = "https://api.langsearch.com/v1/web-search";
-
     private readonly HttpClient _httpClient;
 
 
@@ -33,22 +31,15 @@ public sealed class WebSearchPlugin : IAsyncDisposable
 
 
 
-    public WebSearchPlugin()
+    public WebSearchPlugin(IHttpClientFactory httpClientFactory)
     {
-        _httpClient = new();
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+        _httpClient = httpClientFactory.CreateClient("langsearch");
     }
 
 
 
 
-
-
-
-
-    public async ValueTask DisposeAsync()
-    {
-        await Task.CompletedTask;
-    }
 
 
 
@@ -75,7 +66,7 @@ public sealed class WebSearchPlugin : IAsyncDisposable
         try
         {
 
-            using HttpRequestMessage request = new(HttpMethod.Post, _endPointUrl);
+            using HttpRequestMessage request = new(HttpMethod.Post, "v1/web-search");
 
             request.Headers.UserAgent.ParseAdd("IT-Companion-WebSearchPlugin/1.0-AIAgentAssistant");
             var apiKey = Environment.GetEnvironmentVariable("LANGAPI_KEY");

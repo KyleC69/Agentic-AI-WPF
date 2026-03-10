@@ -7,6 +7,7 @@
 
 
 using Microsoft.Extensions.AI;
+using System.Net.Http;
 
 
 
@@ -21,10 +22,10 @@ internal class ToolBuilder
 {
 
 
-    public static IList<AITool> GetAiTools()
+    public static IList<AITool> GetAiTools(IHttpClientFactory httpClientFactory)
     {
         FileSystemPlugin fileSystemPlugin = new();
-        WebSearchPlugin webSearchPlugin = new();
+        WebSearchPlugin webSearchPlugin = new(httpClientFactory);
         AgentLogger logger = new(Environment.CurrentDirectory);
 
         SandboxFileReader fileReader = new(Environment.CurrentDirectory);

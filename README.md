@@ -373,7 +373,7 @@ The following items are tracked as open issues in this repository:
 - **`RegistryReaderTool.cs`** — Contains unreachable code, an undefined `value` variable reference, and uses a static `LoggerFactory.Create()` instead of constructor-injected `ILogger`.
 - **`AgentRunMiddleWare.cs`** — Dead code: empty `run2()` method, `Console.WriteLine` used instead of the injected `ILoggerFactory`, and the class is not integrated into the agent pipeline.
 - **`ChatConversationService.cs`** — Blocking `.Result` call on `CreateSessionAsync()` in the constructor creates a deadlock risk. `FormatMarkdownLite` private method is declared but never called.
-- **`WebSearchPlugin.cs`** — Creates `HttpClient` directly with `new()` instead of using `IHttpClientFactory`, bypassing connection pooling and lifetime management.
+- **`WebSearchPlugin.cs`** — ~~Creates `HttpClient` directly with `new()` instead of using `IHttpClientFactory`, bypassing connection pooling and lifetime management.~~ Fixed: now accepts `IHttpClientFactory` via constructor injection and uses the named `"langsearch"` client.
 - **`RagSearchTool.cs`** — Generic type parameter incorrectly named `IRagRetriever` (shadows the interface of the same name), and `Search()` returns an empty stub.
 - **`FileSystemPlugin.cs`** — ~~Class named `FileSystemSearch` but its `WriteText` method writes files rather than searching; description is misleading.~~ Fixed: class renamed to `FileSystemPlugin` and `WriteText` description corrected.
 - **`appsettings.json`** — Connection string contains a hard-coded machine name (`Server=Desktop-nc01091`). Should use `(localdb)\MSSQLLocalDB` or a placeholder.
