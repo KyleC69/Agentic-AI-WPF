@@ -6,9 +6,15 @@
 namespace DataIngestionLib.ToolFunctions;
 
 //Simple tool to read registry values, will fail gracefully on security errors or if the registry key doesn't exist. 
-internal class RegistryReaderTool
+public class RegistryReaderTool
 {
-    private static readonly ILogger<RegistryReaderTool> _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<RegistryReaderTool>();
+    private readonly ILogger<RegistryReaderTool> _logger;
+
+    public RegistryReaderTool(ILoggerFactory loggerFactory)
+    {
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        _logger = loggerFactory.CreateLogger<RegistryReaderTool>();
+    }
 
 
 
@@ -20,7 +26,7 @@ internal class RegistryReaderTool
     /// </summary>
     /// <param name="keyPath">The full path to the registry key (e.g., "HKEY_CURRENT_USER\\Software\\MyApplication\\Setting").</param>
     /// <returns>A <see cref="ToolResult{T}" /> with the value on success, or an error message on failure.</returns>
-    public static ToolResult<string> ReadStringValue(string keyPath)
+    public ToolResult<string> ReadStringValue(string keyPath)
     {
         if (string.IsNullOrWhiteSpace(keyPath))
         {
