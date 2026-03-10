@@ -8,9 +8,9 @@
 #   • Publishes a rich Markdown summary directly to the workflow run.
 #   • Uploads the HTML report as a downloadable artifact.
 #   • If line coverage < 80 %:
-#       - Creates a GitHub Issue (Copilot agent task) with a full coverage
-#         breakdown, step-by-step instructions, and suggestions for reaching
-#         the threshold.
+#       - Creates a GitHub Issue (Copilot agent task) and invokes the custom
+#         `testing` agent (`.github/agents/testing.agent.md`) with a coverage
+#         breakdown, artifact link, and pointer to all project conventions.
 #       - If an issue already exists it posts a progress comment instead of
 #         opening a duplicate.
 #   • If 80 % cannot be reached for structural reasons the issue body explains
@@ -290,9 +290,8 @@ jobs:
           $body = @"
           ## 🤖 Agent Task: Increase Test Coverage to $env:THRESHOLD%
 
-          > This issue was automatically created by the
-          > [Test Coverage workflow]($env:RUN_URL) after detecting that line coverage
-          > is below the **$env:THRESHOLD%** threshold.
+          > Automatically created by the [Test Coverage workflow]($env:RUN_URL).
+          > Line coverage is below the **$env:THRESHOLD%** threshold.
 
           ---
 
@@ -311,92 +310,17 @@ jobs:
 
           $pkgTable
 
-          > 📎 The full interactive HTML report is available as a workflow artifact:
+          > 📎 Full interactive HTML report:
           > [Download coverage-report]($env:RUN_URL) → *Artifacts* → **coverage-report**
 
           ---
 
-          ### Task Instructions
-
-          Please add or extend tests in `RAGDataIngestionWPF.Tests.MSTest/` to bring
-          **overall line coverage to at least $env:THRESHOLD%**.
-
-          #### Steps
-
-          1. **Download the coverage report** artifact (link above) and open `index.html`
-             to see exactly which lines are uncovered.
-          2. **Review existing tests** to understand the conventions used in this project
-             (MSTest, Moq, AAA pattern — see `PagesTests.cs`, `SandboxFileReaderTests.cs`).
-          3. **Create new test files or extend existing ones** for the packages listed above.
-          4. **Run tests locally** with:
-             ```bash
-             dotnet test RAGDataIngestionWPF.Tests.MSTest \
-               --collect:"XPlat Code Coverage" \
-               --results-directory coverage
-             ```
-          5. **Open a PR** — the workflow will automatically re-evaluate coverage.
-
-          #### New-File Header Convention
-
-          Every new `.cs` file in the test project must begin with:
-          ```csharp
-          // YYYY/MM/DD
-          //  Solution: RAGDataIngestionWPF
-          //  Project:   RAGDataIngestionWPF.Tests.MSTest
-          //  File:         <FileName>.cs
-          //   Author: Kyle L. Crowder
-          ```
-
-          #### Testing Patterns in Use
-
-          | Concern | Approach |
-          |---------|---------|
-          | Framework | MSTest 4.1.0 — `[TestClass]` / `[TestMethod]` |
-          | Mocking | Moq 4.20.72 |
-          | Structure | Arrange-Act-Assert (AAA) |
-          | Coverage tool | `coverlet.collector` — XPlat Code Coverage (Cobertura) |
-          | DI / Host setup | `IHost` via `Host.CreateDefaultBuilder()` — see `PagesTests.cs` |
-
-          ---
-
-          ### Why 80% May Be Difficult to Reach (and What to Do About It)
-
-          Some areas of a WPF solution are structurally harder to unit-test.
-          The table below explains the constraints and offers concrete mitigations.
-
-          | Area | Why It Is Hard to Test | Suggested Mitigation |
-          |------|------------------------|----------------------|
-          | **WPF Views / XAML code-behind** (`RAGDataIngestionWPF/Views/`) | Views instantiate UI controls; MSTest cannot render WPF without a dispatcher. | Extract all logic into ViewModels (MVVM). Exclude view files with `[ExcludeFromCodeCoverage]` or a `.runsettings` exclusion filter. |
-          | **ViewModels with direct UI dependencies** | `ICommand` implementations that call `Application.Current.Dispatcher` cannot run in a headless test runner. | Use `RelayCommand` (CommunityToolkit.Mvvm) and keep VM logic dispatcher-free. |
-          | **Infrastructure / external services** (`IdentityService`, `MicrosoftGraphService`) | Real HTTP calls or OS resources cannot be made in CI. | Mock via `Moq` — inject the interface, not the concrete class. |
-          | **Auto-generated / designer code** | Template Studio generates boilerplate that is not business logic. | Annotate with `[ExcludeFromCodeCoverage]` or add exclusion patterns to a `.runsettings` file. |
-          | **App entry-point (`App.xaml.cs`)** | WPF application startup cannot run without a real WPF message pump. | Exclude from coverage; test individual services it wires up instead. |
-
-          #### Adding a `.runsettings` exclusion filter
-
-          Create `RAGDataIngestionWPF.Tests.MSTest/coverage.runsettings`:
-          ```xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <RunSettings>
-            <DataCollectionRunSettings>
-              <DataCollectors>
-                <DataCollector friendlyName="XPlat Code Coverage">
-                  <Configuration>
-                    <Format>cobertura</Format>
-                    <Exclude>[RAGDataIngestionWPF]RAGDataIngestionWPF.Views.*,[RAGDataIngestionWPF]RAGDataIngestionWPF.App</Exclude>
-                    <ExcludeByAttribute>System.CodeDom.Compiler.GeneratedCodeAttribute,System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
-                  </Configuration>
-                </DataCollector>
-              </DataCollectors>
-            </DataCollectionRunSettings>
-          </RunSettings>
-          ```
-          Then pass `--settings RAGDataIngestionWPF.Tests.MSTest/coverage.runsettings` to `dotnet test`.
-
-          ---
-
-          /cc @copilot Please review the coverage report artifact and create the necessary
-          tests to reach $env:THRESHOLD% line coverage. Follow the instructions above.
+          @copilot /agent testing
+          Bring line coverage to at least $env:THRESHOLD% by adding or extending tests in
+          `RAGDataIngestionWPF.Tests.MSTest/` for the packages listed above.
+          The `.github/agents/testing.agent.md` file contains all project conventions,
+          MSTest/Moq patterns, WPF-specific constraints, and step-by-step instructions.
+          The coverage report artifact linked above shows exactly which lines are uncovered.
           "@
 
           gh issue create `
