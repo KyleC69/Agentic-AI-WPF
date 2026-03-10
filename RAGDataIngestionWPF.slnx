@@ -12,6 +12,7 @@
     <File Path=".github/instructions/documentation.instructions.md" />
     <File Path=".github/instructions/microsoft-agent-framework-dotnet.instructions.md" />
     <File Path=".github/instructions/namingclarity.instructions.md" />
+    <File Path="generate-tests.prompt.md" />
   </Folder>
   <Folder Name="/.github/prompts/">
     <File Path=".github/prompts/AnalyzeFile.prompt.md" />

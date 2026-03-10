@@ -162,7 +162,17 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
 
 
-
+    /// <summary>
+    /// Removes excess messages from the conversation history, ensuring the total number of messages does not exceed the
+    /// configured limit.
+    /// </summary>
+    /// <remarks>If the maximum context messages limit is set to zero or less, no messages will be removed.
+    /// The method will only delete the oldest messages exceeding the configured limit.</remarks>
+    /// <param name="conversationId">The unique identifier of the conversation from which messages will be pruned. This parameter cannot be null or
+    /// whitespace.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation if needed.</param>
+    /// <returns>The number of messages that were removed from the conversation history.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="conversationId"/> is null or whitespace.</exception>
     public async ValueTask<int> PruneConversationAsync(string conversationId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(conversationId))
