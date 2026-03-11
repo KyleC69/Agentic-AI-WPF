@@ -35,7 +35,7 @@ Analyze the selected function/method and generate focused unit tests that thorou
 - Use existing project testing framework and patterns
 - Follow AAA pattern: Arrange, Act, Assert
 - Write descriptive test names that explain the scenario
-- Group related tests in describe/context blocks
+- Group related tests into well-named [TestClass] types, and use [DataTestMethod]/[DataRow] or nested classes/regions to organize related scenarios
 - Mock external dependencies cleanly
 
 Target function: ${input:function_name:Which function or method should be tested?}
