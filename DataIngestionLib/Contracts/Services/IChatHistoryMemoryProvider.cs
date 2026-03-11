@@ -1,4 +1,4 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         IChatHistoryMemoryProvider.cs
@@ -12,6 +12,7 @@ using DataIngestionLib.Models;
 
 
 namespace DataIngestionLib.Contracts.Services;
+
 
 
 
@@ -45,6 +46,12 @@ public interface IChatHistoryMemoryProvider
             string conversationId,
             ChatHistory currentRequestMessages,
             CancellationToken cancellationToken = default);
+
+
+
+
+
+
 
 
     /// <summary>

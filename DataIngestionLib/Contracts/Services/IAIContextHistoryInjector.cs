@@ -1,4 +1,4 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         IAIContextHistoryInjector.cs
@@ -16,6 +16,7 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 
+
 /// <summary>
 ///     Defines the full management surface for AI chat context history, including building context
 ///     messages, storing messages, pruning conversations, updating message content, and deleting
@@ -28,6 +29,26 @@ namespace DataIngestionLib.Contracts.Services;
 /// </remarks>
 public interface IAIContextHistoryInjector : IChatHistoryMemoryProvider
 {
+
+
+    /// <summary>
+    ///     Permanently deletes a single chat message from the history.
+    /// </summary>
+    /// <param name="messageId">The unique identifier of the message to delete.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>
+    ///     <see langword="true" /> when the message was found and deleted; otherwise
+    ///     <see langword="false" />.
+    /// </returns>
+    ValueTask<bool> DeleteMessageAsync(Guid messageId, CancellationToken cancellationToken = default);
+
+
+
+
+
+
+
+
     /// <summary>
     ///     Removes the oldest messages from a conversation so that the total number of stored
     ///     messages stays within the configured <c>MaxContextMessages</c> limit.
@@ -36,6 +57,12 @@ public interface IAIContextHistoryInjector : IChatHistoryMemoryProvider
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>The number of messages that were deleted.</returns>
     ValueTask<int> PruneConversationAsync(string conversationId, CancellationToken cancellationToken = default);
+
+
+
+
+
+
 
 
     /// <summary>
@@ -54,16 +81,4 @@ public interface IAIContextHistoryInjector : IChatHistoryMemoryProvider
             string content,
             DateTimeOffset timestampUtc,
             CancellationToken cancellationToken = default);
-
-
-    /// <summary>
-    ///     Permanently deletes a single chat message from the history.
-    /// </summary>
-    /// <param name="messageId">The unique identifier of the message to delete.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>
-    ///     <see langword="true" /> when the message was found and deleted; otherwise
-    ///     <see langword="false" />.
-    /// </returns>
-    ValueTask<bool> DeleteMessageAsync(Guid messageId, CancellationToken cancellationToken = default);
 }

@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         MainViewModel.cs
@@ -75,7 +75,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public int ContextTokenCount
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -87,7 +88,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         get;
         set
         {
-            if (SetProperty(ref field, value))
+            if (this.SetProperty(ref field, value))
             {
                 SendMessageCommand.NotifyCanExecuteChanged();
                 CancelMessageCommand.NotifyCanExecuteChanged();
@@ -104,7 +105,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         get;
         set
         {
-            if (SetProperty(ref field, value))
+            if (this.SetProperty(ref field, value))
             {
                 SendMessageCommand.NotifyCanExecuteChanged();
             }
@@ -122,6 +123,26 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
 
     public IAsyncRelayCommand SendMessageCommand { get; }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
+
+
+
+
+
+
+
 
     private bool CanCancelMessage()
     {
@@ -161,7 +182,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private async Task SendMessageAsync()
     {
-        string content = MessageInput.Trim();
+        var content = MessageInput.Trim();
         if (string.IsNullOrWhiteSpace(content))
         {
             return;
@@ -202,18 +223,5 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
 
 
-    }
-
-
-
-
-
-
-
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        throw new NotImplementedException();
     }
 }

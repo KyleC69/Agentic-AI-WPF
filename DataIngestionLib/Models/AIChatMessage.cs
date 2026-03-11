@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         AIChatMessage.cs
@@ -67,6 +67,9 @@ public class AIChatMessage : IEquatable<AIChatMessage>
 
 
 
+
+
+
     /// <summary>Initializes a new instance of the <see cref="AIChatMessage" /> class.</summary>
     /// <param name="role">The role of the author of the message.</param>
     /// <param name="content">The text content of the message.</param>
@@ -91,11 +94,20 @@ public class AIChatMessage : IEquatable<AIChatMessage>
         _contents = contents;
     }
 
+
+
+
+
+
+
+
     public AIChatMessage(AIChatRole role, IList<AIContent>? contents)
     {
         Role = role;
         _contents = contents;
     }
+
+
 
 
 
@@ -126,7 +138,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     {
         get
         {
-            string? text = Text;
+            var text = Text;
             return
                     !string.IsNullOrWhiteSpace(text) ? new TextContent(text) :
                     _contents is { Count: > 0 } ? _contents[0] :
@@ -237,6 +249,33 @@ public class AIChatMessage : IEquatable<AIChatMessage>
 
 
 
+    /// <inheritdoc />
+    public bool Equals(AIChatMessage? other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return Role == other.Role
+               && string.Equals(Text, other.Text, StringComparison.Ordinal)
+               && string.Equals(AuthorName, other.AuthorName, StringComparison.Ordinal)
+               && Nullable.Equals(CreatedAt, other.CreatedAt)
+               && string.Equals(MessageId, other.MessageId, StringComparison.Ordinal);
+    }
+
+
+
+
+
+
+
+
     /// <summary>Clones the <see cref="AIChatMessage" /> to a new <see cref="AIChatMessage" /> instance.</summary>
     /// <returns>A shallow clone of the original message object.</returns>
     /// <remarks>
@@ -257,6 +296,39 @@ public class AIChatMessage : IEquatable<AIChatMessage>
         };
     }
 
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+    {
+        return obj is AIChatMessage other && Equals(other);
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Role, Text, AuthorName, CreatedAt, MessageId);
+    }
+
+
+
+
+
+
+
+
     public static bool operator ==(AIChatMessage? left, AIChatMessage? right)
     {
         if (ReferenceEquals(left, right))
@@ -272,41 +344,16 @@ public class AIChatMessage : IEquatable<AIChatMessage>
         return left.Equals(right);
     }
 
+
+
+
+
+
+
+
     public static bool operator !=(AIChatMessage? left, AIChatMessage? right)
     {
         return !(left == right);
-    }
-
-    /// <inheritdoc />
-    public bool Equals(AIChatMessage? other)
-    {
-        if (other is null)
-        {
-            return false;
-        }
-
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
-        return Role == other.Role
-                && string.Equals(Text, other.Text, StringComparison.Ordinal)
-                && string.Equals(AuthorName, other.AuthorName, StringComparison.Ordinal)
-                && Nullable.Equals(CreatedAt, other.CreatedAt)
-                && string.Equals(MessageId, other.MessageId, StringComparison.Ordinal);
-    }
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj)
-    {
-        return obj is AIChatMessage other && Equals(other);
-    }
-
-    /// <inheritdoc />
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Role, Text, AuthorName, CreatedAt, MessageId);
     }
 
 

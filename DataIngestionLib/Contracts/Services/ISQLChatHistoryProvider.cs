@@ -1,4 +1,4 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         ISQLChatHistoryProvider.cs
@@ -7,6 +7,7 @@
 
 
 namespace DataIngestionLib.Contracts.Services;
+
 
 
 
@@ -22,6 +23,7 @@ namespace DataIngestionLib.Contracts.Services;
 ///     The session identifier from the last persisted session.
 /// </param>
 public sealed record ChatHistorySessionSnapshot(string ConversationId, string SessionId);
+
 
 
 

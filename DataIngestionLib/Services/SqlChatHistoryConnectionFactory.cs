@@ -1,4 +1,4 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         SqlChatHistoryConnectionFactory.cs
@@ -56,13 +56,13 @@ public sealed class SqlChatHistoryConnectionFactory : ISqlChatHistoryConnectionF
 
     public async ValueTask<SqlConnection> OpenConnectionAsync(CancellationToken cancellationToken)
     {
-        string connectionString = _optionsMonitor.CurrentValue.ConnectionString?.Trim() ?? string.Empty;
+        var connectionString = _optionsMonitor.CurrentValue.ConnectionString?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new InvalidOperationException("Chat history connection string is not configured.");
         }
 
-        SqlConnection connection = new(connectionString);
+        SqlConnection connection = new SqlConnection(connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         return connection;
     }

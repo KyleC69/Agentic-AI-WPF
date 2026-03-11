@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         MainPage.xaml.cs
@@ -53,8 +53,8 @@ public partial class MainPage : Page
     private static T? FindVisualChild<T>(DependencyObject parent)
             where T : DependencyObject
     {
-        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-        for (int index = 0; index < childrenCount; index++)
+        var childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (var index = 0; index < childrenCount; index++)
         {
             DependencyObject child = VisualTreeHelper.GetChild(parent, index);
             if (child is T typedChild)
@@ -126,7 +126,7 @@ public partial class MainPage : Page
 
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
         {
-            object lastItem = MessagesListBox.Items[^1];
+            var lastItem = MessagesListBox.Items[^1];
             MessagesListBox.ScrollIntoView(lastItem);
             _messagesScrollViewer?.ScrollToEnd();
         }));

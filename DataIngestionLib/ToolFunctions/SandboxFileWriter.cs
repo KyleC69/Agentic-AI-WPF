@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         SandboxFileWriter.cs
@@ -41,21 +41,33 @@ public sealed class SandboxFileWriter
 
 
 
-    public void WriteFile(string relativePath, string content)
+    public ToolResult<string> WriteFile(string relativePath, string content)
     {
         if (string.IsNullOrWhiteSpace(relativePath))
         {
-            throw new ArgumentException("Path cannot be empty.");
+            return ToolResult<string>.Fail("Path cannot be empty.");
         }
 
-        var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
-
-        if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
+        try
         {
-            throw new UnauthorizedAccessException("Access outside sandbox is not allowed.");
-        }
+            var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
 
-        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-        File.WriteAllText(fullPath, content ?? string.Empty);
+            if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                return ToolResult<string>.Fail("Access outside sandbox is not allowed.");
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+            File.WriteAllText(fullPath, content ?? string.Empty);
+            return ToolResult<string>.Ok($"Wrote file {relativePath}");
+        }
+        catch (IOException ex)
+        {
+            return ToolResult<string>.Fail($"I/O error writing file: {ex.Message}");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return ToolResult<string>.Fail($"Access denied writing file: {ex.Message}");
+        }
     }
 }

@@ -1,7 +1,7 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
-//  File:         RAGAIContextProvider.cs
+//  File:         AIContextRAGInjector.cs
 //   Author: Kyle L. Crowder
 
 

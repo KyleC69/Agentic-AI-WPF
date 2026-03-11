@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         AIChatRole.cs
@@ -43,9 +43,12 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
     public static AIChatRole Tool { get; } = new("tool");
 
     /// <summary>
-    /// Injected context from chat history or other knowledge source. This is a special role that can be used to differentiate injected context from user/system/assistant messages.
-    /// It allows the system to treat injected context differently, such as by not including it in the conversation history or by applying different processing rules.
-    /// NOTE: Intended for internal filtering and processing of injected context, and not necessarily for end-user display. The value "context" is used to clearly indicate the source and purpose of these messages.
+    ///     Injected context from chat history or other knowledge source. This is a special role that can be used to
+    ///     differentiate injected context from user/system/assistant messages.
+    ///     It allows the system to treat injected context differently, such as by not including it in the conversation history
+    ///     or by applying different processing rules.
+    ///     NOTE: Intended for internal filtering and processing of injected context, and not necessarily for end-user display.
+    ///     The value "context" is used to clearly indicate the source and purpose of these messages.
     /// </summary>
     public static AIChatRole AIContext { get; } = new("context");
 
@@ -56,10 +59,14 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
     ///     The value will be serialized into the "role" message field of the Chat Message format.
     /// </remarks>
     public string Value { get; }
+
     /// <summary>
-    /// Injected context from RAG or other knowledge source. This is a special role that can be used to differentiate injected context from user/system/assistant messages.
-    /// It allows the system to treat injected context differently, such as by not including it in the conversation history or by applying different processing rules.
-    /// NOTE: Intended for internal filtering and processing of injected context, and not necessarily for end-user display. The value "rag_context" is used to clearly indicate the source and purpose of these messages.
+    ///     Injected context from RAG or other knowledge source. This is a special role that can be used to differentiate
+    ///     injected context from user/system/assistant messages.
+    ///     It allows the system to treat injected context differently, such as by not including it in the conversation history
+    ///     or by applying different processing rules.
+    ///     NOTE: Intended for internal filtering and processing of injected context, and not necessarily for end-user display.
+    ///     The value "rag_context" is used to clearly indicate the source and purpose of these messages.
     /// </summary>
     public static AIChatRole RAGContext { get; } = new("rag_context");
 
@@ -125,30 +132,72 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
         return !(left == right);
     }
 
+
+
+
+
+
+
+
     public static bool operator ==(AIChatRole left, ChatRole right)
     {
         return left.Equals(right);
     }
+
+
+
+
+
+
+
 
     public static bool operator !=(AIChatRole left, ChatRole right)
     {
         return !(left == right);
     }
 
+
+
+
+
+
+
+
     public static bool operator ==(ChatRole left, AIChatRole right)
     {
         return right.Equals(left);
     }
+
+
+
+
+
+
+
 
     public static bool operator !=(ChatRole left, AIChatRole right)
     {
         return !(left == right);
     }
 
+
+
+
+
+
+
+
     public static implicit operator ChatRole(AIChatRole v)
     {
         return new ChatRole(v.Value);
     }
+
+
+
+
+
+
+
 
     public static implicit operator AIChatRole(ChatRole v)
     {
@@ -179,7 +228,7 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
         return obj is AIChatRole otherRole && Equals(otherRole)
-                || obj is ChatRole chatRole && Equals(chatRole);
+               || obj is ChatRole chatRole && Equals(chatRole);
     }
 
 
@@ -252,10 +301,24 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
         }
     }
 
+
+
+
+
+
+
+
     public ChatRole ToChatRole()
     {
         return new ChatRole(Value);
     }
+
+
+
+
+
+
+
 
     public AIChatRole ToAIChatRole()
     {

@@ -1,14 +1,33 @@
-﻿using Microsoft.Extensions.Logging;
+﻿// 2026/03/10
+//  Solution: RAGDataIngestionWPF
+//  Project:   DataIngestionLib
+//  File:         RegistryReaderTool.cs
+//   Author: Kyle L. Crowder
+
+
+
+using Microsoft.Extensions.Logging;
 
 
 
 
 namespace DataIngestionLib.ToolFunctions;
 
+
+
+
+
 //Simple tool to read registry values, will fail gracefully on security errors or if the registry key doesn't exist. 
 public class RegistryReaderTool
 {
     private readonly ILogger<RegistryReaderTool> _logger;
+
+
+
+
+
+
+
 
     public RegistryReaderTool(ILoggerFactory loggerFactory)
     {
@@ -21,8 +40,10 @@ public class RegistryReaderTool
 
 
 
+
+
     /// <summary>
-    /// Reads a string value from the Windows Registry.
+    ///     Reads a string value from the Windows Registry.
     /// </summary>
     /// <param name="keyPath">The full path to the registry key (e.g., "HKEY_CURRENT_USER\\Software\\MyApplication\\Setting").</param>
     /// <returns>A <see cref="ToolResult{T}" /> with the value on success, or an error message on failure.</returns>
@@ -44,7 +65,7 @@ public class RegistryReaderTool
 
         try
         {
-            int separatorIndex = keyPath.IndexOf('\\');
+            var separatorIndex = keyPath.IndexOf('\\');
             if (separatorIndex <= 0)
             {
                 const string message = "Invalid registry key path format.";
@@ -52,8 +73,8 @@ public class RegistryReaderTool
                 return ToolResult<string>.Fail(message);
             }
 
-            string hiveName = keyPath[..separatorIndex];
-            string keyAndValuePath = keyPath[(separatorIndex + 1)..];
+            var hiveName = keyPath[..separatorIndex];
+            var keyAndValuePath = keyPath[(separatorIndex + 1)..];
             if (string.IsNullOrWhiteSpace(keyAndValuePath))
             {
                 const string message = "Registry subkey path cannot be empty.";
@@ -63,21 +84,25 @@ public class RegistryReaderTool
 
             if (!TryResolveBaseKey(hiveName, out Microsoft.Win32.RegistryKey? baseKey))
             {
-                string message = $"Unsupported registry hive: {hiveName}";
+                var message = $"Unsupported registry hive: {hiveName}";
                 _logger.LogError(message);
                 return ToolResult<string>.Fail(message);
             }
 
-            bool useDefaultValue = keyAndValuePath.EndsWith("\\", StringComparison.Ordinal);
-            string trimmedPath = useDefaultValue ? keyAndValuePath.TrimEnd('\\') : keyAndValuePath;
+            var useDefaultValue = keyAndValuePath.EndsWith("\\", StringComparison.Ordinal);
+            var trimmedPath = useDefaultValue ? keyAndValuePath.TrimEnd('\\') : keyAndValuePath;
 
-            int lastSlashIndex = trimmedPath.LastIndexOf('\\');
-            string subKeyPath = useDefaultValue
+            var lastSlashIndex = trimmedPath.LastIndexOf('\\');
+            var subKeyPath = useDefaultValue
                     ? trimmedPath
-                    : lastSlashIndex >= 0 ? trimmedPath[..lastSlashIndex] : trimmedPath;
-            string valueName = useDefaultValue
+                    : lastSlashIndex >= 0
+                            ? trimmedPath[..lastSlashIndex]
+                            : trimmedPath;
+            var valueName = useDefaultValue
                     ? string.Empty
-                    : lastSlashIndex >= 0 ? trimmedPath[(lastSlashIndex + 1)..] : string.Empty;
+                    : lastSlashIndex >= 0
+                            ? trimmedPath[(lastSlashIndex + 1)..]
+                            : string.Empty;
 
             if (string.IsNullOrWhiteSpace(subKeyPath))
             {
@@ -91,24 +116,24 @@ public class RegistryReaderTool
             {
                 if (subKey == null)
                 {
-                    string message = $"Registry key not found: {subKeyPath}";
+                    var message = $"Registry key not found: {subKeyPath}";
                     _logger.LogInformation(message);
                     return ToolResult<string>.Fail(message);
                 }
 
-                object? value = subKey.GetValue(valueName);
+                var value = subKey.GetValue(valueName);
                 if (value == null)
                 {
-                    string effectiveValueName = string.IsNullOrEmpty(valueName) ? "(Default)" : valueName;
-                    string message = $"Registry value '{effectiveValueName}' not found in key '{subKeyPath}'.";
+                    var effectiveValueName = string.IsNullOrEmpty(valueName) ? "(Default)" : valueName;
+                    var message = $"Registry value '{effectiveValueName}' not found in key '{subKeyPath}'.";
                     _logger.LogInformation(message);
                     return ToolResult<string>.Fail(message);
                 }
 
-                string? valueText = value.ToString();
+                var valueText = value.ToString();
                 if (valueText == null)
                 {
-                    string message = $"Registry value '{valueName}' in key '{subKeyPath}' could not be converted to text.";
+                    var message = $"Registry value '{valueName}' in key '{subKeyPath}' could not be converted to text.";
                     _logger.LogInformation(message);
                     return ToolResult<string>.Fail(message);
                 }
@@ -127,6 +152,13 @@ public class RegistryReaderTool
             return ToolResult<string>.Fail("Unauthorized access while reading the registry key.");
         }
     }
+
+
+
+
+
+
+
 
     private static bool TryResolveBaseKey(string hiveName, out Microsoft.Win32.RegistryKey? baseKey)
     {

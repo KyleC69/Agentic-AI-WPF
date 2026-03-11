@@ -1,4 +1,4 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         ChatConversationService.cs
@@ -83,7 +83,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     public string UserId
     {
-        get { return _contextAccessor.GetCurrent().UserPrincipalName.ToString(); }
+        get { return _contextAccessor.GetCurrent().UserPrincipalName; }
     }
 
 

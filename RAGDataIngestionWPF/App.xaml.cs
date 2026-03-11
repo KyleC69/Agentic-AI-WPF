@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         App.xaml.cs
@@ -194,6 +194,16 @@ public partial class App : Application
         configuration[ToastNotificationActivationHandler.ActivationArguments] = toastArgument;
         await EnsureHostStartedAsync();
     }
+
+
+
+
+
+
+
+
+    [LoggerMessage(LogLevel.Error, "Unhandled UI exception.")]
+    static partial void LogUnhandledUiException(ILogger<App> logger, Exception exception);
 
 
 
@@ -421,14 +431,4 @@ public partial class App : Application
         services.AddTransient<ILogInWindow, LogInWindow>();
         services.AddTransient<LogInViewModel>();
     }
-
-
-
-
-
-
-
-
-    [LoggerMessage(LogLevel.Error, "Unhandled UI exception.")]
-    static partial void LogUnhandledUiException(ILogger<App> logger, Exception exception);
 }

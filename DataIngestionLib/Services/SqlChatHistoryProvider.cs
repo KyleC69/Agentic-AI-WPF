@@ -1,7 +1,7 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
-//  File:         SQLChatHistoryProvider.cs
+//  File:         SqlChatHistoryProvider.cs
 //   Author: Kyle L. Crowder
 
 
@@ -19,11 +19,6 @@ using Microsoft.Extensions.AI;
 
 
 namespace DataIngestionLib.Services;
-
-
-
-
-
 
 
 
@@ -95,7 +90,8 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
     public async ValueTask EnsureInitializedAsync(CancellationToken cancellationToken = default)
     {
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false); ;
+        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        ;
 
         foreach ((string? migrationId, string? migrationSql) in ChatHistoryMigrations.All)
         {
@@ -107,7 +103,8 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 continue;
             }
 
-            await using SqlTransaction transaction = (SqlTransaction)await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false); ;
+            await using SqlTransaction transaction = (SqlTransaction)await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+            ;
 
             try
             {
@@ -148,7 +145,9 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false); ; ;
+        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
         await InsertMessageAsync(connection, normalizedMessage, cancellationToken).ConfigureAwait(false);
 
         return normalizedMessage;
@@ -177,9 +176,15 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 WHERE [MessageId] = @MessageId;
                 """;
 
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false); ; ;
-        await using SqlCommand command = CreateCommand(connection, null, selectSql, [new SqlParameter("@MessageId", messageId)]); ; ;
-        await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false); ; ;
+        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
+        await using SqlCommand command = CreateCommand(connection, null, selectSql, [new SqlParameter("@MessageId", messageId)]);
+        ;
+        ;
+        await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
 
         return await reader.ReadAsync(cancellationToken).ConfigureAwait(false) ? MapMessage(reader) : null;
     }
@@ -249,9 +254,12 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         List<PersistedChatMessage> messages = [];
 
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false); ;
-        await using SqlCommand command = CreateCommand(connection, null, selectSql, [.. parameters]); ;
-        await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false); ;
+        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        await using SqlCommand command = CreateCommand(connection, null, selectSql, [.. parameters]);
+        ;
+        await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        ;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -297,7 +305,9 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 new SqlParameter("@MessageId", messageId)
         ];
 
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false); ; ;
+        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
         int affected = await ExecuteNonQueryAsync(connection, null, updateSql, updateParameters, cancellationToken).ConfigureAwait(false);
 
         return affected == 0
@@ -327,7 +337,9 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 SET [Enabled] = 0
                 WHERE [MessageId] = @MessageId;
                 """;
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false); ; ;
+        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
 
         int affected = await ExecuteNonQueryAsync(connection, null, deleteSql, [new SqlParameter("@MessageId", messageId)], cancellationToken).ConfigureAwait(false);
         return affected > 0;
@@ -361,7 +373,9 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                   AND [UserId] = @UserId
                   AND [ConversationId] = @ConversationId;
                 """;
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false); ; ;
+        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
 
         return await ExecuteNonQueryAsync(
                         connection,
@@ -401,7 +415,9 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 ORDER BY [TimestampUtc] DESC, [MessageId] DESC;
                 """;
 
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false); ; ;
+        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
         await using SqlCommand command = CreateCommand(
                 connection,
                 null,
@@ -409,8 +425,12 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 [
                         new SqlParameter("@ApplicationId", applicationId),
                         new SqlParameter("@UserId", userId)
-                ]); ; ;
-        await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false); ; ;
+                ]);
+        ;
+        ;
+        await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
 
         return !await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
                 ? null
@@ -464,7 +484,9 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
     private static async ValueTask<int> ExecuteNonQueryAsync(SqlConnection connection, SqlTransaction? transaction, string sql, SqlParameter[] parameters, CancellationToken cancellationToken)
     {
-        await using SqlCommand command = CreateCommand(connection, transaction, sql, parameters); ; ;
+        await using SqlCommand command = CreateCommand(connection, transaction, sql, parameters);
+        ;
+        ;
         return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -534,9 +556,15 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         List<PersistedChatMessage> messages = [];
 
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false); ; ;
-        await using SqlCommand command = CreateCommand(connection, null, selectSql, [.. parameters]); ; ;
-        await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false); ; ;
+        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
+        await using SqlCommand command = CreateCommand(connection, null, selectSql, [.. parameters]);
+        ;
+        ;
+        await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -649,7 +677,9 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 END
                 """;
 
-        await using SqlCommand command = CreateCommand(connection, null, sql, [new SqlParameter("@MigrationId", migrationId)]); ; ;
+        await using SqlCommand command = CreateCommand(connection, null, sql, [new SqlParameter("@MigrationId", migrationId)]);
+        ;
+        ;
         object result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
         return result is bool boolValue && boolValue;
@@ -782,7 +812,9 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false); ; ;
+        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        ;
+        ;
         DateTimeOffset baseTimestamp = DateTimeOffset.UtcNow;
         int sequence = 0;
 

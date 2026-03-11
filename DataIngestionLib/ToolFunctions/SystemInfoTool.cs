@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         SystemInfoTool.cs
@@ -14,15 +14,15 @@ namespace DataIngestionLib.ToolFunctions;
 
 public sealed class SystemInfoTool
 {
-    public SystemInfoSnapshot GetInfo()
+    public ToolResult<SystemInfoSnapshot> GetInfo()
     {
-        return new()
+        return ToolResult<SystemInfoSnapshot>.Ok(new()
         {
                 OS = Environment.OSVersion.ToString(),
                 MachineName = Environment.MachineName,
                 ProcessorCount = Environment.ProcessorCount,
                 DotNetVersion = Environment.Version.ToString()
-        };
+        });
     }
 }
 

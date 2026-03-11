@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF.Tests.MSTest
 //  File:         PagesTests.cs
@@ -86,7 +86,7 @@ public class PagesTests
         services.AddSingleton<IChatConversationService, ChatConversationService>();
         services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
         services.AddSingleton<IUserDataService, UserDataService>();
- //       services.AddSingleton<IIdentityCacheService, IdentityCacheService>();
+        //       services.AddSingleton<IIdentityCacheService, IdentityCacheService>();
         services.AddHttpClient("msgraph", client => { client.BaseAddress = new Uri("https://graph.microsoft.com/v1.0/"); });
         services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
         services.AddSingleton<IPageService, PageService>();

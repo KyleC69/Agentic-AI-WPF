@@ -1,4 +1,4 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         ChatHistorySessionState.cs
@@ -56,7 +56,7 @@ internal static class ChatHistorySessionState
             return;
         }
 
-        (string SessionId, string ConversationId)? startupSession = TryTakeStartupSession();
+        var startupSession = TryTakeStartupSession();
         if (startupSession is null)
         {
             return;
@@ -151,7 +151,7 @@ internal static class ChatHistorySessionState
     {
         if (session is null)
         {
-            string value = factory();
+            var value = factory();
             return string.IsNullOrWhiteSpace(value) ? "unknown" : value;
         }
 
@@ -160,7 +160,7 @@ internal static class ChatHistorySessionState
             return existingValue;
         }
 
-        string newValue = factory();
+        var newValue = factory();
         if (string.IsNullOrWhiteSpace(newValue))
         {
             newValue = "unknown";

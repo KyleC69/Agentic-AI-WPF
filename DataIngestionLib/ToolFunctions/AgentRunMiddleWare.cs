@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         AgentRunMiddleWare.cs
@@ -6,10 +6,11 @@
 
 
 
+using System.Net.Http;
+
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-using System.Net.Http;
 
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
@@ -27,8 +28,8 @@ public class AgentRunMiddleWare
 
     private readonly IChatClient _baseAgent;
     private readonly ILoggerFactory _factory;
-    private readonly ILogger<AgentRunMiddleWare> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<AgentRunMiddleWare> _logger;
 
 
 
@@ -117,12 +118,4 @@ public class AgentRunMiddleWare
 
 
     }
-
-
-
-
-
-
-
-
 }

@@ -1,4 +1,4 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         WebSearchPlugin.cs
@@ -44,21 +44,17 @@ public sealed class WebSearchPlugin
 
 
 
-
-
-
-
     [Description("Search the web for information about a topic and return summarized results with links.")]
-    public async Task<string> WebSearch(string strquery, int maxResults = 5, CancellationToken cancellationToken = default)
+    public async Task<ToolResult<string>> WebSearch(string strquery, int maxResults = 5, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(strquery))
         {
-            return "{Error: Query cannot be empty}";
+            return ToolResult<string>.Fail("Query cannot be empty.");
         }
 
         if (maxResults <= 0)
         {
-            return JsonSerializer.Serialize("Error: maxResults must be greater than 0.");
+            return ToolResult<string>.Fail("maxResults must be greater than 0.");
         }
 
 
@@ -72,7 +68,7 @@ public sealed class WebSearchPlugin
             var apiKey = Environment.GetEnvironmentVariable("LANGAPI_KEY");
             if (string.IsNullOrWhiteSpace(apiKey))
             {
-                return JsonSerializer.Serialize("Error: Missing LANGAPI_KEY environment variable.");
+                return ToolResult<string>.Fail("Missing LANGAPI_KEY environment variable.");
             }
 
             request.Headers.Authorization = new("Bearer", apiKey);
@@ -99,7 +95,7 @@ public sealed class WebSearchPlugin
             if (!response.IsSuccessStatusCode)
             {
                 var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
-                return JsonSerializer.Serialize($"Error: HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {errorBody}");
+                return ToolResult<string>.Fail($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {errorBody}");
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -110,7 +106,7 @@ public sealed class WebSearchPlugin
             }
             catch (ArgumentException)
             {
-                return JsonSerializer.Serialize("Error: Invalid Unicode content in response.");
+                return ToolResult<string>.Fail("Invalid Unicode content in response.");
             }
 
             JsonDocument doc;
@@ -120,7 +116,7 @@ public sealed class WebSearchPlugin
             }
             catch (JsonException)
             {
-                return jsonResponse;
+                return ToolResult<string>.Ok(jsonResponse);
             }
 
             // 3. Pretty-print
@@ -129,13 +125,17 @@ public sealed class WebSearchPlugin
                     WriteIndented = true
             });
 
-            return pretty;
+            return ToolResult<string>.Ok(pretty);
 
 
         }
-        catch (Exception)
+        catch (HttpRequestException ex)
         {
-            return JsonSerializer.Serialize("Unexpected error while performing web search.");
+            return ToolResult<string>.Fail($"HTTP request failed: {ex.Message}");
+        }
+        catch (TaskCanceledException ex)
+        {
+            return ToolResult<string>.Fail($"Web search timed out or was canceled: {ex.Message}");
         }
     }
 }

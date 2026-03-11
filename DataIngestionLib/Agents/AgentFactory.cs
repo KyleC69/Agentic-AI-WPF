@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         AgentFactory.cs
@@ -6,12 +6,13 @@
 
 
 
+using System.Net.Http;
+
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Agents.AI;
-using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -28,8 +29,8 @@ namespace DataIngestionLib.Agents;
 public class AgentFactory : IAgentFactory
 {
     private readonly ILoggerFactory _factory;
-    private readonly IChatClient _innerClient;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IChatClient _innerClient;
 
     private readonly string _modelInstructions = """
                                                  -- Your name is Maxx, using a name helps personalize the experience and allows users to refer to you in a more natural way. It also helps establish a consistent identity for you as an AI agent.

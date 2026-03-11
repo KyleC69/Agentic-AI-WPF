@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         SafeCommandRunner.cs
@@ -45,34 +45,34 @@ public sealed class SafeCommandRunner
 
 
 
-    private string ExecuteAllowedCommand(string cmd, string args)
+    private ToolResult<string> ExecuteAllowedCommand(string cmd, string args)
     {
         switch (cmd.ToLowerInvariant())
         {
             case "echo":
-                return args;
+                return ToolResult<string>.Ok(args);
 
             case "dir":
             case "ls":
-                return string.Join("\n", Directory.GetFiles(_sandboxRoot).Select(Path.GetFileName));
+                return ToolResult<string>.Ok(string.Join("\n", Directory.GetFiles(_sandboxRoot).Select(Path.GetFileName)));
 
             case "cat":
             case "type":
                 var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, args));
                 if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
                 {
-                    return "Access denied.";
+                    return ToolResult<string>.Fail("Access denied.");
                 }
 
                 if (!File.Exists(fullPath))
                 {
-                    return "File not found.";
+                    return ToolResult<string>.Fail("File not found.");
                 }
 
-                return File.ReadAllText(fullPath);
+                return ToolResult<string>.Ok(File.ReadAllText(fullPath));
 
             default:
-                return "Command not implemented.";
+                return ToolResult<string>.Fail("Command not implemented.");
         }
     }
 
@@ -83,18 +83,20 @@ public sealed class SafeCommandRunner
 
 
 
-    public string Run(string input)
+    public ToolResult<string> Run(string input)
     {
         if (string.IsNullOrWhiteSpace(input))
         {
-            return "No command provided.";
+            return ToolResult<string>.Fail("No command provided.");
         }
 
         var parts = input.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
         var cmd = parts[0];
         var args = parts.Length > 1 ? parts[1] : string.Empty;
 
-        return !AllowedCommands.Contains(cmd) ? $"Command '{cmd}' is not allowed." : ExecuteAllowedCommand(cmd, args);
+        return !AllowedCommands.Contains(cmd)
+                ? ToolResult<string>.Fail($"Command '{cmd}' is not allowed.")
+                : ExecuteAllowedCommand(cmd, args);
 
     }
 }

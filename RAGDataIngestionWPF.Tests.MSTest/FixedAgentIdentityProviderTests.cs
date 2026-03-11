@@ -1,4 +1,4 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF.Tests.MSTest
 //  File:         FixedAgentIdentityProviderTests.cs
@@ -19,18 +19,41 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 
 
 
+
 /// <summary>
 ///     Unit tests for <see cref="FixedAgentIdentityProvider" /> and related model correctness.
 /// </summary>
 [TestClass]
 public class FixedAgentIdentityProviderTests
 {
+
+
+
+
     [TestMethod]
-    public void GetAgentId_ReturnsConfiguredValue()
+    public void AIChatMessage_ToString_ReturnsEmptyString_WhenContentIsNull()
     {
-        FixedAgentIdentityProvider provider = new("my-agent");
-        Assert.AreEqual("my-agent", provider.GetAgentId());
+        AIChatMessage message = new(ChatRole.User, (string?)null);
+        Assert.AreEqual(string.Empty, message.ToString());
     }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void AIChatMessage_ToString_ReturnsMessageText()
+    {
+        AIChatMessage message = new(ChatRole.User, "Hello, world!");
+        Assert.AreEqual("Hello, world!", message.ToString());
+    }
+
+
+
+
 
 
 
@@ -47,20 +70,14 @@ public class FixedAgentIdentityProviderTests
 
 
 
-    [TestMethod]
-    public void AIChatMessage_ToString_ReturnsMessageText()
-    {
-        AIChatMessage message = new(ChatRole.User, "Hello, world!");
-        Assert.AreEqual("Hello, world!", message.ToString());
-    }
 
 
 
 
     [TestMethod]
-    public void AIChatMessage_ToString_ReturnsEmptyString_WhenContentIsNull()
+    public void GetAgentId_ReturnsConfiguredValue()
     {
-        AIChatMessage message = new(ChatRole.User, (string?)null);
-        Assert.AreEqual(string.Empty, message.ToString());
+        FixedAgentIdentityProvider provider = new("my-agent");
+        Assert.AreEqual("my-agent", provider.GetAgentId());
     }
 }

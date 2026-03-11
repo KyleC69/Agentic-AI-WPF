@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         SettingsViewModel.cs
@@ -36,28 +36,42 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
     private readonly IThemeSelectorService _themeSelectorService = themeSelectorService;
     private readonly IUserDataService _userDataService = userDataService;
 
+
+
+
+
     public Guid ApplicationId
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
 
 
 
-    public ICommand PrivacyStatementCommand => field ??= new RelayCommand(OnPrivacyStatement);
+    public ICommand PrivacyStatementCommand
+    {
+        get { return field ??= new RelayCommand(OnPrivacyStatement); }
+    }
 
 
 
 
 
-    public ICommand RenewApplicationIdCommand => field ??= new RelayCommand(OnRenewApplicationId);
+    public ICommand RenewApplicationIdCommand
+    {
+        get { return field ??= new RelayCommand(OnRenewApplicationId); }
+    }
 
 
 
 
 
-    public ICommand SetThemeCommand => field ??= new RelayCommand<string>(OnSetTheme);
+    public ICommand SetThemeCommand
+    {
+        get { return field ??= new RelayCommand<string>(OnSetTheme); }
+    }
 
 
 
@@ -65,7 +79,8 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
 
     public AppTheme Theme
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -74,7 +89,8 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
 
     public UserViewModel User
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -83,7 +99,8 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
 
     public string VersionDescription
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 

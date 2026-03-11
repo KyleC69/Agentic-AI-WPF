@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         SandboxFileReader.cs
@@ -15,15 +15,31 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
+
+
 public sealed class SandboxFileReader
 {
     private readonly string _sandboxRoot;
+
+
+
+
+
+
+
 
     public SandboxFileReader(string sandboxRoot)
     {
         _sandboxRoot = Path.GetFullPath(sandboxRoot);
         _ = Directory.CreateDirectory(_sandboxRoot);
     }
+
+
+
+
+
+
+
 
     public ToolResult<string> ReadFile(string relativePath)
     {
@@ -34,7 +50,7 @@ public sealed class SandboxFileReader
                 return ToolResult<string>.Fail("Path cannot be empty.");
             }
 
-            string fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
+            var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
 
             if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
             {
@@ -46,7 +62,7 @@ public sealed class SandboxFileReader
                 return ToolResult<string>.Fail($"File not found: {relativePath}");
             }
 
-            string content = File.ReadAllText(fullPath);
+            var content = File.ReadAllText(fullPath);
 
             return ToolResult<string>.Ok(content);
         }

@@ -1,4 +1,4 @@
-// 2026/03/08
+// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         AIContextHistoryInjector.cs
@@ -20,6 +20,7 @@ using Microsoft.Extensions.Options;
 
 
 namespace DataIngestionLib.Services.ContextInjectors;
+
 
 
 
@@ -150,10 +151,10 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
                 Metadata = CreateMetadata(message)
             };
 
-            await _chatHistoryProvider.CreateMessageAsync(persistedMessage, cancellationToken).ConfigureAwait(false);
+            PersistedChatMessage unused1 = await _chatHistoryProvider.CreateMessageAsync(persistedMessage, cancellationToken).ConfigureAwait(false);
         }
 
-        await PruneConversationAsync(conversationId, cancellationToken).ConfigureAwait(false);
+        int unused = await PruneConversationAsync(conversationId, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -162,17 +163,22 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
 
 
+
     /// <summary>
-    /// Removes excess messages from the conversation history, ensuring the total number of messages does not exceed the
-    /// configured limit.
+    ///     Removes excess messages from the conversation history, ensuring the total number of messages does not exceed the
+    ///     configured limit.
     /// </summary>
-    /// <remarks>If the maximum context messages limit is set to zero or less, no messages will be removed.
-    /// The method will only delete the oldest messages exceeding the configured limit.</remarks>
-    /// <param name="conversationId">The unique identifier of the conversation from which messages will be pruned. This parameter cannot be null or
-    /// whitespace.</param>
+    /// <remarks>
+    ///     If the maximum context messages limit is set to zero or less, no messages will be removed.
+    ///     The method will only delete the oldest messages exceeding the configured limit.
+    /// </remarks>
+    /// <param name="conversationId">
+    ///     The unique identifier of the conversation from which messages will be pruned. This parameter cannot be null or
+    ///     whitespace.
+    /// </param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation if needed.</param>
     /// <returns>The number of messages that were removed from the conversation history.</returns>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="conversationId"/> is null or whitespace.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="conversationId" /> is null or whitespace.</exception>
     public async ValueTask<int> PruneConversationAsync(string conversationId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(conversationId))
@@ -222,16 +228,17 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
 
 
+
     /// <summary>
-    /// Updates the content of a specific chat message in the chat history.
+    ///     Updates the content of a specific chat message in the chat history.
     /// </summary>
     /// <param name="messageId">The unique identifier of the message to be updated.</param>
     /// <param name="content">The new content to replace the existing message content.</param>
     /// <param name="timestampUtc">The timestamp indicating when the update occurred, in UTC.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
-    /// A task that represents the asynchronous operation. The task result contains the updated 
-    /// <see cref="PersistedChatMessage"/> if the update was successful, or <c>null</c> if the message was not found.
+    ///     A task that represents the asynchronous operation. The task result contains the updated
+    ///     <see cref="PersistedChatMessage" /> if the update was successful, or <c>null</c> if the message was not found.
     /// </returns>
     public ValueTask<PersistedChatMessage?> UpdateMessageContentAsync(Guid messageId, string content, DateTimeOffset timestampUtc, CancellationToken cancellationToken = default)
     {
@@ -256,37 +263,38 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
 
 
+
     /// <summary>
-    /// Applies a windowing mechanism to the provided historical chat messages, ensuring that the resulting set
-    /// adheres to the constraints defined in the <see cref="ChatHistoryOptions"/>.
+    ///     Applies a windowing mechanism to the provided historical chat messages, ensuring that the resulting set
+    ///     adheres to the constraints defined in the <see cref="ChatHistoryOptions" />.
     /// </summary>
     /// <param name="conversationId">
-    /// The unique identifier of the conversation for which the windowing mechanism is applied.
+    ///     The unique identifier of the conversation for which the windowing mechanism is applied.
     /// </param>
     /// <param name="historicalMessages">
-    /// The collection of historical chat messages to be processed.
+    ///     The collection of historical chat messages to be processed.
     /// </param>
     /// <param name="options">
-    /// The configuration options that define the constraints for the windowing mechanism, such as the maximum
-    /// number of messages and tokens.
+    ///     The configuration options that define the constraints for the windowing mechanism, such as the maximum
+    ///     number of messages and tokens.
     /// </param>
     /// <param name="cancellationToken">
-    /// A token to monitor for cancellation requests.
+    ///     A token to monitor for cancellation requests.
     /// </param>
     /// <returns>
-    /// A <see cref="ChatHistory"/> containing the pruned and processed set of messages that fit within the
-    /// specified constraints.
+    ///     A <see cref="ChatHistory" /> containing the pruned and processed set of messages that fit within the
+    ///     specified constraints.
     /// </returns>
     /// <remarks>
-    /// If summarization is enabled in the <paramref name="options"/> and the number of pruned messages exceeds
-    /// zero, a summary may be generated and included in the resulting window. The method ensures that the
-    /// resulting set of messages adheres to the constraints even after summarization.
+    ///     If summarization is enabled in the <paramref name="options" /> and the number of pruned messages exceeds
+    ///     zero, a summary may be generated and included in the resulting window. The method ensures that the
+    ///     resulting set of messages adheres to the constraints even after summarization.
     /// </remarks>
     /// <exception cref="ArgumentNullException">
-    /// Thrown if <paramref name="historicalMessages"/> is <c>null</c>.
+    ///     Thrown if <paramref name="historicalMessages" /> is <c>null</c>.
     /// </exception>
     /// <exception cref="OperationCanceledException">
-    /// Thrown if the operation is canceled via the <paramref name="cancellationToken"/>.
+    ///     Thrown if the operation is canceled via the <paramref name="cancellationToken" />.
     /// </exception>
     private async ValueTask<ChatHistory> ApplyWindowAsync(
             string conversationId,

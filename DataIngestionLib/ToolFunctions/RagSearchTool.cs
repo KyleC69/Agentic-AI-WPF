@@ -1,4 +1,4 @@
-﻿// 2026/03/08
+﻿// 2026/03/10
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         RagSearchTool.cs
@@ -12,7 +12,7 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-public sealed class RagSearchTool<IRagRetriever>
+public sealed class RagSearchTool
 {
     private readonly IRagRetriever _retriever;
 
@@ -35,21 +35,20 @@ public sealed class RagSearchTool<IRagRetriever>
 
 
 
-    public IReadOnlyList<RagResult> Search(string query, int topK = 5)
+    public ToolResult<IReadOnlyList<RagResult>> Search(string query, int topK = 5)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            throw new ArgumentException("Query cannot be empty.");
+            return ToolResult<IReadOnlyList<RagResult>>.Fail("Query cannot be empty.");
         }
 
         if (topK is < 1 or > 50)
         {
-            throw new ArgumentOutOfRangeException(nameof(topK));
+            return ToolResult<IReadOnlyList<RagResult>>.Fail("topK must be between 1 and 50.");
         }
 
-        //return _retriever.Search(query, topK);
-
-        return [];
+        var results = _retriever.Search(query, topK);
+        return ToolResult<IReadOnlyList<RagResult>>.Ok(results);
 
 
 
