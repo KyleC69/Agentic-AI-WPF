@@ -1,52 +1,19 @@
 ---
 agent: 'agent'
-description: 'Generate unit tests for selected functions or methods'
+description: 'DEPRECATED: use .github/prompts/generate_unit_tests.prompt.md as the canonical unit test generation prompt'
 ---
 
-## Task
+# Deprecated prompt
 
-Analyze the selected function/method and generate focused unit tests that thoroughly validate its behavior.
+This prompt file is **deprecated** and is kept only for backward compatibility with existing
+tooling or workflows that still reference `generate-tests.prompt.md`.
 
-## Test Generation Strategy
+The **canonical** and up-to-date unit test generation prompt is:
 
-1. **Core Functionality Tests**
-   - Test the main purpose/expected behavior
-   - Verify return values with typical inputs
-   - Test with realistic data scenarios
+- `.github/prompts/generate_unit_tests.prompt.md`
 
-2. **Input Validation Tests**
-   - Test with invalid input types
-   - Test with null/undefined values
-   - Test with empty strings/arrays/objects
-   - Test boundary values (min/max, zero, negative numbers)
+All changes to test generation behavior, strategies, and guidelines **must** be made in the
+canonical prompt file listed above. Do not update this file with prompt logic or instructions.
 
-3. **Error Handling Tests**
-   - Test expected exceptions are thrown
-   - Verify error messages are meaningful
-   - Test graceful handling of edge cases
-
-4. **Side Effects Tests** (if applicable)
-   - Verify external calls are made correctly
-   - Test state changes
-   - Validate interactions with dependencies
-
-## Test Structure Requirements
-
-- Use existing project testing framework and patterns
-- Follow AAA pattern: Arrange, Act, Assert
-- Write descriptive test names that explain the scenario
-- Group related tests in describe/context blocks
-- Mock external dependencies cleanly
-
-Target Scope: Project DataIngestionLib
-Testing framework: MS Test Framework (MSTest)
-
-## Guidelines
-
-- Generate 5-8 focused test cases per function/method
-- Include realistic test data, not just simple examples
-- Add comments for complex test setup or assertions
-- Ensure tests are independent and can run in any order
-- Focus on testing behavior, not implementation details
-
-Create tests that give confidence the function works correctly and help catch regressions.
+If you are configuring a new workflow or agent, point it directly at
+`.github/prompts/generate_unit_tests.prompt.md` instead of this file.
