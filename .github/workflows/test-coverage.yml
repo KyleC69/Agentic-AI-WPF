@@ -1,0 +1,403 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Test Coverage Workflow
+#
+# Triggers on every push/merge to master and on pull-requests targeting master.
+#
+# Scope: coverage is measured for DataIngestionLib only ([DataIngestionLib]*).
+#        Tests are executed from RAGDataIngestionWPF.Tests.MSTest but coverlet
+#        filters out all other assemblies so the threshold applies solely to
+#        the DataIngestionLib project.
+#
+# Behaviour:
+#   • Builds the test project and collects line coverage via coverlet (Cobertura).
+#   • Publishes a rich Markdown summary directly to the workflow run.
+#   • Uploads the HTML report as a downloadable artifact.
+#   • If DataIngestionLib line coverage < 80 %:
+#       - Creates a GitHub Issue (Copilot agent task) and invokes the custom
+#         `testing` agent (`.github/agents/testing.agent.md`) with a coverage
+#         breakdown, artifact link, and pointer to all project conventions.
+#       - If an issue already exists it posts a progress comment instead of
+#         opening a duplicate.
+#   • Auto-closes the issue once coverage recovers.
+# ──────────────────────────────────────────────────────────────────────────────
+name: Test Coverage
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  COVERAGE_THRESHOLD: 80
+  # Coverage is restricted to the DataIngestionLib assembly only.
+  COVERAGE_INCLUDE: '[DataIngestionLib]*'
+  TEST_PROJECT: RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj
+  COVERAGE_DIR: coverage
+
+jobs:
+  test-and-coverage:
+    name: Run Tests & Evaluate Coverage
+    runs-on: windows-latest
+
+    steps:
+      # ── 1. Source ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. SDK ───────────────────────────────────────────────────────────────
+      - name: Setup .NET 10 Preview
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'preview'
+
+      # ── 3. Restore ───────────────────────────────────────────────────────────
+      - name: Restore NuGet packages
+        run: dotnet restore "${{ env.TEST_PROJECT }}"
+
+      # ── 4. Test + coverage collection ────────────────────────────────────────
+      - name: Run tests with code coverage
+        id: run-tests
+        shell: pwsh
+        run: |
+          dotnet test "${{ env.TEST_PROJECT }}" `
+            --no-restore `
+            --collect:"XPlat Code Coverage" `
+            --results-directory "${{ env.COVERAGE_DIR }}" `
+            --logger "trx;LogFileName=test-results.trx" `
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Include="${{ env.COVERAGE_INCLUDE }}"
+          $exitCode = $LASTEXITCODE
+          "tests_exit_code=$exitCode" >> $env:GITHUB_OUTPUT
+          # Do NOT propagate failure yet — we still want the coverage report.
+          exit 0
+
+      # ── 5. ReportGenerator ───────────────────────────────────────────────────
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Generate coverage reports
+        id: gen-report
+        shell: pwsh
+        run: |
+          $inputs = Get-ChildItem -Path "${{ env.COVERAGE_DIR }}" -Recurse `
+                      -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue
+          if ($inputs.Count -eq 0) {
+            Write-Warning "No Cobertura coverage files found — skipping report generation."
+            "report_generated=false" >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+          reportgenerator `
+            "-reports:${{ env.COVERAGE_DIR }}/**/coverage.cobertura.xml" `
+            "-targetdir:${{ env.COVERAGE_DIR }}/report" `
+            "-reporttypes:HtmlInline_AzurePipelines;Cobertura;MarkdownSummaryGithub"
+          "report_generated=true" >> $env:GITHUB_OUTPUT
+
+      # ── 6. Evaluate coverage threshold ───────────────────────────────────────
+      - name: Evaluate coverage
+        id: coverage
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path "${{ env.COVERAGE_DIR }}" -Recurse `
+                     -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue
+
+          if ($files.Count -eq 0) {
+            Write-Warning "Coverage files not found — reporting 0%."
+            "percent=0"          >> $env:GITHUB_OUTPUT
+            "covered=0"          >> $env:GITHUB_OUTPUT
+            "total=0"            >> $env:GITHUB_OUTPUT
+            "below_threshold=true"   >> $env:GITHUB_OUTPUT
+            "collection_failed=true" >> $env:GITHUB_OUTPUT
+            "low_packages="      >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+
+          $totalValid   = 0
+          $totalCovered = 0
+          $lowPackages  = [System.Collections.Generic.List[string]]::new()
+
+          foreach ($f in $files) {
+            [xml]$xml   = Get-Content $f.FullName -Raw
+            $totalValid   += [int]$xml.coverage.'lines-valid'
+            $totalCovered += [int]$xml.coverage.'lines-covered'
+
+            foreach ($pkg in $xml.coverage.packages.package) {
+              $rate = [double]$pkg.'line-rate'
+              $pct  = [math]::Round($rate * 100, 1)
+              if ($rate -lt 0.80) {
+                $lowPackages.Add("$($pkg.name)|$pct")
+              }
+            }
+          }
+
+          $pct   = if ($totalValid -gt 0) { [math]::Round(($totalCovered / $totalValid) * 100, 2) } else { 0 }
+          $below = $pct -lt ${{ env.COVERAGE_THRESHOLD }}
+
+          "percent=$pct"                             >> $env:GITHUB_OUTPUT
+          "covered=$totalCovered"                    >> $env:GITHUB_OUTPUT
+          "total=$totalValid"                        >> $env:GITHUB_OUTPUT
+          "below_threshold=$($below.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+          "collection_failed=false"                  >> $env:GITHUB_OUTPUT
+          "low_packages=$($lowPackages -join ',')"   >> $env:GITHUB_OUTPUT
+
+          Write-Host "Coverage: $pct%  ($totalCovered / $totalValid lines)  Below threshold: $below"
+
+      # ── 7. Upload HTML report artifact ───────────────────────────────────────
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ${{ env.COVERAGE_DIR }}/report/
+          if-no-files-found: warn
+
+      # ── 8. Job summary ───────────────────────────────────────────────────────
+      - name: Publish coverage summary
+        shell: pwsh
+        run: |
+          $pct       = "${{ steps.coverage.outputs.percent }}"
+          $covered   = "${{ steps.coverage.outputs.covered }}"
+          $total     = "${{ steps.coverage.outputs.total }}"
+          $below     = "${{ steps.coverage.outputs.below_threshold }}" -eq "true"
+          $failed    = "${{ steps.coverage.outputs.collection_failed }}" -eq "true"
+          $threshold = ${{ env.COVERAGE_THRESHOLD }}
+          $testsOk   = "${{ steps.run-tests.outputs.tests_exit_code }}" -eq "0"
+
+          $statusIcon = if ($failed) { "⚠️" } elseif ($below) { "❌" } else { "✅" }
+          $statusText = if ($failed) { "Collection Failed" } elseif ($below) { "Below Threshold" } else { "Passing" }
+          $testIcon   = if ($testsOk) { "✅" } else { "❌" }
+
+          $md = @"
+          ## 📊 DataIngestionLib Test Coverage Report
+
+          | Metric | Value |
+          |--------|-------|
+          | **Test Run** | $testIcon $(if ($testsOk) { 'All tests passed' } else { 'One or more tests FAILED — see logs' }) |
+          | **Coverage Status** | $statusIcon $statusText |
+          | **Line Coverage (DataIngestionLib)** | **$pct%** |
+          | **Lines Covered** | $covered / $total |
+          | **Required Threshold** | $threshold% |
+
+          "@
+
+          if ($failed) {
+            $md += @"
+
+          ### ⚠️ Coverage Collection Failed
+
+          The coverage tool could not produce data. Common causes:
+
+          - Build or compilation errors prevented test execution.
+          - The `coverlet.collector` NuGet package is missing from the test project.
+          - The target framework or platform is unsupported by coverlet.
+
+          **Next steps:**
+          1. Review the *Run tests with code coverage* step output above for errors.
+          2. Confirm `coverlet.collector` is referenced in `RAGDataIngestionWPF.Tests.MSTest.csproj`.
+          3. Re-run the workflow once the build is green.
+
+          "@
+          } elseif ($below) {
+            $md += @"
+
+          ### ❌ Coverage is $pct% — below the $threshold% threshold
+
+          A GitHub Issue (Copilot agent task) has been created (or updated) with detailed instructions.
+          See the **Issues** tab for the task.
+
+          "@
+          } else {
+            $md += @"
+
+          ### ✅ Coverage meets the $threshold% threshold — no action required.
+
+          "@
+          }
+
+          $md >> $env:GITHUB_STEP_SUMMARY
+
+      # ── 9. Ensure labels exist ────────────────────────────────────────────────
+      - name: Ensure required labels exist
+        if: steps.coverage.outputs.below_threshold == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $required = @(
+            @{ name = "coverage";    color = "e4e669"; description = "Related to code coverage" },
+            @{ name = "agent-task";  color = "0075ca"; description = "Task assigned to a Copilot agent" },
+            @{ name = "testing";     color = "d93f0b"; description = "Related to automated tests" }
+          )
+          $existing = (gh label list --json name | ConvertFrom-Json).name
+          foreach ($lbl in $required) {
+            if ($lbl.name -notin $existing) {
+              gh label create $lbl.name --color $lbl.color --description $lbl.description
+              Write-Host "Created label: $($lbl.name)"
+            }
+          }
+
+      # ── 10. Check for an existing open coverage issue ─────────────────────────
+      - name: Check for existing open coverage issue
+        if: steps.coverage.outputs.below_threshold == 'true'
+        id: check-issue
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $open = gh issue list --label "coverage,agent-task" --state open --json number,title `
+                  | ConvertFrom-Json
+          if ($open.Count -gt 0) {
+            "exists=true"                   >> $env:GITHUB_OUTPUT
+            "issue_number=$($open[0].number)" >> $env:GITHUB_OUTPUT
+            Write-Host "Existing coverage issue: #$($open[0].number)"
+          } else {
+            "exists=false" >> $env:GITHUB_OUTPUT
+            Write-Host "No existing open coverage issue found."
+          }
+
+      # ── 11. Create new Copilot agent task (issue) ────────────────────────────
+      - name: Create Copilot agent task
+        if: >
+          steps.coverage.outputs.below_threshold == 'true' &&
+          steps.check-issue.outputs.exists == 'false'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERAGE_PCT:   ${{ steps.coverage.outputs.percent }}
+          COVERED_LINES:  ${{ steps.coverage.outputs.covered }}
+          TOTAL_LINES:    ${{ steps.coverage.outputs.total }}
+          COMMIT_SHA:     ${{ github.sha }}
+          RUN_URL:        ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          THRESHOLD:      ${{ env.COVERAGE_THRESHOLD }}
+        run: |
+          # Build per-package breakdown table from Cobertura XML
+          $files = Get-ChildItem -Path "${{ env.COVERAGE_DIR }}" -Recurse `
+                     -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue
+          $pkgRows = [System.Collections.Generic.List[string]]::new()
+          foreach ($f in $files) {
+            [xml]$xml = Get-Content $f.FullName -Raw
+            foreach ($pkg in $xml.coverage.packages.package) {
+              $rate = [double]$pkg.'line-rate'
+              if ($rate -lt 0.80) {
+                $pct = [math]::Round($rate * 100, 1)
+                $gap = [math]::Round(80 - $pct, 1)
+                $pkgRows.Add("| ``$($pkg.name)`` | $pct% | $gap% |")
+              }
+            }
+          }
+          $pkgTable = if ($pkgRows.Count -gt 0) {
+            "| Package / Namespace | Coverage | Gap to 80% |`n|---------------------|----------|------------|`n" + ($pkgRows -join "`n")
+          } else {
+            "_Package-level breakdown unavailable — review the coverage report artifact._"
+          }
+
+          $body = @"
+          ## 🤖 Agent Task: Increase Test Coverage to $env:THRESHOLD%
+
+          > Automatically created by the [Test Coverage workflow]($env:RUN_URL).
+          > Line coverage is below the **$env:THRESHOLD%** threshold.
+
+          ---
+
+          ### Current Status
+
+          | Metric | Value |
+          |--------|-------|
+          | **Current Line Coverage** | $env:COVERAGE_PCT% |
+          | **Target Coverage** | $env:THRESHOLD% |
+          | **Lines Covered** | $env:COVERED_LINES / $env:TOTAL_LINES |
+          | **Triggered by Commit** | ``$env:COMMIT_SHA`` |
+
+          ---
+
+          ### Packages / Namespaces Below $env:THRESHOLD%
+
+          $pkgTable
+
+          > 📎 Full interactive HTML report:
+          > [Download coverage-report]($env:RUN_URL) → *Artifacts* → **coverage-report**
+
+          ---
+
+          @copilot /agent testing
+          Bring `DataIngestionLib` line coverage to at least $env:THRESHOLD% by adding
+          or extending tests in `RAGDataIngestionWPF.Tests.MSTest/` for the packages
+          listed above.
+          The `.github/agents/testing.agent.md` file contains all project conventions,
+          MSTest/Moq patterns, and step-by-step instructions.
+          The coverage report artifact linked above shows exactly which lines are uncovered.
+          "@
+
+          gh issue create `
+            --title "🤖 Agent Task: Increase test coverage from $env:COVERAGE_PCT% to $env:THRESHOLD%+" `
+            --body $body `
+            --label "coverage,agent-task,testing"
+
+      # ── 12. Update existing coverage issue with progress comment ──────────────
+      - name: Comment on existing coverage issue
+        if: >
+          steps.coverage.outputs.below_threshold == 'true' &&
+          steps.check-issue.outputs.exists == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERAGE_PCT:  ${{ steps.coverage.outputs.percent }}
+          COVERED_LINES: ${{ steps.coverage.outputs.covered }}
+          TOTAL_LINES:   ${{ steps.coverage.outputs.total }}
+          COMMIT_SHA:    ${{ github.sha }}
+          RUN_URL:       ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ISSUE_NUMBER:  ${{ steps.check-issue.outputs.issue_number }}
+          THRESHOLD:     ${{ env.COVERAGE_THRESHOLD }}
+        run: |
+          $comment = @"
+          ### 📊 Coverage Update — $(Get-Date -Format 'yyyy-MM-dd HH:mm') UTC
+
+          Coverage is still below the **$env:THRESHOLD%** threshold after commit ``$env:COMMIT_SHA``.
+
+          | Metric | Value |
+          |--------|-------|
+          | **Current Coverage** | $env:COVERAGE_PCT% |
+          | **Lines Covered** | $env:COVERED_LINES / $env:TOTAL_LINES |
+          | **Workflow Run** | [View run]($env:RUN_URL) |
+          "@
+          gh issue comment $env:ISSUE_NUMBER --body $comment
+
+      # ── 13. Close resolved coverage issue (if coverage now meets threshold) ───
+      - name: Close resolved coverage issue
+        if: >
+          steps.coverage.outputs.below_threshold == 'false' &&
+          steps.coverage.outputs.collection_failed == 'false'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERAGE_PCT: ${{ steps.coverage.outputs.percent }}
+          COMMIT_SHA:   ${{ github.sha }}
+          RUN_URL:      ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          THRESHOLD:    ${{ env.COVERAGE_THRESHOLD }}
+        run: |
+          $open = gh issue list --label "coverage,agent-task" --state open --json number `
+                  | ConvertFrom-Json
+          foreach ($issue in $open) {
+            $closeComment = @"
+            ### ✅ Coverage Threshold Met — Closing
+
+            Line coverage is now **$env:COVERAGE_PCT%**, which meets or exceeds the
+            **$env:THRESHOLD%** threshold. This issue is being automatically closed.
+
+            Triggered by commit ``$env:COMMIT_SHA`` — [workflow run]($env:RUN_URL).
+            "@
+            gh issue comment $issue.number --body $closeComment
+            gh issue close $issue.number --reason completed
+            Write-Host "Closed issue #$($issue.number)"
+          }
+
+      # ── 14. Fail the workflow if tests actually failed ────────────────────────
+      - name: Fail workflow on test failures
+        if: steps.run-tests.outputs.tests_exit_code != '0'
+        shell: pwsh
+        run: |
+          Write-Error "One or more tests FAILED (exit code ${{ steps.run-tests.outputs.tests_exit_code }}). See the test logs above."
+          exit 1
