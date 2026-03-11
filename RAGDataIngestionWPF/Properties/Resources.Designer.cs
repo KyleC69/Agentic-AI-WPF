@@ -79,7 +79,7 @@ namespace RAGDataIngestionWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DataGrid.
+        ///   Looks up a localized string similar to Knowledge Source Ingestion.
         /// </summary>
         public static string DataGridPageTitle {
             get {
@@ -142,14 +142,14 @@ namespace RAGDataIngestionWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to About this application.
+        ///   Looks up a localized string similar to Agent Framework Implementation.
         /// </summary>
         public static string SettingsPageAboutTitle {
             get {
                 return ResourceManager.GetString("SettingsPageAboutTitle", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Choose Theme.
         /// </summary>
@@ -241,7 +241,7 @@ namespace RAGDataIngestionWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DataGrid.
+        ///   Looks up a localized string similar to Ingestion.
         /// </summary>
         public static string ShellDataGridPage {
             get {

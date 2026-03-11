@@ -1,8 +1,9 @@
-﻿// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   DataIngestionLib
-//  File:         AgentLogger.cs
-//   Author: Kyle L. Crowder
+﻿// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         AgentLogger.cs
+// Author: Kyle L. Crowder
+// Build Num: 105650
 
 
 
@@ -15,12 +16,14 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
+
+
 /// <summary>
-/// Writes timestamped agent log entries to a single file in a specified directory.
+///     Writes timestamped agent log entries to a single file in a specified directory.
 /// </summary>
 /// <remarks>
-/// This logger uses UTC timestamps in round-trip format (<c>O</c>) to preserve
-/// ordering and timezone-independent diagnostics across environments.
+///     This logger uses UTC timestamps in round-trip format (<c>O</c>) to preserve
+///     ordering and timezone-independent diagnostics across environments.
 /// </remarks>
 public sealed class AgentLogger
 {
@@ -29,11 +32,15 @@ public sealed class AgentLogger
 
 
 
+
+
+
+
     /// <summary>
-    /// Initializes a new instance of the <see cref="AgentLogger"/> class.
+    ///     Initializes a new instance of the <see cref="AgentLogger" /> class.
     /// </summary>
     /// <param name="logDirectory">
-    /// The directory where the <c>agent.log</c> file is stored. The directory is created if it does not exist.
+    ///     The directory where the <c>agent.log</c> file is stored. The directory is created if it does not exist.
     /// </param>
     public AgentLogger(string logDirectory)
     {
@@ -45,12 +52,15 @@ public sealed class AgentLogger
 
 
 
+
+
+
     /// <summary>
-    /// Attempts to log a message and ignores the operation result.
+    ///     Attempts to log a message and ignores the operation result.
     /// </summary>
     /// <param name="message">The message content to append to the log.</param>
     /// <remarks>
-    /// Use <see cref="LogMessage"/> when callers need success/failure details.
+    ///     Use <see cref="LogMessage" /> when callers need success/failure details.
     /// </remarks>
     public void Log(string message)
     {
@@ -61,16 +71,19 @@ public sealed class AgentLogger
 
 
 
+
+
+
     /// <summary>
-    /// Appends a timestamped message to the log file.
+    ///     Appends a timestamped message to the log file.
     /// </summary>
     /// <param name="message">The message content to append.</param>
     /// <returns>
-    /// A successful <see cref="ToolResult{T}"/> when the message is written; otherwise a failed result
-    /// containing validation or file access error details.
+    ///     A successful <see cref="ToolResult{T}" /> when the message is written; otherwise a failed result
+    ///     containing validation or file access error details.
     /// </returns>
     /// <remarks>
-    /// Returns failure when <paramref name="message"/> is null, empty, or whitespace.
+    ///     Returns failure when <paramref name="message" /> is null, empty, or whitespace.
     /// </remarks>
     public ToolResult<string> LogMessage(string message)
     {
@@ -81,7 +94,7 @@ public sealed class AgentLogger
 
         try
         {
-            string line = $"{DateTime.UtcNow:O} | {message}";
+            var line = $"{DateTime.UtcNow:O} | {message}";
             File.AppendAllLines(_logFile, [line]);
             return ToolResult<string>.Ok("Message logged.");
         }

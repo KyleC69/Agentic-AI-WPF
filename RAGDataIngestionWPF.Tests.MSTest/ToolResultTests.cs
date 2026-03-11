@@ -1,8 +1,9 @@
-// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   RAGDataIngestionWPF.Tests.MSTest
-//  File:         ToolResultTests.cs
-//   Author: Kyle L. Crowder
+// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         ToolResultTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 105607
 
 
 
@@ -16,6 +17,7 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 
 
 
+
 /// <summary>
 ///     Unit tests for <see cref="ToolResult{T}" /> covering factory method contracts,
 ///     null-safety guards, and property invariants.
@@ -23,42 +25,25 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 [TestClass]
 public class ToolResultTests
 {
+
+
+
+
     [TestMethod]
-    public void Ok_WithValidValue_SetsSuccessTrueAndValue()
+    public void Fail_ValueTypeResult_ReturnsFailWithError()
     {
         // Arrange / Act
-        ToolResult<string> result = ToolResult<string>.Ok("hello");
-
-        // Assert
-        Assert.IsTrue(result.Success);
-        Assert.AreEqual("hello", result.Value);
-        Assert.IsNull(result.Error);
-    }
-
-
-
-
-    [TestMethod]
-    public void Ok_WithNullValue_ThrowsArgumentNullException()
-    {
-        // Arrange / Act / Assert
-        Assert.ThrowsExactly<ArgumentNullException>(() => ToolResult<string>.Ok(null!));
-    }
-
-
-
-
-    [TestMethod]
-    public void Fail_WithValidMessage_SetsSuccessFalseAndError()
-    {
-        // Arrange / Act
-        ToolResult<string> result = ToolResult<string>.Fail("something went wrong");
+        var result = ToolResult<int>.Fail("integer error");
 
         // Assert
         Assert.IsFalse(result.Success);
-        Assert.AreEqual("something went wrong", result.Error);
-        Assert.IsNull(result.Value);
+        Assert.AreEqual("integer error", result.Error);
+        Assert.AreEqual(default, result.Value);
     }
+
+
+
+
 
 
 
@@ -76,32 +61,25 @@ public class ToolResultTests
 
 
 
-    [TestMethod]
-    public void Ok_ValueTypeResult_SetsValueCorrectly()
-    {
-        // Arrange / Act
-        ToolResult<int> result = ToolResult<int>.Ok(42);
-
-        // Assert
-        Assert.IsTrue(result.Success);
-        Assert.AreEqual(42, result.Value);
-        Assert.IsNull(result.Error);
-    }
 
 
 
 
     [TestMethod]
-    public void Fail_ValueTypeResult_ReturnsFailWithError()
+    public void Fail_WithValidMessage_SetsSuccessFalseAndError()
     {
         // Arrange / Act
-        ToolResult<int> result = ToolResult<int>.Fail("integer error");
+        var result = ToolResult<string>.Fail("something went wrong");
 
         // Assert
         Assert.IsFalse(result.Success);
-        Assert.AreEqual("integer error", result.Error);
-        Assert.AreEqual(default(int), result.Value);
+        Assert.AreEqual("something went wrong", result.Error);
+        Assert.IsNull(result.Value);
     }
+
+
+
+
 
 
 
@@ -113,10 +91,62 @@ public class ToolResultTests
         List<string> list = ["a", "b", "c"];
 
         // Act
-        ToolResult<List<string>> result = ToolResult<List<string>>.Ok(list);
+        var result = ToolResult<List<string>>.Ok(list);
 
         // Assert
         Assert.IsTrue(result.Success);
         Assert.AreSame(list, result.Value);
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void Ok_ValueTypeResult_SetsValueCorrectly()
+    {
+        // Arrange / Act
+        var result = ToolResult<int>.Ok(42);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(42, result.Value);
+        Assert.IsNull(result.Error);
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void Ok_WithNullValue_ThrowsArgumentNullException()
+    {
+        // Arrange / Act / Assert
+        Assert.ThrowsExactly<ArgumentNullException>(() => ToolResult<string>.Ok(null!));
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void Ok_WithValidValue_SetsSuccessTrueAndValue()
+    {
+        // Arrange / Act
+        var result = ToolResult<string>.Ok("hello");
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("hello", result.Value);
+        Assert.IsNull(result.Error);
     }
 }

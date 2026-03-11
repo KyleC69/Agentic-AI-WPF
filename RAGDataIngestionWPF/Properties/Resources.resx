@@ -152,7 +152,7 @@
     <value>Settings page placeholder text.  Your app description goes here.</value>
   </data>
   <data name="SettingsPageAboutTitle" xml:space="preserve">
-    <value>About this application</value>
+    <value>Agent Framework Implementation</value>
   </data>
   <data name="SettingsPageChooseThemeText" xml:space="preserve">
     <value>Choose Theme</value>
@@ -194,10 +194,10 @@
     <value>Open in browser (Ctrl + T)</value>
   </data>
   <data name="ShellDataGridPage" xml:space="preserve">
-    <value>DataGrid</value>
+    <value>Ingestion</value>
   </data>
   <data name="DataGridPageTitle" xml:space="preserve">
-    <value>DataGrid</value>
+    <value>Knowledge Source Ingestion</value>
   </data>
   <data name="ShellListDetailsPage" xml:space="preserve">
     <value>ListDetails</value>

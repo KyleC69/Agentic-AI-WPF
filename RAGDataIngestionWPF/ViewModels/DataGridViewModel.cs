@@ -1,8 +1,9 @@
-﻿// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   RAGDataIngestionWPF
-//  File:         DataGridViewModel.cs
-//   Author: Kyle L. Crowder
+﻿// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         DataGridViewModel.cs
+// Author: Kyle L. Crowder
+// Build Num: 105617
 
 
 
@@ -10,9 +11,10 @@ using System.Collections.ObjectModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
+using DataIngestionLib.ExternalKnowledge.RAGModels;
+using DataIngestionLib.Services;
+
 using RAGDataIngestionWPF.Contracts.ViewModels;
-using RAGDataIngestionWPF.Core.Contracts.Services;
-using RAGDataIngestionWPF.Core.Models;
 
 
 
@@ -25,7 +27,12 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 public class DataGridViewModel : ObservableObject, INavigationAware
 {
-    private readonly ISampleDataService _sampleDataService;
+
+
+
+
+
+    public ObservableCollection<RemoteRag> Source { get; } = [];
 
 
 
@@ -34,35 +41,16 @@ public class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    public DataGridViewModel(ISampleDataService sampleDataService)
-    {
-        _sampleDataService = sampleDataService;
-    }
-
-
-
-
-
-
-
-
-    public ObservableCollection<SampleOrder> Source { get; } = [];
-
-
-
-
-
-
-
-
-    public async void OnNavigatedTo(object parameter)
+    public void OnNavigatedTo(object parameter)
     {
         Source.Clear();
 
-        // Replace this with your actual data
-        var data = await _sampleDataService.GetGridDataAsync();
+        ObservableCollection<RemoteRag> entries = RagDataService.GetRagDataEntries();
+        foreach (RemoteRag entry in entries)
+        {
+            Source.Add(entry);
+        }
 
-        foreach (SampleOrder item in data) Source.Add(item);
     }
 
 

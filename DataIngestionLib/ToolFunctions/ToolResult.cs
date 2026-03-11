@@ -1,8 +1,9 @@
-﻿// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   DataIngestionLib
-//  File:         ToolResult.cs
-//   Author: Kyle L. Crowder
+﻿// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ToolResult.cs
+// Author: Kyle L. Crowder
+// Build Num: 105651
 
 
 
@@ -13,11 +14,11 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 /// <summary>
-/// Represents a result type that encapsulates the outcome of a tool operation, 
-/// indicating success or failure, and optionally providing a value or an error message.
+///     Represents a result type that encapsulates the outcome of a tool operation,
+///     indicating success or failure, and optionally providing a value or an error message.
 /// </summary>
 /// <typeparam name="T">
-/// The type of the value contained in the result, if the operation is successful.
+///     The type of the value contained in the result, if the operation is successful.
 /// </typeparam>
 public sealed class ToolResult<T>
 {
@@ -35,8 +36,8 @@ public sealed class ToolResult<T>
     public static ToolResult<T> Fail(string message)
     {
         return string.IsNullOrWhiteSpace(message)
-            ? throw new ArgumentException("Failure message cannot be null or whitespace.", nameof(message))
-            : new() { Success = false, Error = message };
+                ? throw new ArgumentException("Failure message cannot be null or whitespace.", nameof(message))
+                : new() { Success = false, Error = message };
     }
 
 

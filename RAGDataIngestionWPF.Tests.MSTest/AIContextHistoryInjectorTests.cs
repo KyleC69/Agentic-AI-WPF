@@ -1,8 +1,9 @@
-// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   RAGDataIngestionWPF.Tests.MSTest
-//  File:         AIContextHistoryInjectorTests.cs
-//   Author: Kyle L. Crowder
+// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         AIContextHistoryInjectorTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 105603
 
 
 
@@ -77,7 +78,7 @@ public class AIContextHistoryInjectorTests
                 .Select(i => MakeMessage("user", $"Message {i}", DateTimeOffset.UtcNow.AddMinutes(i)))
                 .ToList();
 
-        Mock<IChatHistoryProvider> providerMock = new Mock<IChatHistoryProvider>();
+        var providerMock = new Mock<IChatHistoryProvider>();
         providerMock
                 .Setup(p => p.GetMessagesAsync("conv-1", null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(messages);
@@ -102,7 +103,7 @@ public class AIContextHistoryInjectorTests
     [TestMethod]
     public async Task BuildContextMessagesAsync_ReturnsEmpty_WhenNoHistoryExists()
     {
-        Mock<IChatHistoryProvider> providerMock = new Mock<IChatHistoryProvider>();
+        var providerMock = new Mock<IChatHistoryProvider>();
         providerMock
                 .Setup(p => p.GetMessagesAsync("conv-1", null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync([]);
@@ -134,7 +135,7 @@ public class AIContextHistoryInjectorTests
                 MakeMessage("user", "  ")
         ];
 
-        Mock<IChatHistoryProvider> providerMock = new Mock<IChatHistoryProvider>();
+        var providerMock = new Mock<IChatHistoryProvider>();
         providerMock
                 .Setup(p => p.GetMessagesAsync("conv-1", null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(messages);
@@ -162,7 +163,7 @@ public class AIContextHistoryInjectorTests
     [DataRow("   ")]
     public async Task BuildContextMessagesAsync_ThrowsArgumentException_WhenConversationIdIsNullOrWhiteSpace(string? conversationId)
     {
-        Mock<IChatHistoryProvider> providerMock = new Mock<IChatHistoryProvider>();
+        var providerMock = new Mock<IChatHistoryProvider>();
 
         AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object, CreateOptions(new ChatHistoryOptions()));
 
@@ -179,7 +180,7 @@ public class AIContextHistoryInjectorTests
 
     private static IOptionsMonitor<ChatHistoryOptions> CreateOptions(ChatHistoryOptions options)
     {
-        Mock<IOptionsMonitor<ChatHistoryOptions>> mock = new Mock<IOptionsMonitor<ChatHistoryOptions>>();
+        var mock = new Mock<IOptionsMonitor<ChatHistoryOptions>>();
         mock.SetupGet(m => m.CurrentValue).Returns(options);
         return mock.Object;
     }
@@ -224,7 +225,7 @@ public class AIContextHistoryInjectorTests
 
         List<Guid> deleted = [];
 
-        Mock<IChatHistoryProvider> providerMock = new Mock<IChatHistoryProvider>();
+        var providerMock = new Mock<IChatHistoryProvider>();
         providerMock
                 .Setup(p => p.GetMessagesAsync("conv-1", null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(messages);
@@ -259,7 +260,7 @@ public class AIContextHistoryInjectorTests
                 .Select(i => MakeMessage("user", $"Msg {i}"))
                 .ToList();
 
-        Mock<IChatHistoryProvider> providerMock = new Mock<IChatHistoryProvider>();
+        var providerMock = new Mock<IChatHistoryProvider>();
         providerMock
                 .Setup(p => p.GetMessagesAsync("conv-1", null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(messages);
@@ -283,7 +284,7 @@ public class AIContextHistoryInjectorTests
     {
         List<PersistedChatMessage> stored = [];
 
-        Mock<IChatHistoryProvider> providerMock = new Mock<IChatHistoryProvider>();
+        var providerMock = new Mock<IChatHistoryProvider>();
         providerMock
                 .Setup(p => p.CreateMessageAsync(It.IsAny<PersistedChatMessage>(), It.IsAny<CancellationToken>()))
                 .Callback<PersistedChatMessage, CancellationToken>((msg, _) => stored.Add(msg))
@@ -317,7 +318,7 @@ public class AIContextHistoryInjectorTests
     {
         List<PersistedChatMessage> stored = [];
 
-        Mock<IChatHistoryProvider> providerMock = new Mock<IChatHistoryProvider>();
+        var providerMock = new Mock<IChatHistoryProvider>();
         providerMock
                 .Setup(p => p.CreateMessageAsync(It.IsAny<PersistedChatMessage>(), It.IsAny<CancellationToken>()))
                 .Callback<PersistedChatMessage, CancellationToken>((msg, _) => stored.Add(msg))
@@ -353,7 +354,7 @@ public class AIContextHistoryInjectorTests
     {
         List<PersistedChatMessage> stored = [];
 
-        Mock<IChatHistoryProvider> providerMock = new Mock<IChatHistoryProvider>();
+        var providerMock = new Mock<IChatHistoryProvider>();
         providerMock
                 .Setup(p => p.CreateMessageAsync(It.IsAny<PersistedChatMessage>(), It.IsAny<CancellationToken>()))
                 .Callback<PersistedChatMessage, CancellationToken>((msg, _) => stored.Add(msg))

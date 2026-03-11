@@ -1,8 +1,9 @@
-﻿// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   DataIngestionLib
-//  File:         SafeCommandRunner.cs
-//   Author: Kyle L. Crowder
+﻿// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         SafeCommandRunner.cs
+// Author: Kyle L. Crowder
+// Build Num: 105650
 
 
 
@@ -17,9 +18,9 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-public sealed class SafeCommandRunner
+public sealed class SafeCommandRunner(string sandboxRoot)
 {
-    private readonly string _sandboxRoot;
+    private readonly string _sandboxRoot = Path.GetFullPath(sandboxRoot);
 
     private static readonly HashSet<string> AllowedCommands = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -33,31 +34,19 @@ public sealed class SafeCommandRunner
 
 
 
-    public SafeCommandRunner(string sandboxRoot)
-    {
-        _sandboxRoot = Path.GetFullPath(sandboxRoot);
-    }
-
-
-
-
-
-
-
-
     private ToolResult<string> ExecuteAllowedCommand(string cmd, string args)
     {
-        switch (cmd.ToLowerInvariant())
+        switch (cmd.ToUpperInvariant())
         {
-            case "echo":
+            case "ECHO":
                 return ToolResult<string>.Ok(args);
 
-            case "dir":
-            case "ls":
+            case "DIR":
+            case "LS":
                 return ToolResult<string>.Ok(string.Join("\n", Directory.GetFiles(_sandboxRoot).Select(Path.GetFileName)));
 
-            case "cat":
-            case "type":
+            case "CAT":
+            case "TYPE":
                 var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, args));
                 if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
                 {

@@ -1,8 +1,9 @@
-// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   DataIngestionLib
-//  File:         SqlChatHistoryProvider.cs
-//   Author: Kyle L. Crowder
+// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         SqlChatHistoryProvider.cs
+// Author: Kyle L. Crowder
+// Build Num: 105639
 
 
 
@@ -76,7 +77,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         ArgumentNullException.ThrowIfNull(runtimeContextAccessor);
         _connectionFactory = connectionFactory;
         _runtimeContextAccessor = runtimeContextAccessor;
-        _defaultAgentId = GetType().Name;
+        _defaultAgentId = this.GetType().Name;
         _defaultApplicationId = AppDomain.CurrentDomain.FriendlyName;
         _defaultUserId = Environment.UserName;
     }
@@ -93,11 +94,11 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
         ;
 
-        foreach ((string? migrationId, string? migrationSql) in ChatHistoryMigrations.All)
+        foreach (var (migrationId, migrationSql) in ChatHistoryMigrations.All)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            bool isApplied = await MigrationAlreadyAppliedAsync(connection, migrationId, cancellationToken).ConfigureAwait(false);
+            var isApplied = await MigrationAlreadyAppliedAsync(connection, migrationId, cancellationToken).ConfigureAwait(false);
             if (isApplied)
             {
                 continue;
@@ -108,7 +109,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
             try
             {
-                int unused1 = await ExecuteNonQueryAsync(connection, transaction, migrationSql, [], cancellationToken).ConfigureAwait(false);
+                var unused1 = await ExecuteNonQueryAsync(connection, transaction, migrationSql, [], cancellationToken).ConfigureAwait(false);
 
                 SqlParameter[] insertParameters =
                 [
@@ -117,7 +118,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 ];
 
                 const string insertMigrationSql = "INSERT INTO dbo.__ChatHistoryMigrations ([Id], [AppliedOnUtc]) VALUES (@MigrationId, @AppliedOnUtc);";
-                int unused = await ExecuteNonQueryAsync(connection, transaction, insertMigrationSql, insertParameters, cancellationToken).ConfigureAwait(false);
+                var unused = await ExecuteNonQueryAsync(connection, transaction, insertMigrationSql, insertParameters, cancellationToken).ConfigureAwait(false);
 
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -211,11 +212,11 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         RuntimeContext runtimeContext = _runtimeContextAccessor.GetCurrent();
-        string applicationId = runtimeContext.ApplicationId.ToString("N");
-        string userId = GetUserId(runtimeContext);
-        bool hasTake = take.HasValue;
+        var applicationId = runtimeContext.ApplicationId.ToString("N");
+        var userId = GetUserId(runtimeContext);
+        var hasTake = take.HasValue;
 
-        string selectSql = hasTake
+        var selectSql = hasTake
                 ? """
                   SELECT [MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata]
                   FROM (
@@ -261,10 +262,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         ;
 
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
-            messages.Add(MapMessage(reader));
-        }
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false)) messages.Add(MapMessage(reader));
 
         return messages;
     }
@@ -308,7 +306,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
         ;
         ;
-        int affected = await ExecuteNonQueryAsync(connection, null, updateSql, updateParameters, cancellationToken).ConfigureAwait(false);
+        var affected = await ExecuteNonQueryAsync(connection, null, updateSql, updateParameters, cancellationToken).ConfigureAwait(false);
 
         return affected == 0
                 ? null
@@ -341,7 +339,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         ;
         ;
 
-        int affected = await ExecuteNonQueryAsync(connection, null, deleteSql, [new SqlParameter("@MessageId", messageId)], cancellationToken).ConfigureAwait(false);
+        var affected = await ExecuteNonQueryAsync(connection, null, deleteSql, [new SqlParameter("@MessageId", messageId)], cancellationToken).ConfigureAwait(false);
         return affected > 0;
     }
 
@@ -362,8 +360,8 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         RuntimeContext runtimeContext = _runtimeContextAccessor.GetCurrent();
-        string applicationId = runtimeContext.ApplicationId.ToString("N");
-        string userId = GetUserId(runtimeContext);
+        var applicationId = runtimeContext.ApplicationId.ToString("N");
+        var userId = GetUserId(runtimeContext);
 
         const string deleteSql =
                 """
@@ -402,8 +400,8 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         RuntimeContext runtimeContext = _runtimeContextAccessor.GetCurrent();
-        string applicationId = runtimeContext.ApplicationId.ToString("N");
-        string userId = GetUserId(runtimeContext);
+        var applicationId = runtimeContext.ApplicationId.ToString("N");
+        var userId = GetUserId(runtimeContext);
 
         const string selectSql =
                 """
@@ -511,8 +509,8 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
-        bool hasTake = take.HasValue;
-        string selectSql = hasTake
+        var hasTake = take.HasValue;
+        var selectSql = hasTake
                 ? """
                   SELECT [MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata]
                   FROM (
@@ -566,10 +564,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         ;
         ;
 
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
-            messages.Add(MapMessage(reader));
-        }
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false)) messages.Add(MapMessage(reader));
 
         return messages;
     }
@@ -633,23 +628,23 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
     private static PersistedChatMessage MapMessage(SqlDataReader reader)
     {
-        string? metadataValue = reader.IsDBNull(9) ? null : reader.GetString(9);
+        var metadataValue = reader.IsDBNull(9) ? null : reader.GetString(9);
         JsonDocument? metadata = TryParseMetadata(metadataValue, out JsonDocument? parsedMetadata)
                 ? parsedMetadata
                 : null;
 
         return new PersistedChatMessage
         {
-            MessageId = reader.GetGuid(0),
-            ConversationId = reader.GetString(1),
-            SessionId = reader.GetString(2),
-            AgentId = reader.GetString(3),
-            UserId = reader.GetString(4),
-            ApplicationId = reader.GetString(5),
-            Role = reader.GetString(6),
-            Content = reader.GetString(7),
-            TimestampUtc = reader.GetDateTimeOffset(8),
-            Metadata = metadata
+                MessageId = reader.GetGuid(0),
+                ConversationId = reader.GetString(1),
+                SessionId = reader.GetString(2),
+                AgentId = reader.GetString(3),
+                UserId = reader.GetString(4),
+                ApplicationId = reader.GetString(5),
+                Role = reader.GetString(6),
+                Content = reader.GetString(7),
+                TimestampUtc = reader.GetDateTimeOffset(8),
+                Metadata = metadata
         };
     }
 
@@ -680,7 +675,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await using SqlCommand command = CreateCommand(connection, null, sql, [new SqlParameter("@MigrationId", migrationId)]);
         ;
         ;
-        object result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
         return result is bool boolValue && boolValue;
     }
@@ -698,14 +693,14 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         return message with
         {
-            MessageId = message.MessageId == Guid.Empty ? Guid.NewGuid() : message.MessageId,
-            ConversationId = message.ConversationId.Trim(),
-            SessionId = message.SessionId.Trim(),
-            AgentId = message.AgentId.Trim(),
-            UserId = message.UserId.Trim(),
-            ApplicationId = message.ApplicationId.Trim(),
-            Role = message.Role.Trim(),
-            Content = message.Content.Trim()
+                MessageId = message.MessageId == Guid.Empty ? Guid.NewGuid() : message.MessageId,
+                ConversationId = message.ConversationId.Trim(),
+                SessionId = message.SessionId.Trim(),
+                AgentId = message.AgentId.Trim(),
+                UserId = message.UserId.Trim(),
+                ApplicationId = message.ApplicationId.Trim(),
+                Role = message.Role.Trim(),
+                Content = message.Content.Trim()
         };
     }
 
@@ -718,15 +713,15 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
     private static ChatRole ParseRole(string role)
     {
-        string normalized = role.Trim();
+        var normalized = role.Trim();
 
         return normalized.ToLowerInvariant() switch
         {
-            "assistant" => ChatRole.Assistant,
-            "user" => ChatRole.User,
-            "system" => ChatRole.System,
-            "tool" => ChatRole.Tool,
-            _ => ChatRole.User
+                "assistant" => ChatRole.Assistant,
+                "user" => ChatRole.User,
+                "system" => ChatRole.System,
+                "tool" => ChatRole.Tool,
+                _ => ChatRole.User
         };
     }
 
@@ -743,7 +738,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         cancellationToken.ThrowIfCancellationRequested();
 
         ChatHistoryScope scope = ResolveScope(context.Session);
-        IReadOnlyList<PersistedChatMessage> persistedMessages = await GetMessagesAsync(scope, DefaultHistoryWindowSize, cancellationToken).ConfigureAwait(false);
+        var persistedMessages = await GetMessagesAsync(scope, DefaultHistoryWindowSize, cancellationToken).ConfigureAwait(false);
 
         return persistedMessages.Select(static persistedMessage => new ChatMessage(ParseRole(persistedMessage.Role), persistedMessage.Content));
     }
@@ -759,14 +754,14 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     {
         RuntimeContext runtimeContext = _runtimeContextAccessor.GetCurrent();
 
-        string applicationId = ChatHistorySessionState.GetOrCreateApplicationId(
+        var applicationId = ChatHistorySessionState.GetOrCreateApplicationId(
                 session,
                 runtimeContext.ApplicationId.ToString("N"));
 
-        string userId = ChatHistorySessionState.GetOrCreateUserId(session, GetUserId(runtimeContext));
-        string conversationId = ChatHistorySessionState.GetOrCreateConversationId(session);
-        string sessionId = ChatHistorySessionState.GetOrCreateSessionId(session);
-        string agentId = ChatHistorySessionState.GetOrCreateAgentId(session, _defaultAgentId);
+        var userId = ChatHistorySessionState.GetOrCreateUserId(session, GetUserId(runtimeContext));
+        var conversationId = ChatHistorySessionState.GetOrCreateConversationId(session);
+        var sessionId = ChatHistorySessionState.GetOrCreateSessionId(session);
+        var agentId = ChatHistorySessionState.GetOrCreateAgentId(session, _defaultAgentId);
 
         return new ChatHistoryScope(applicationId, userId, conversationId, sessionId, agentId);
     }
@@ -785,7 +780,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             return false;
         }
 
-        string normalized = role.Trim().ToLowerInvariant();
+        var normalized = role.Trim().ToLowerInvariant();
         return !(normalized.Contains("context") || normalized.Contains("rag"));
     }
 
@@ -808,7 +803,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         ChatHistoryScope scope = ResolveScope(context.Session);
 
-        IEnumerable<ChatMessage> newMessages = context.RequestMessages.Concat(context.ResponseMessages ?? []);
+        var newMessages = context.RequestMessages.Concat(context.ResponseMessages ?? []);
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
@@ -816,7 +811,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         ;
         ;
         DateTimeOffset baseTimestamp = DateTimeOffset.UtcNow;
-        int sequence = 0;
+        var sequence = 0;
 
         foreach (ChatMessage message in newMessages)
         {
@@ -827,23 +822,23 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 continue;
             }
 
-            string role = message.Role.ToString();
+            var role = message.Role.ToString();
             if (!ShouldPersistRole(role))
             {
                 continue;
             }
 
-            PersistedChatMessage persistedMessage = new()
+            PersistedChatMessage persistedMessage = new PersistedChatMessage
             {
-                MessageId = Guid.NewGuid(),
-                ConversationId = scope.ConversationId,
-                SessionId = scope.SessionId,
-                AgentId = scope.AgentId,
-                UserId = scope.UserId,
-                ApplicationId = scope.ApplicationId,
-                Role = role,
-                Content = message.Text.Trim(),
-                TimestampUtc = baseTimestamp.AddTicks(sequence++)
+                    MessageId = Guid.NewGuid(),
+                    ConversationId = scope.ConversationId,
+                    SessionId = scope.SessionId,
+                    AgentId = scope.AgentId,
+                    UserId = scope.UserId,
+                    ApplicationId = scope.ApplicationId,
+                    Role = role,
+                    Content = message.Text.Trim(),
+                    TimestampUtc = baseTimestamp.AddTicks(sequence++)
             };
 
             await InsertMessageAsync(connection, persistedMessage, cancellationToken).ConfigureAwait(false);
@@ -892,7 +887,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             throw new ArgumentException("Value is required.", parameterName);
         }
 
-        string trimmed = value.Trim();
+        var trimmed = value.Trim();
         if (trimmed.Length > maxLength)
         {
             throw new ArgumentOutOfRangeException(parameterName, $"Value exceeds maximum length of {maxLength} characters.");

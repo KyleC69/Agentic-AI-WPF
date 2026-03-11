@@ -1,12 +1,11 @@
-// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   RAGDataIngestionWPF.Tests.MSTest
-//  File:         SafeCommandRunnerTests.cs
-//   Author: Kyle L. Crowder
+// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         SafeCommandRunnerTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 105606
 
 
-
-using System.IO;
 
 using DataIngestionLib.ToolFunctions;
 
@@ -14,6 +13,7 @@ using DataIngestionLib.ToolFunctions;
 
 
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
 
 
 
@@ -30,95 +30,6 @@ public class SafeCommandRunnerTests
 
 
 
-    [TestInitialize]
-    public void SetUp()
-    {
-        _sandboxDir = Path.Combine(Path.GetTempPath(), $"SafeCommandRunnerTests_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_sandboxDir);
-    }
-
-
-
-
-    [TestCleanup]
-    public void TearDown()
-    {
-        if (Directory.Exists(_sandboxDir))
-        {
-            Directory.Delete(_sandboxDir, recursive: true);
-        }
-    }
-
-
-
-
-    [TestMethod]
-    [DataRow(null)]
-    [DataRow("")]
-    [DataRow("   ")]
-    public void Run_WithNullOrWhitespaceInput_ReturnsNoCommandProvided(string? input)
-    {
-        // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
-
-        // Act
-        string result = runner.Run(input!);
-
-        // Assert
-        Assert.AreEqual("No command provided.", result);
-    }
-
-
-
-
-    [TestMethod]
-    public void Run_WithDisallowedCommand_ReturnsNotAllowedMessage()
-    {
-        // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
-
-        // Act
-        string result = runner.Run("rm -rf /");
-
-        // Assert
-        StringAssert.Contains(result, "not allowed");
-    }
-
-
-
-
-    [TestMethod]
-    public void Run_EchoCommand_ReturnsArguments()
-    {
-        // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
-
-        // Act
-        string result = runner.Run("echo hello world");
-
-        // Assert
-        Assert.AreEqual("hello world", result);
-    }
-
-
-
-
-    [TestMethod]
-    public void Run_LsCommand_ReturnsSandboxFileNames()
-    {
-        // Arrange
-        File.WriteAllText(Path.Combine(_sandboxDir, "alpha.txt"), "a");
-        File.WriteAllText(Path.Combine(_sandboxDir, "beta.txt"), "b");
-
-        SafeCommandRunner runner = new(_sandboxDir);
-
-        // Act
-        string result = runner.Run("ls");
-
-        // Assert
-        StringAssert.Contains(result, "alpha.txt");
-        StringAssert.Contains(result, "beta.txt");
-    }
 
 
 
@@ -134,11 +45,16 @@ public class SafeCommandRunnerTests
         SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
-        string result = runner.Run($"cat {fileName}");
+        var result = runner.Run($"cat {fileName}");
 
         // Assert
-        Assert.AreEqual(expectedContent, result);
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(expectedContent, result.Value);
     }
+
+
+
+
 
 
 
@@ -147,14 +63,19 @@ public class SafeCommandRunnerTests
     public void Run_CatCommand_WithNonexistentFile_ReturnsFileNotFound()
     {
         // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
         // Act
-        string result = runner.Run("cat ghost_file.txt");
+        var result = runner.Run("cat ghost_file.txt");
 
         // Assert
-        Assert.AreEqual("File not found.", result);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("File not found.", result.Error);
     }
+
+
+
+
 
 
 
@@ -163,14 +84,40 @@ public class SafeCommandRunnerTests
     public void Run_CatCommand_WithPathTraversal_ReturnsDenied()
     {
         // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
         // Act — attempt to read outside the sandbox
-        string result = runner.Run("cat ../../sensitive.txt");
+        var result = runner.Run("cat ../../sensitive.txt");
 
         // Assert
-        Assert.AreEqual("Access denied.", result);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("Access denied.", result.Error);
     }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void Run_EchoCommand_ReturnsArguments()
+    {
+        // Arrange
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+
+        // Act
+        var result = runner.Run("echo hello world");
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("hello world", result.Value);
+    }
+
+
+
+
 
 
 
@@ -179,12 +126,113 @@ public class SafeCommandRunnerTests
     public void Run_EchoWithNoArgs_ReturnsEmptyString()
     {
         // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
         // Act
-        string result = runner.Run("echo");
+        var result = runner.Run("echo");
 
         // Assert
-        Assert.AreEqual(string.Empty, result);
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(string.Empty, result.Value);
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void Run_LsCommand_ReturnsSandboxFileNames()
+    {
+        // Arrange
+        File.WriteAllText(Path.Combine(_sandboxDir, "alpha.txt"), "a");
+        File.WriteAllText(Path.Combine(_sandboxDir, "beta.txt"), "b");
+
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+
+        // Act
+        var result = runner.Run("ls");
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        StringAssert.Contains(result.Value!, "alpha.txt");
+        StringAssert.Contains(result.Value!, "beta.txt");
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void Run_WithDisallowedCommand_ReturnsNotAllowedMessage()
+    {
+        // Arrange
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+
+        // Act
+        var result = runner.Run("rm -rf /");
+
+        // Assert
+        Assert.IsFalse(result.Success);
+        StringAssert.Contains(result.Error!, "not allowed");
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow("   ")]
+    public void Run_WithNullOrWhitespaceInput_ReturnsNoCommandProvided(string? input)
+    {
+        // Arrange
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+
+        // Act
+        var result = runner.Run(input!);
+
+        // Assert
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("No command provided.", result.Error);
+    }
+
+
+
+
+
+
+
+
+    [TestInitialize]
+    public void SetUp()
+    {
+        _sandboxDir = Path.Combine(Path.GetTempPath(), $"SafeCommandRunnerTests_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(_sandboxDir);
+    }
+
+
+
+
+
+
+
+
+    [TestCleanup]
+    public void TearDown()
+    {
+        if (Directory.Exists(_sandboxDir))
+        {
+            Directory.Delete(_sandboxDir, recursive: true);
+        }
     }
 }

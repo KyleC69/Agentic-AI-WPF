@@ -1,8 +1,14 @@
-﻿// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   DataIngestionLib
-//  File:         RagSearchTool.cs
-//   Author: Kyle L. Crowder
+﻿// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         RagSearchTool.cs
+// Author: Kyle L. Crowder
+// Build Num: 105650
+
+
+
+using DataIngestionLib.Services;
+
 
 
 
@@ -12,46 +18,24 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-public sealed class RagSearchTool
+public sealed class FullTextRagSearchTool
 {
-    private readonly IRagRetriever _retriever;
 
 
 
 
 
-
-
-
-    public RagSearchTool(IRagRetriever retriever)
-    {
-        _retriever = retriever;
-    }
-
-
-
-
-
-
-
-
-    public ToolResult<IReadOnlyList<RagResult>> Search(string query, int topK = 5)
+    public static ToolResult<string> Search(string query)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            return ToolResult<IReadOnlyList<RagResult>>.Fail("Query cannot be empty.");
+            return ToolResult<string>.Fail("Query cannot be empty.");
         }
 
-        if (topK is < 1 or > 50)
-        {
-            return ToolResult<IReadOnlyList<RagResult>>.Fail("topK must be between 1 and 50.");
-        }
-
-        var results = _retriever.Search(query, topK);
-        return ToolResult<IReadOnlyList<RagResult>>.Ok(results);
-
-
-
+        var results = RagDataService.FullTextSearch(query);
+        return string.IsNullOrEmpty(results) || results == "[]"
+                ? ToolResult<string>.Fail("No results found.")
+                : ToolResult<string>.Ok(results);
     }
 }
 

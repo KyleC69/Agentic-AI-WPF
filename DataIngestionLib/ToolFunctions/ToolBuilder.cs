@@ -1,12 +1,12 @@
-﻿// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   DataIngestionLib
-//  File:         ToolBuilder.cs
-//   Author: Kyle L. Crowder
+﻿// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ToolBuilder.cs
+// Author: Kyle L. Crowder
+// Build Num: 105649
 
 
 
-using System.Diagnostics.Eventing.Reader;
 using System.Net.Http;
 
 using Microsoft.Extensions.AI;
@@ -26,12 +26,9 @@ internal class ToolBuilder
 
     public static IList<AITool> GetAiTools(IHttpClientFactory httpClientFactory)
     {
-        FileSystemWriterTool fileSystemPlugin = new();
         WebSearchPlugin webSearchPlugin = new(httpClientFactory);
         AgentLogger logger = new(Environment.CurrentDirectory);
 
-        SandboxFileReader fileReader = new(Environment.CurrentDirectory);
-        SandboxFileWriter fileWriter = new(Environment.CurrentDirectory);
         SystemInfoTool systemInfoTool = new();
         SandboxEventLogReader eventLogReader = new();
         SafeCommandRunner safeCommandRunner = new(Environment.CurrentDirectory);
@@ -40,21 +37,18 @@ internal class ToolBuilder
 
 
         IList<AITool> tools =
-          [
+        [
 
-                  AIFunctionFactory.Create(logger.LogMessage),
-                AIFunctionFactory.Create(fileSystemPlugin.WriteText),
-                //  AIFunctionFactory.Create(ragSearchTool.Search),
-                AIFunctionFactory.Create(fileReader.ReadFile),
+                AIFunctionFactory.Create(logger.LogMessage),
+                AIFunctionFactory.Create(FileSystemWriterTool.WriteText),
+                AIFunctionFactory.Create(FileSystemReaderTool.ReadFile),
+                AIFunctionFactory.Create(FullTextRagSearchTool.Search),
                 AIFunctionFactory.Create(webSearchPlugin.WebSearch),
-                AIFunctionFactory.Create(fileWriter.WriteFile),
-                AIFunctionFactory.Create(systemInfoTool.GetInfo),   
-                  AIFunctionFactory.Create(eventLogReader.ReadLog),
-                  AIFunctionFactory.Create(safeCommandRunner.Run),
-                  
+                AIFunctionFactory.Create(systemInfoTool.GetInfo),
+                AIFunctionFactory.Create(eventLogReader.ReadLog),
+                AIFunctionFactory.Create(safeCommandRunner.Run)
 
-
-          ];
+        ];
 
 
         return tools;

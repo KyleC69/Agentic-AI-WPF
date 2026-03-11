@@ -1,8 +1,9 @@
-﻿// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   RAGDataIngestionWPF
-//  File:         MainViewModel.cs
-//   Author: Kyle L. Crowder
+﻿// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         MainViewModel.cs
+// Author: Kyle L. Crowder
+// Build Num: 105619
 
 
 
@@ -134,7 +135,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        throw new NotImplementedException();
+
     }
 
 

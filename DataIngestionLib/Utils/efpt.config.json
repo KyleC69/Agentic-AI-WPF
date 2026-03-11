@@ -1,17 +1,17 @@
 ﻿{
    "CodeGenerationMode": 6,
-   "ContextClassName": "ChatContext",
+   "ContextClassName": "RAGContext",
    "ContextNamespace": "",
    "FilterSchemas": false,
    "IncludeConnectionString": false,
    "IrregularWords": null,
    "MinimumProductVersion": "2.6.1378",
    "ModelNamespace": null,
-   "OutputContextPath": "DBChatHistory",
-   "OutputPath": "DBChatHistory",
+   "OutputContextPath": "Data",
+   "OutputPath": "RAGModels",
    "PluralRules": null,
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "DBChatHistory",
+   "ProjectRootNamespace": "DataIngestionLib.ExternalKnowledge",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,
@@ -19,14 +19,54 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[ChatHistory]",
+         "Name": "[dbo].[Chunks_Code]",
          "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Chunks_Text]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Documents]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Metadata]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[rag_policy_chunk]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RemoteRAG]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Search_FullText]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Search_Hybrid]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Search_SemanticKeyPhrases]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Search_Vector]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[sp_VectorizeSearchText]",
+         "ObjectType": 1
       }
    ],
    "UiHint": null,
    "UncountableWords": null,
    "UseAsyncStoredProcedureCalls": true,
-   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseBoolPropertiesWithoutDefaultSql": true,
    "UseDatabaseNames": false,
    "UseDatabaseNamesForRoutines": true,
    "UseDateOnlyTimeOnly": true,
@@ -43,7 +83,7 @@
    "UseNoNavigations": false,
    "UseNoObjectFilter": false,
    "UseNodaTime": false,
-   "UseNullableReferences": false,
+   "UseNullableReferences": true,
    "UsePrefixNavigationNaming": false,
    "UseSchemaFolders": false,
    "UseSchemaNamespaces": false,

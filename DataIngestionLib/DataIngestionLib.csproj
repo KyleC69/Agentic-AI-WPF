@@ -16,6 +16,17 @@
     <WarningLevel>8</WarningLevel>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="DBChatHistory\**" />
+    <Compile Remove="Ingestion\**" />
+    <EmbeddedResource Remove="DBChatHistory\**" />
+    <EmbeddedResource Remove="Ingestion\**" />
+    <None Remove="DBChatHistory\**" />
+    <None Remove="Ingestion\**" />
+    <Page Remove="DBChatHistory\**" />
+    <Page Remove="Ingestion\**" />
+  </ItemGroup>
+
 
 
   <ItemGroup>
@@ -38,11 +49,8 @@
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
 	  <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="11.0.0-preview.1.26104.118" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
 	  <PackageReference Include="OllamaSharp" Version="5.4.23" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DBChatHistory\" />
   </ItemGroup>
 
 </Project>

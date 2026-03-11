@@ -1,8 +1,9 @@
-// 2026/03/10
-//  Solution: RAGDataIngestionWPF
-//  Project:   DataIngestionLib
-//  File:         ChatHistoryOptions.cs
-//   Author: Kyle L. Crowder
+// Build Date: 2026/03/11
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChatHistoryOptions.cs
+// Author: Kyle L. Crowder
+// Build Num: 105646
 
 
 
@@ -29,7 +30,7 @@ public sealed class ChatHistoryOptions
     ///     history.
     ///     This helps retain the context of removed messages while adhering to the constraints of maximum messages or tokens.
     /// </remarks>
-    public bool EnableSummarization { get; set; }  //is it practical to summarize in real-time on enterprise environment that retain full history?
+    public bool EnableSummarization { get; set; } //is it practical to summarize in real-time on enterprise environment that retain full history?
 
 
     /// <summary>
@@ -47,9 +48,14 @@ public sealed class ChatHistoryOptions
     public int? MaxContextTokens { get; set; } = 130000;
 
     /// <summary>
-    /// Enabled the use of past chat history message as part of the context. Can be extremely useful for enterprise scenarios where the entire history of the conversation needs to be retained and used as part of the context for future interactions. When enabled, past messages from the chat history are
-    /// Ideal Scenario : Call centers or support systems using LLM's to assist agents in providing better customer service by retaining the entire history of customer interactions, allowing for more informed responses and personalized assistance.
-    /// This is not the same as RAG Knowledge, which may consist of in-house documents or very specific domain contents like repair manuals, product catalogs, etc... 
+    ///     Enabled the use of past chat history message as part of the context. Can be extremely useful for enterprise
+    ///     scenarios where the entire history of the conversation needs to be retained and used as part of the context for
+    ///     future interactions. When enabled, past messages from the chat history are
+    ///     Ideal Scenario : Call centers or support systems using LLM's to assist agents in providing better customer service
+    ///     by retaining the entire history of customer interactions, allowing for more informed responses and personalized
+    ///     assistance.
+    ///     This is not the same as RAG Knowledge, which may consist of in-house documents or very specific domain contents
+    ///     like repair manuals, product catalogs, etc...
     /// </summary>
     public int MaxSemanticMessages { get; set; } = 8;
 
@@ -85,9 +91,6 @@ public sealed class ChatHistoryOptions
 
 
 
-    public ChatHistoryMode PruneMode { get; set; } = ChatHistoryMode.MessageCount;
-    public ChatHistoryRetentionPolicy RetentionPolicy { get; set; } = ChatHistoryRetentionPolicy.KeepNewest;
-}
 public enum ChatHistoryMode
 {
     /// <summary>
