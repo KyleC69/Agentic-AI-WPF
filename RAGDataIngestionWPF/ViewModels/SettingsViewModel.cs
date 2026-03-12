@@ -14,6 +14,7 @@ using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.Options;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using RAGDataIngestionWPF.Contracts.Services;
@@ -30,7 +31,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 // TODO: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
-public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IApplicationIdService applicationIdService, IChatHistorySettingsService chatHistorySettingsService) : ObservableObject, INavigationAware
+public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IApplicationIdService applicationIdService, IChatHistorySettingsService chatHistorySettingsService, ILoggingLevelService loggingLevelService) : ObservableObject, INavigationAware
 {
     private const string SettingsPageChatHistoryContextEnabledLabelKey = "SettingsPageChatHistoryContextEnabledLabel";
     private const string SettingsPageChatHistorySaveStatusKey = "SettingsPageChatHistorySaveStatus";
@@ -50,6 +51,7 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
     private readonly IThemeSelectorService _themeSelectorService = themeSelectorService;
     private readonly IUserDataService _userDataService = userDataService;
     private readonly IChatHistorySettingsService _chatHistorySettingsService = chatHistorySettingsService;
+    private readonly ILoggingLevelService _loggingLevelService = loggingLevelService;
 
 
 
@@ -156,6 +158,31 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
     {
         get; set => SetProperty(ref field, value);
     }
+
+
+
+
+    /// <summary>
+    /// The available <see cref="LogLevel"/> values displayed in the log-level picker.
+    /// <see cref="LogLevel.None"/> is excluded because selecting it silences all logging,
+    /// which makes runtime diagnostics impossible.
+    /// </summary>
+    public IReadOnlyList<LogLevel> AvailableLogLevels { get; } =
+        Enum.GetValues<LogLevel>().Where(l => l != LogLevel.None).ToList();
+
+
+
+
+    /// <summary>Gets or sets the currently selected minimum log level.</summary>
+    public LogLevel MinimumLogLevel
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+    public ICommand SetLogLevelCommand => field ??= new RelayCommand(OnSetLogLevel);
 
 
 
@@ -274,6 +301,8 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
         RAGKnowledgeEnabled = settings.RAGKnowledgeEnabled;
         ChatHistoryContextEnabled = settings.ChatHistoryContextEnabled;
         ChatHistorySettingsStatus = string.Empty;
+
+        MinimumLogLevel = _loggingLevelService.GetMinimumLevel();
     }
 
 
@@ -326,6 +355,12 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
     }
 
 
+
+
+    private void OnSetLogLevel()
+    {
+        _loggingLevelService.SetMinimumLevel(MinimumLogLevel);
+    }
 
 
 

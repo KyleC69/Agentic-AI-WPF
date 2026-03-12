@@ -77,6 +77,11 @@ public partial class App : Application
     private const string OllamaEndpoint = "http://localhost:11434";
     private const string OllamaModel = "gpt-oss:20b-cloud";
 
+    // Created before the host is built so it can be captured by the logging
+    // filter lambda. Registered as a singleton in DI so LoggingLevelService
+    // can mutate it at runtime.
+    private readonly LoggingLevelSwitch _loggingLevelSwitch = new();
+
 
 
 
@@ -101,7 +106,12 @@ public partial class App : Application
                 {
                     logging.AddDebug();
                     logging.AddConsole();
+                    // Set the host-level minimum to Trace so every message reaches
+                    // the dynamic filter below. The LoggingLevelSwitch controls the
+                    // effective minimum at runtime and is user-configurable from the
+                    // Settings page.
                     logging.SetMinimumLevel(LogLevel.Trace);
+                    logging.AddFilter((_, level) => level >= _loggingLevelSwitch.MinimumLevel);
                 })
                 .Build();
     }
@@ -122,7 +132,7 @@ public partial class App : Application
         RegisterAgentServices(services);
         RegisterActivationHandlers(services);
         RegisterCoreServices(services);
-        RegisterApplicationServices(services);
+        RegisterApplicationServices(services, _loggingLevelSwitch);
         RegisterViewsAndViewModels(services);
 
         // Configuration
@@ -346,7 +356,7 @@ public partial class App : Application
 
 
 
-    private static void RegisterApplicationServices(IServiceCollection services)
+    private static void RegisterApplicationServices(IServiceCollection services, LoggingLevelSwitch loggingLevelSwitch)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -356,6 +366,8 @@ public partial class App : Application
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
         services.AddSingleton<ISystemService, SystemService>();
         services.AddSingleton<IApplicationIdService, ApplicationIdService>();
+        services.AddSingleton(loggingLevelSwitch);
+        services.AddSingleton<ILoggingLevelService, LoggingLevelService>();
         services.AddSingleton<ChatHistorySettingsService>();
         services.AddSingleton<IChatHistorySettingsService>(sp => sp.GetRequiredService<ChatHistorySettingsService>());
         services.AddSingleton<IOptionsMonitor<ChatHistoryOptions>>(sp => sp.GetRequiredService<ChatHistorySettingsService>());

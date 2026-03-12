@@ -1,5 +1,6 @@
 using DataIngestionLib.Options;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using Moq;
@@ -61,6 +62,41 @@ public class SettingsViewModelTests
         Assert.AreEqual(viewModel.ChatHistorySaveStatusText, viewModel.ChatHistorySettingsStatus);
     }
 
+    [TestMethod]
+    public void OnNavigatedTo_LoadsMinimumLogLevelFromLoggingLevelService()
+    {
+        Mock<ILoggingLevelService> loggingLevelServiceMock = new();
+        loggingLevelServiceMock.Setup(s => s.GetMinimumLevel()).Returns(LogLevel.Warning);
+
+        SettingsViewModel viewModel = CreateViewModel(loggingLevelServiceMock: loggingLevelServiceMock);
+        viewModel.OnNavigatedTo(null!);
+
+        Assert.AreEqual(LogLevel.Warning, viewModel.MinimumLogLevel);
+    }
+
+    [TestMethod]
+    public void SetLogLevelCommand_DelegatesToLoggingLevelService()
+    {
+        Mock<ILoggingLevelService> loggingLevelServiceMock = new();
+        loggingLevelServiceMock.Setup(s => s.GetMinimumLevel()).Returns(LogLevel.Trace);
+
+        SettingsViewModel viewModel = CreateViewModel(loggingLevelServiceMock: loggingLevelServiceMock);
+        viewModel.OnNavigatedTo(null!);
+
+        viewModel.MinimumLogLevel = LogLevel.Error;
+        viewModel.SetLogLevelCommand.Execute(null);
+
+        loggingLevelServiceMock.Verify(s => s.SetMinimumLevel(LogLevel.Error), Times.Once);
+    }
+
+    [TestMethod]
+    public void AvailableLogLevels_DoesNotContainNone()
+    {
+        SettingsViewModel viewModel = CreateViewModel();
+
+        Assert.IsFalse(viewModel.AvailableLogLevels.Contains(LogLevel.None));
+    }
+
     private static Mock<IChatHistorySettingsService> CreateChatHistorySettingsServiceMock()
     {
         Mock<IChatHistorySettingsService> chatSettingsServiceMock = new();
@@ -82,7 +118,8 @@ public class SettingsViewModelTests
 
     private static SettingsViewModel CreateViewModel(
             ChatHistoryOptions? chatSettings = null,
-            Mock<IChatHistorySettingsService>? chatSettingsServiceMock = null)
+            Mock<IChatHistorySettingsService>? chatSettingsServiceMock = null,
+            Mock<ILoggingLevelService>? loggingLevelServiceMock = null)
     {
         Mock<IThemeSelectorService> themeSelectorServiceMock = new();
         themeSelectorServiceMock.Setup(service => service.GetCurrentTheme()).Returns(AppTheme.Dark);
@@ -121,6 +158,11 @@ public class SettingsViewModelTests
                     ChatHistoryContextEnabled = true
                 });
 
+        Mock<ILoggingLevelService> resolvedLoggingLevelServiceMock = loggingLevelServiceMock ?? new Mock<ILoggingLevelService>();
+        resolvedLoggingLevelServiceMock
+                .Setup(s => s.GetMinimumLevel())
+                .Returns(LogLevel.Trace);
+
         return new SettingsViewModel(
                 appConfigMock.Object,
                 themeSelectorServiceMock.Object,
@@ -128,6 +170,7 @@ public class SettingsViewModelTests
                 applicationInfoServiceMock.Object,
                 userDataServiceMock.Object,
                 applicationIdServiceMock.Object,
-                resolvedChatSettingsServiceMock.Object);
+                resolvedChatSettingsServiceMock.Object,
+                resolvedLoggingLevelServiceMock.Object);
     }
 }

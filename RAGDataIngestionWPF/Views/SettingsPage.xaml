@@ -7,6 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:converters="clr-namespace:RAGDataIngestionWPF.Converters"
     xmlns:models="clr-namespace:RAGDataIngestionWPF.Models"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
+    xmlns:logging="clr-namespace:Microsoft.Extensions.Logging;assembly=Microsoft.Extensions.Logging.Abstractions"
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     mc:Ignorable="d" Background="DarkBlue"
@@ -61,6 +63,26 @@
                             </i:Interaction.Triggers>
                         </RadioButton>
                     </StackPanel>
+                </StackPanel>
+
+                <TextBlock
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource SubtitleTextStyle}"
+                    Text="Diagnostics" />
+                <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
+                    <TextBlock
+                        Style="{StaticResource BodyTextStyle}"
+                        Text="Minimum Log Level" />
+                    <ComboBox
+                        Margin="{StaticResource XSmallTopMargin}"
+                        ItemsSource="{Binding AvailableLogLevels, Mode=OneTime}"
+                        SelectedItem="{Binding MinimumLogLevel, Mode=TwoWay}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <i:InvokeCommandAction Command="{Binding SetLogLevelCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </ComboBox>
                 </StackPanel>
 
                 <TextBlock
