@@ -52,10 +52,10 @@ public class AIContextHistoryInjectorTests
                 CreateOptions(new ChatHistoryOptions { MaxContextMessages = 10 }));
 
         // Same message content in current request — should be de-duplicated
-        ChatHistory currentRequest = new();
+        AIChatHistory currentRequest = [];
         currentRequest.AddUserMessage("Hello");
 
-        var result = await injector.BuildContextMessagesAsync(
+        IEnumerable<AIChatMessage> result = await injector.BuildContextMessagesAsync(
                 "conv-1",
                 currentRequest,
                 CancellationToken.None);
@@ -83,11 +83,11 @@ public class AIContextHistoryInjectorTests
                 .Setup(p => p.GetMessagesAsync("conv-1", null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(messages);
 
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 5 }));
+        AIContextHistoryInjector injector = new(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 5 }));
 
-        var result = await injector.BuildContextMessagesAsync(
+        IEnumerable<AIChatMessage> result = await injector.BuildContextMessagesAsync(
                 "conv-1",
-                new ChatHistory(),
+                [],
                 CancellationToken.None);
 
         Assert.AreEqual(5, result.Count(), "Window should be capped at MaxContextMessages.");
@@ -108,11 +108,11 @@ public class AIContextHistoryInjectorTests
                 .Setup(p => p.GetMessagesAsync("conv-1", null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync([]);
 
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 10 }));
+        AIContextHistoryInjector injector = new(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 10 }));
 
-        var result = await injector.BuildContextMessagesAsync(
+        IEnumerable<AIChatMessage> result = await injector.BuildContextMessagesAsync(
                 "conv-1",
-                new ChatHistory(),
+                [],
                 CancellationToken.None);
 
         Assert.AreEqual(0, result.Count());
@@ -140,11 +140,11 @@ public class AIContextHistoryInjectorTests
                 .Setup(p => p.GetMessagesAsync("conv-1", null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(messages);
 
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 10 }));
+        AIContextHistoryInjector injector = new(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 10 }));
 
-        var result = await injector.BuildContextMessagesAsync(
+        IEnumerable<AIChatMessage> result = await injector.BuildContextMessagesAsync(
                 "conv-1",
-                new ChatHistory(),
+                [],
                 CancellationToken.None);
 
         Assert.AreEqual(1, result.Count(), "Messages with empty or whitespace content should be excluded.");
@@ -161,14 +161,14 @@ public class AIContextHistoryInjectorTests
     [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
-    public async Task BuildContextMessagesAsync_ThrowsArgumentException_WhenConversationIdIsNullOrWhiteSpace(string? conversationId)
+    public async Task BuildContextMessagesAsync_ThrowsArgumentException_WhenConversationIdIsNullOrWhiteSpace(string conversationId)
     {
         var providerMock = new Mock<IChatHistoryProvider>();
 
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object, CreateOptions(new ChatHistoryOptions()));
+        AIContextHistoryInjector injector = new(providerMock.Object, CreateOptions(new ChatHistoryOptions()));
 
         await Assert.ThrowsExactlyAsync<ArgumentException>(async () =>
-                await injector.BuildContextMessagesAsync(conversationId!, new ChatHistory()));
+                await injector.BuildContextMessagesAsync(conversationId!, []));
     }
 
 
@@ -196,15 +196,15 @@ public class AIContextHistoryInjectorTests
     {
         return new PersistedChatMessage
         {
-                MessageId = id ?? Guid.NewGuid(),
-                ConversationId = "conv-1",
-                SessionId = "session-1",
-                AgentId = "agent-1",
-                UserId = "user-1",
-                ApplicationId = "app-1",
-                Role = role,
-                Content = content,
-                TimestampUtc = timestamp ?? DateTimeOffset.UtcNow
+            MessageId = id ?? Guid.NewGuid(),
+            ConversationId = "conv-1",
+            SessionId = "session-1",
+            AgentId = "agent-1",
+            UserId = "user-1",
+            ApplicationId = "app-1",
+            Role = role,
+            Content = content,
+            TimestampUtc = timestamp ?? DateTimeOffset.UtcNow
         };
     }
 
@@ -235,13 +235,13 @@ public class AIContextHistoryInjectorTests
                 .Callback<Guid, CancellationToken>((id, _) => deleted.Add(id))
                 .ReturnsAsync(true);
 
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 6 }));
+        AIContextHistoryInjector injector = new(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 6 }));
 
         var removed = await injector.PruneConversationAsync("conv-1", CancellationToken.None);
 
         Assert.AreEqual(4, removed, "4 oldest messages should be pruned when limit is 6 out of 10.");
         // The oldest 4 messages should be the ones deleted
-        var expectedDeleted = messages.Take(4).Select(m => m.MessageId);
+        IEnumerable<Guid> expectedDeleted = messages.Take(4).Select(m => m.MessageId);
         CollectionAssert.AreEquivalent(expectedDeleted.ToList(), deleted);
     }
 
@@ -265,7 +265,7 @@ public class AIContextHistoryInjectorTests
                 .Setup(p => p.GetMessagesAsync("conv-1", null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(messages);
 
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 10 }));
+        AIContextHistoryInjector injector = new(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 10 }));
 
         var removed = await injector.PruneConversationAsync("conv-1", CancellationToken.None);
 
@@ -294,14 +294,13 @@ public class AIContextHistoryInjectorTests
                 .Setup(p => p.GetMessagesAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync([]);
 
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 100 }));
+        AIContextHistoryInjector injector = new(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 100 }));
 
-        ChatHistory request = new ChatHistory();
-        request.Add(new AIChatMessage(ChatRole.User, string.Empty));
+        AIChatHistory request = [new AIChatMessage(ChatRole.User, string.Empty)];
 
         await injector.StoreMessagesAsync(
                 "conv-1", "session-1", "agent-1", "user-1", "app-1",
-                request, new ChatHistory(), CancellationToken.None);
+                request, [], CancellationToken.None);
 
         Assert.AreEqual(0, stored.Count, "Messages with empty content should not be persisted.");
     }
@@ -328,15 +327,15 @@ public class AIContextHistoryInjectorTests
                 .Setup(p => p.GetMessagesAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync([]);
 
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 100 }));
+        AIContextHistoryInjector injector = new(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 100 }));
 
-        ChatHistory request = new ChatHistory();
+        AIChatHistory request = [];
         request.AddSystemMessage("You are a helpful assistant.");
         request.AddUserMessage("Hello");
 
         await injector.StoreMessagesAsync(
                 "conv-1", "session-1", "agent-1", "user-1", "app-1",
-                request, new ChatHistory(), CancellationToken.None);
+                request, [], CancellationToken.None);
 
         Assert.IsFalse(stored.Any(m => m.Role == "system"), "System messages should not be persisted.");
         Assert.AreEqual(1, stored.Count, "Only the user message should be persisted.");
@@ -364,12 +363,12 @@ public class AIContextHistoryInjectorTests
                 .Setup(p => p.GetMessagesAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(stored.AsReadOnly());
 
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 100 }));
+        AIContextHistoryInjector injector = new(providerMock.Object, CreateOptions(new ChatHistoryOptions { MaxContextMessages = 100 }));
 
-        ChatHistory request = new ChatHistory();
+        AIChatHistory request = [];
         request.AddUserMessage("What is the weather?");
 
-        ChatHistory response = new ChatHistory();
+        AIChatHistory response = [];
         response.AddAssistantMessage("It is sunny.");
 
         await injector.StoreMessagesAsync(

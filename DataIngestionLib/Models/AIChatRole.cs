@@ -228,8 +228,8 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
     /// <inheritdoc />
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
-        return obj is AIChatRole otherRole && Equals(otherRole)
-               || obj is ChatRole chatRole && Equals(chatRole);
+        return (obj is AIChatRole otherRole && Equals(otherRole))
+               || (obj is ChatRole chatRole && Equals(chatRole));
     }
 
 
@@ -278,29 +278,6 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
 
 
-    /// <summary>Provides a <see cref="JsonConverter{AIChatRole}" /> for serializing <see cref="AIChatRole" /> instances.</summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public sealed class Converter : JsonConverter<AIChatRole>
-    {
-        /// <inheritdoc />
-        public override AIChatRole Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            return new(reader.GetString()!);
-        }
-
-
-
-
-
-
-
-
-        /// <inheritdoc />
-        public override void Write(Utf8JsonWriter writer, AIChatRole value, JsonSerializerOptions options)
-        {
-            writer.WriteStringValue(value.Value);
-        }
-    }
 
 
 
@@ -324,5 +301,32 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
     public AIChatRole ToAIChatRole()
     {
         return this;
+    }
+}
+
+
+
+
+/// <summary>Provides a <see cref="JsonConverter{AIChatRole}" /> for serializing <see cref="AIChatRole" /> instances.</summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed class Converter : JsonConverter<AIChatRole>
+{
+    /// <inheritdoc />
+    public override AIChatRole Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        return new(reader.GetString()!);
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public override void Write(Utf8JsonWriter writer, AIChatRole value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.Value);
     }
 }

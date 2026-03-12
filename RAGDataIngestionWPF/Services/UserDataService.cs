@@ -28,7 +28,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 
-public class UserDataService : IUserDataService
+public sealed class UserDataService : IUserDataService
 {
     private readonly AppSettings _appConfig;
     private readonly IFileService _fileService;
@@ -49,13 +49,6 @@ public class UserDataService : IUserDataService
     }
 
 
-
-
-
-
-
-
-    public event EventHandler<UserViewModel> UserDataUpdated;
 
 
 
@@ -93,8 +86,8 @@ public class UserDataService : IUserDataService
     {
         return new UserViewModel
         {
-                Name = Environment.UserName,
-                Photo = ImageHelper.ImageFromAssetsFile("DefaultIcon.png")
+            Name = Environment.UserName,
+            Photo = ImageHelper.ImageFromAssetsFile("DefaultIcon.png")
         };
     }
 
@@ -107,8 +100,8 @@ public class UserDataService : IUserDataService
 
     private UserViewModel GetUserFromCache()
     {
-        var folderPath = Path.Combine(_localAppData, _appConfig.ConfigurationsFolder);
-        var fileName = _appConfig.UserFileName;
+        string folderPath = Path.Combine(_localAppData, _appConfig.ConfigurationsFolder);
+        string fileName = _appConfig.UserFileName;
         User cacheData = _fileService.Read<User>(folderPath, fileName);
         return GetUserViewModelFromData(cacheData);
     }
@@ -133,9 +126,9 @@ public class UserDataService : IUserDataService
 
         return new UserViewModel
         {
-                Name = userData.DisplayName,
-                UserPrincipalName = userData.UserPrincipalName,
-                Photo = userPhoto
+            Name = userData.DisplayName,
+            UserPrincipalName = userData.UserPrincipalName,
+            Photo = userPhoto
         };
     }
 }

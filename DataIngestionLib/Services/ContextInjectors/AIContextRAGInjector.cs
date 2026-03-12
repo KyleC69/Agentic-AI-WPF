@@ -47,12 +47,12 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
 
-    protected override async ValueTask<IEnumerable<ChatMessage>?> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
+    protected override async ValueTask<IEnumerable<ChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(context);
 
-        ChatHistory requestMessages =
+        AIChatHistory requestMessages =
         [
                 .. context.RequestMessages
                         .Select(m => new AIChatMessage(m.Role, m.Text))
@@ -66,7 +66,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
         foreach (IRagContextSource source in _sources)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            ChatHistory sourceMessages = await source
+            AIChatHistory sourceMessages = await source
                     .GetContextMessagesAsync(requestMessages, context.Session, cancellationToken)
                     .ConfigureAwait(false);
 

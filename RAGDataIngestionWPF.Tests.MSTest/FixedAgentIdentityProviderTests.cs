@@ -34,7 +34,7 @@ public class FixedAgentIdentityProviderTests
     [TestMethod]
     public void AIChatMessage_ToString_ReturnsEmptyString_WhenContentIsNull()
     {
-        AIChatMessage message = new(ChatRole.User, (string?)null);
+        AIChatMessage message = new(ChatRole.User, (string)null);
         Assert.AreEqual(string.Empty, message.ToString());
     }
 
@@ -63,7 +63,7 @@ public class FixedAgentIdentityProviderTests
     [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
-    public void Constructor_ThrowsArgumentException_WhenAgentIdIsNullOrWhiteSpace(string? agentId)
+    public void Constructor_ThrowsArgumentException_WhenAgentIdIsNullOrWhiteSpace(string agentId)
     {
         Assert.ThrowsExactly<ArgumentException>(() => _ = new FixedAgentIdentityProvider(agentId!));
     }

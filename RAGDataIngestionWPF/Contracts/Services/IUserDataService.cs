@@ -27,5 +27,4 @@ public interface IUserDataService
     void Initialize();
 
 
-    event EventHandler<UserViewModel> UserDataUpdated;
 }

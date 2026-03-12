@@ -26,7 +26,7 @@ namespace RAGDataIngestionWPF.Views;
 
 public partial class MainPage : Page
 {
-    private ScrollViewer? _messagesScrollViewer;
+    private ScrollViewer _messagesScrollViewer;
 
 
 
@@ -51,11 +51,11 @@ public partial class MainPage : Page
 
 
 
-    private static T? FindVisualChild<T>(DependencyObject parent)
+    private static T FindVisualChild<T>(DependencyObject parent)
             where T : DependencyObject
     {
-        var childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-        for (var index = 0; index < childrenCount; index++)
+        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (int index = 0; index < childrenCount; index++)
         {
             DependencyObject child = VisualTreeHelper.GetChild(parent, index);
             if (child is T typedChild)
@@ -63,7 +63,7 @@ public partial class MainPage : Page
                 return typedChild;
             }
 
-            T? nestedChild = FindVisualChild<T>(child);
+            T nestedChild = FindVisualChild<T>(child);
             if (nestedChild is not null)
             {
                 return nestedChild;
@@ -94,7 +94,7 @@ public partial class MainPage : Page
 
 
 
-    private void OnMessagesItemsChanged(object? sender, ItemsChangedEventArgs e)
+    private void OnMessagesItemsChanged(object sender, ItemsChangedEventArgs e)
     {
         ScrollMessagesToBottom();
     }
@@ -127,7 +127,7 @@ public partial class MainPage : Page
 
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
         {
-            var lastItem = MessagesListBox.Items[^1];
+            object lastItem = MessagesListBox.Items[^1];
             MessagesListBox.ScrollIntoView(lastItem);
             _messagesScrollViewer?.ScrollToEnd();
         }));

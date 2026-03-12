@@ -5,6 +5,8 @@
   <Folder Name="/.github/agents/">
     <File Path=".github/agents/expert-dotnet-software-engineer.agent.md" />
     <File Path=".github/agents/microsoft-agent-framework-dotnet.agent.md" />
+    <File Path="architect.agent.md" />
+    <File Path="planner.agent.md" />
   </Folder>
   <Folder Name="/.github/instructions/">
     <File Path=".github/instructions/api.instructions.md" />

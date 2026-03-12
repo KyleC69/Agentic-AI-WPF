@@ -16,6 +16,7 @@
 
 
 
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -169,8 +170,8 @@ public partial class App : Application
 
     private static string GetAppLocation()
     {
-        var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
-        var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
+        string? entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
+        string? appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
                 ? AppContext.BaseDirectory
                 : Path.GetDirectoryName(entryAssemblyLocation);
 
@@ -216,7 +217,11 @@ public partial class App : Application
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         var logger = _host?.Services.GetService<ILogger<App>>();
-        LogUnhandledUiException(logger, e.Exception);
+        if (logger != null)
+        {
+            LogUnhandledUiException(logger, e.Exception);
+        }
+
         e.Handled = false;
     }
 
@@ -245,10 +250,14 @@ public partial class App : Application
         }
         catch (InvalidOperationException ex)
         {
-            LogUnhandledUiException(logger, ex);
+            if (logger != null)
+            {
+                LogUnhandledUiException(logger, ex);
+            }
         }
         catch (OperationCanceledException ex)
         {
+            Debug.Assert(logger != null, nameof(logger) + " != null");
             LogUnhandledUiException(logger, ex);
         }
         finally
@@ -277,7 +286,7 @@ public partial class App : Application
         {
                 { ToastNotificationActivationHandler.ActivationArguments, string.Empty }
         };
-        var appLocation = GetAppLocation();
+        string appLocation = GetAppLocation();
 
         _host = BuildHost(e.Args ?? Array.Empty<string>(), appLocation, activationArgs);
 
@@ -354,9 +363,9 @@ public partial class App : Application
             AppSettings appConfig = sp.GetRequiredService<IOptions<AppSettings>>().Value;
             return new ChatSessionOptions
             {
-                    ConfigurationsFolder = appConfig.ConfigurationsFolder,
-                    ChatSessionFileName = appConfig.ChatSessionFileName,
-                    MaxContextTokens = 120000
+                ConfigurationsFolder = appConfig.ConfigurationsFolder,
+                ChatSessionFileName = appConfig.ChatSessionFileName,
+                MaxContextTokens = 120000
             };
         });
         services.AddSingleton<IChatConversationService, ChatConversationService>();

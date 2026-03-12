@@ -45,7 +45,7 @@ public class SafeCommandRunnerTests
         SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
-        var result = runner.Run($"cat {fileName}");
+        ToolResult<string> result = runner.Run($"cat {fileName}");
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -63,10 +63,10 @@ public class SafeCommandRunnerTests
     public void Run_CatCommand_WithNonexistentFile_ReturnsFileNotFound()
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
-        var result = runner.Run("cat ghost_file.txt");
+        ToolResult<string> result = runner.Run("cat ghost_file.txt");
 
         // Assert
         Assert.IsFalse(result.Success);
@@ -84,10 +84,10 @@ public class SafeCommandRunnerTests
     public void Run_CatCommand_WithPathTraversal_ReturnsDenied()
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act — attempt to read outside the sandbox
-        var result = runner.Run("cat ../../sensitive.txt");
+        ToolResult<string> result = runner.Run("cat ../../sensitive.txt");
 
         // Assert
         Assert.IsFalse(result.Success);
@@ -105,10 +105,10 @@ public class SafeCommandRunnerTests
     public void Run_EchoCommand_ReturnsArguments()
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
-        var result = runner.Run("echo hello world");
+        ToolResult<string> result = runner.Run("echo hello world");
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -126,10 +126,10 @@ public class SafeCommandRunnerTests
     public void Run_EchoWithNoArgs_ReturnsEmptyString()
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
-        var result = runner.Run("echo");
+        ToolResult<string> result = runner.Run("echo");
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -150,10 +150,10 @@ public class SafeCommandRunnerTests
         File.WriteAllText(Path.Combine(_sandboxDir, "alpha.txt"), "a");
         File.WriteAllText(Path.Combine(_sandboxDir, "beta.txt"), "b");
 
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
-        var result = runner.Run("ls");
+        ToolResult<string> result = runner.Run("ls");
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -172,10 +172,10 @@ public class SafeCommandRunnerTests
     public void Run_WithDisallowedCommand_ReturnsNotAllowedMessage()
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
-        var result = runner.Run("rm -rf /");
+        ToolResult<string> result = runner.Run("rm -rf /");
 
         // Assert
         Assert.IsFalse(result.Success);
@@ -193,13 +193,13 @@ public class SafeCommandRunnerTests
     [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
-    public void Run_WithNullOrWhitespaceInput_ReturnsNoCommandProvided(string? input)
+    public void Run_WithNullOrWhitespaceInput_ReturnsNoCommandProvided(string input)
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
-        var result = runner.Run(input!);
+        ToolResult<string> result = runner.Run(input!);
 
         // Assert
         Assert.IsFalse(result.Success);

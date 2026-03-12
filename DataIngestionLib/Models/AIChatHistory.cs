@@ -11,7 +11,6 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.AI;
 
@@ -33,7 +32,7 @@ namespace DataIngestionLib.Models;
 ///     in
 ///     service layers.
 /// </remarks>
-public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMessage>, INotifyCollectionChanged, INotifyPropertyChanged
+public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMessage>, INotifyCollectionChanged, INotifyPropertyChanged
 {
     private readonly List<AIChatMessage> _messages;
 
@@ -47,7 +46,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <summary>
     ///     Initializes an empty chat history.
     /// </summary>
-    public ChatHistory()
+    public AIChatHistory()
     {
         _messages = [];
     }
@@ -59,11 +58,14 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
 
 
 
-    public ChatHistory(IEnumerable<(ChatRole Role, string Text)> messages)
+    public AIChatHistory(IEnumerable<(ChatRole Role, string Text)> messages)
     {
         ArgumentNullException.ThrowIfNull(messages);
         _messages = [];
-        foreach ((ChatRole Role, var Text) in messages) Add(new AIChatMessage(Role, Text));
+        foreach ((ChatRole Role, string? Text) in messages)
+        {
+            Add(new AIChatMessage(Role, Text));
+        }
     }
 
 
@@ -78,7 +80,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// </summary>
     /// <param name="message">The text message to add to the first message in chat history.</param>
     /// <param name="role">The role to add as the first message.</param>
-    public ChatHistory(string message, ChatRole role)
+    public AIChatHistory(string message, ChatRole role)
     {
         EnsureNotNullOrWhiteSpace(message, nameof(message));
 
@@ -96,7 +98,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     ///     Initializes chat history with a single system message.
     /// </summary>
     /// <param name="systemMessage">The system message to add to the history.</param>
-    public ChatHistory(string systemMessage)
+    public AIChatHistory(string systemMessage)
             : this(systemMessage, ChatRole.System)
     {
     }
@@ -109,7 +111,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
 
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ChatHistory" /> class with a collection of context request messages.
+    ///     Initializes a new instance of the <see cref="AIChatHistory" /> class with a collection of context request messages.
     /// </summary>
     /// <param name="contextRequestMessages">
     ///     A collection of <see cref="AIChatMessage" /> instances representing the context request messages.
@@ -117,10 +119,10 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <exception cref="ArgumentNullException">
     ///     Thrown when <paramref name="contextRequestMessages" /> is <c>null</c>.
     /// </exception>
-    public ChatHistory(IEnumerable<AIChatMessage> contextRequestMessages)
+    public AIChatHistory(IEnumerable<AIChatMessage> contextRequestMessages)
     {
         ArgumentNullException.ThrowIfNull(contextRequestMessages);
-        _messages = contextRequestMessages.Select(msg => new AIChatMessage(msg.Role, msg.Text)).ToList();
+        _messages = [.. contextRequestMessages.Select(msg => new AIChatMessage(msg.Role, msg.Text))];
     }
 
 
@@ -133,10 +135,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <summary>
     ///     Gets the newest message in the history, or <see langword="null" /> when history is empty.
     /// </summary>
-    public AIChatMessage? LastMessage
-    {
-        get { return _messages.Count == 0 ? null : _messages[^1]; }
-    }
+    public AIChatMessage? LastMessage => _messages.Count == 0 ? null : _messages[^1];
 
 
 
@@ -145,10 +144,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <summary>
     ///     Gets the number of messages in the history.
     /// </summary>
-    public int Count
-    {
-        get { return _messages.Count; }
-    }
+    public int Count => _messages.Count;
 
 
 
@@ -244,7 +240,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index" /> was not valid for this history.</exception>
     public AIChatMessage this[int index]
     {
-        get { return _messages[index]; }
+        get => _messages[index];
         set
         {
             ArgumentNullException.ThrowIfNull(value);
@@ -333,10 +329,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
 
 
     /// <inheritdoc />
-    bool ICollection<AIChatMessage>.IsReadOnly
-    {
-        get { return false; }
-    }
+    bool ICollection<AIChatMessage>.IsReadOnly => false;
 
 
 
@@ -399,6 +392,8 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
                 break;
             case "system":
                 AddSystemMessage(mText);
+                break;
+            default:
                 break;
         }
 
@@ -495,7 +490,10 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     {
         ArgumentNullException.ThrowIfNull(items);
 
-        foreach (AIChatMessage item in items) Add(item);
+        foreach (AIChatMessage item in items)
+        {
+            Add(item);
+        }
     }
 
 
@@ -596,17 +594,17 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
             throw new ArgumentOutOfRangeException(nameof(maxTokens), "Maximum context tokens must be a positive value.");
         }
 
-        var tokenCount = 0;
+        int tokenCount = 0;
 
-        for (var index = _messages.Count - 1; index >= 0; index--)
+        for (int index = _messages.Count - 1; index >= 0; index--)
         {
-            var text = _messages[index].Text;
+            string text = _messages[index].Text;
             if (string.IsNullOrWhiteSpace(text))
             {
                 continue;
             }
 
-            var messageTokenCount = Math.Max(1, text.Length / 4);
+            int messageTokenCount = Math.Max(1, text.Length / 4);
             if (tokenCount + messageTokenCount > maxTokens)
             {
                 break;
@@ -631,11 +629,11 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <returns>Estimated token count for all messages.</returns>
     public int EstimateTokenCount()
     {
-        var tokenCount = 0;
+        int tokenCount = 0;
 
         foreach (AIChatMessage message in _messages)
         {
-            var text = message.Text;
+            string text = message.Text;
             if (string.IsNullOrWhiteSpace(text))
             {
                 continue;
@@ -676,6 +674,8 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     private void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
     {
         CollectionChanged?.Invoke(this, e);
+        OnPropertyChanged(nameof(Count));
+        OnPropertyChanged(nameof(LastMessage));
     }
 
 
@@ -685,7 +685,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
 
 
 
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
@@ -697,32 +697,9 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
 
 
 
-    /// <summary>
-    ///     Implicitly converts a <see cref="AIChatMessage" /> array to a <see cref="ChatHistory" /> instance.
-    /// </summary>
-    /// <param name="messages">The messages to include in the history.</param>
-    public static implicit operator ChatHistory(AIChatMessage[] messages)
-    {
-        ArgumentNullException.ThrowIfNull(messages);
-        return [.. messages];
-    }
 
 
 
-
-
-
-
-
-    /// <summary>
-    ///     Implicitly converts a <see cref="ChatHistory" /> instance to a <see cref="AIChatMessage" /> array.
-    /// </summary>
-    /// <param name="history">The history to convert.</param>
-    public static implicit operator AIChatMessage[](ChatHistory history)
-    {
-        ArgumentNullException.ThrowIfNull(history);
-        return [.. history._messages];
-    }
 
 
 
@@ -748,25 +725,6 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
 
 
 
-    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
-    {
-        if (EqualityComparer<T>.Default.Equals(field, value))
-        {
-            return false;
-        }
-
-        field = value;
-        OnPropertyChanged(propertyName);
-        return true;
-    }
-
-
-
-
-
-
-
-
     /// <summary>
     ///     Attempts to get the most recent message matching the provided role.
     /// </summary>
@@ -775,12 +733,14 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <returns><see langword="true" /> when a matching message exists; otherwise <see langword="false" />.</returns>
     public bool TryGetLastMessage(ChatRole role, [NotNullWhen(true)] out AIChatMessage? message)
     {
-        for (var index = _messages.Count - 1; index >= 0; index--)
+        for (int index = _messages.Count - 1; index >= 0; index--)
+        {
             if (_messages[index].Role == role)
             {
                 message = _messages[index];
                 return true;
             }
+        }
 
         message = null;
         return false;

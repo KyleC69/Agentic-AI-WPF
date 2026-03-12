@@ -24,7 +24,7 @@ public interface IChatConversationService
     /// <summary>
     ///     Gets the active Semantic Kernel chat history for the current conversation.
     /// </summary>
-    ChatHistory ChatHistory { get; }
+    AIChatHistory ChatHistory { get; }
 
 
 

@@ -58,7 +58,10 @@ public sealed class ChatConversationService : IChatConversationService
         _options = options;
         _agent = agentFactory.GetCodingAssistantAgent();
 
-        _agentSession = _agent.CreateSessionAsync().Result;
+        _agentSession = _agent.CreateSessionAsync().IsCompleted
+            ? _agent.CreateSessionAsync().GetAwaiter().GetResult()
+            : throw new InvalidOperationException("Failed to create agent session.");
+        ;
         _contextAccessor = runtimeContextAccessor;
 
 
@@ -73,35 +76,26 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public string ApplicationId
-    {
-        get { return _contextAccessor.GetCurrent().ApplicationId.ToString(); }
-    }
+    public string ApplicationId => _contextAccessor.GetCurrent().ApplicationId.ToString();
 
 
 
 
 
-    public string UserId
-    {
-        get { return _contextAccessor.GetCurrent().UserPrincipalName; }
-    }
+    public string UserId => _contextAccessor.GetCurrent().UserPrincipalName ?? "";
 
 
 
 
 
     //Duplicate history objects?  We should not need to track sepearately the session holds the context and our sql backed chat history should be handling all the history objects.
-    public ChatHistory ChatHistory { get; } = [];
+    public AIChatHistory ChatHistory { get; } = [];
 
 
 
 
 
-    public int ContextTokenCount
-    {
-        get { return CalculateContextTokenCount(); }
-    }
+    public int ContextTokenCount => CalculateContextTokenCount();
 
 
 
@@ -113,20 +107,20 @@ public sealed class ChatConversationService : IChatConversationService
     /// <summary>
     ///     Sends request to LLM and waits for a responsel chat history.
     /// </summary>
-    /// <param name="userMessage">The user message content to answer.</param>
-    /// <param name="cancellationToken">The cancellation token for interrupting generation.</param>
+    /// <param name="content">The user message content to answer.</param>
+    /// <param name="token">The cancellation token for interrupting generation.</param>
     /// <returns>The generated assistant chat message.</returns>
-    public async ValueTask<AIChatMessage> SendRequestToModelAsync(string userMessage, CancellationToken cancellationToken)
+    public async ValueTask<AIChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
     {
-        if (string.IsNullOrWhiteSpace(userMessage))
+        if (string.IsNullOrWhiteSpace(content))
         {
-            throw new ArgumentException("User message cannot be empty.", nameof(userMessage));
+            throw new ArgumentException("User message cannot be empty.", nameof(content));
         }
 
         //Add user message to ChatHistory
-        ChatHistory.AddUserMessage(userMessage);
-        AgentResponse response = await _agent.RunAsync(userMessage, _agentSession, null, cancellationToken);
-        var assistantText = response.Text?.Trim() ?? string.Empty;
+        ChatHistory.AddUserMessage(content);
+        AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
+        string assistantText = response.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(assistantText))
         {
 
@@ -140,7 +134,7 @@ public sealed class ChatConversationService : IChatConversationService
                             .Where(static text => !string.IsNullOrWhiteSpace(text)));
         }
 
-        AIChatMessage assistantMessage = new AIChatMessage(ChatRole.Assistant, assistantText);
+        AIChatMessage assistantMessage = new(ChatRole.Assistant, assistantText);
         if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
         {
             ChatHistory.Add(assistantMessage);
@@ -158,12 +152,12 @@ public sealed class ChatConversationService : IChatConversationService
 
     private int CalculateContextTokenCount()
     {
-        var tokenCount = 0;
+        int tokenCount = 0;
 
-        for (var index = ChatHistory.Count - 1; index >= 0; index--)
+        for (int index = ChatHistory.Count - 1; index >= 0; index--)
         {
-            var content = ChatHistory[index].Text ?? string.Empty;
-            var messageTokenCount = EstimateTokenCount(content);
+            string content = ChatHistory[index].Text ?? string.Empty;
+            int messageTokenCount = EstimateTokenCount(content);
             if (tokenCount + messageTokenCount > _options.MaxContextTokens)
             {
                 break;
@@ -185,50 +179,5 @@ public sealed class ChatConversationService : IChatConversationService
     private static int EstimateTokenCount(string content)
     {
         return string.IsNullOrWhiteSpace(content) ? 0 : Math.Max(1, content.Length / 4);
-    }
-
-
-
-
-
-
-
-
-    private static string FormatMarkdownLite(string content)
-    {
-        var normalized = content.Replace("\r\n", "\n", StringComparison.Ordinal)
-                .Replace("**", string.Empty, StringComparison.Ordinal)
-                .Replace("__", string.Empty, StringComparison.Ordinal)
-                .Replace("`", string.Empty, StringComparison.Ordinal);
-
-        var lines = normalized.Split('\n');
-        for (var i = 0; i < lines.Length; i++)
-        {
-            var line = lines[i].TrimEnd();
-            if (line.StartsWith("### ", StringComparison.Ordinal))
-            {
-                lines[i] = line[4..];
-                continue;
-            }
-
-            if (line.StartsWith("## ", StringComparison.Ordinal))
-            {
-                lines[i] = line[3..];
-                continue;
-            }
-
-            if (line.StartsWith("# ", StringComparison.Ordinal))
-            {
-                lines[i] = line[2..].ToUpperInvariant();
-                continue;
-            }
-
-            if (line.StartsWith("- ", StringComparison.Ordinal) || line.StartsWith("* ", StringComparison.Ordinal))
-            {
-                lines[i] = $"• {line[2..]}";
-            }
-        }
-
-        return string.Join(Environment.NewLine, lines);
     }
 }

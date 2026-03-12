@@ -7,6 +7,7 @@
 
 
 
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 
@@ -28,8 +29,8 @@ public sealed class EventLogEntryDto
 
 public sealed class EventLogReadResult
 {
-    public IReadOnlyList<EventLogEntryDto>? Entries { get; init; }
-    public string? Error { get; init; }
+    public IReadOnlyList<EventLogEntryDto> Entries { get; init; }
+    public string Error { get; init; }
     public bool Success { get; init; }
 
 
@@ -100,17 +101,17 @@ public sealed class SandboxEventLogReader
 
             using EventLog log = new(logName);
 
-            var entries = log.Entries
+            ReadOnlyCollection<EventLogEntryDto> entries = log.Entries
                     .Cast<EventLogEntry>()
                     .Reverse() // newest first
                     .Take(_maxEvents)
                     .Select(e => new EventLogEntryDto
                     {
-                            TimeGenerated = e.TimeGenerated,
-                            Source = e.Source,
-                            Message = e.Message,
-                            EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
-                            EntryType = e.EntryType
+                        TimeGenerated = e.TimeGenerated,
+                        Source = e.Source,
+                        Message = e.Message,
+                        EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
+                        EntryType = e.EntryType
                     })
                     .ToList()
                     .AsReadOnly();

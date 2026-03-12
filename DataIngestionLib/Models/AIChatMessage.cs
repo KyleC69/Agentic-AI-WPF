@@ -124,9 +124,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
 
     /// <summary>Gets or sets the name of the author of the message.</summary>
     public string? AuthorName
-    {
-        get { return _authorName; }
-        set { _authorName = string.IsNullOrWhiteSpace(value) ? null : value; }
+    { get => _authorName; set => _authorName = string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
 
@@ -139,7 +137,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     {
         get
         {
-            var text = Text;
+            string text = Text;
             return
                     !string.IsNullOrWhiteSpace(text) ? new TextContent(text) :
                     _contents is { Count: > 0 } ? _contents[0] :
@@ -154,9 +152,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     /// <summary>Gets or sets the chat message content items.</summary>
     [AllowNull]
     public IList<AIContent> Contents
-    {
-        get { return _contents ??= []; }
-        set { _contents = value; }
+    { get => _contents ??= []; set => _contents = value;
     }
 
 
@@ -172,10 +168,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
 
     /// <summary>Gets an indication for the debugger display of whether there's more content.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string EllipsesForDebuggerDisplay
-    {
-        get { return _contents is { Count: > 1 } ? ", ..." : string.Empty; }
-    }
+    private string EllipsesForDebuggerDisplay => _contents is { Count: > 1 } ? ", ..." : string.Empty;
 
 
 
@@ -190,10 +183,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     /// <remarks>
     ///     This property is useful for distinguishing messages authored by users from those authored by other roles.
     /// </remarks>
-    public bool IsUser
-    {
-        get { return Role == AIChatRole.User; }
-    }
+    public bool IsUser => Role == AIChatRole.User;
 
 
 
@@ -228,7 +218,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
         get
         {
 
-            var vb = string.Concat(Contents.OfType<TextContent>().Select(c => c.Text));
+            string vb = string.Concat(Contents.OfType<TextContent>().Select(c => c.Text));
             return vb;
         }
     }
@@ -238,10 +228,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
 
 
     /// <summary>Gets a timestamp for the chat message normalized to the local time zone.</summary>
-    public DateTimeOffset TimeStampOffset
-    {
-        get { return DateTime.Now; }
-    }
+    public DateTimeOffset TimeStampOffset => DateTime.Now;
 
 
 
@@ -253,21 +240,11 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     /// <inheritdoc />
     public bool Equals(AIChatMessage? other)
     {
-        if (other is null)
-        {
-            return false;
-        }
-
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
-        return Role == other.Role
+        return other is not null && (ReferenceEquals(this, other) || Role == other.Role
                && string.Equals(Text, other.Text, StringComparison.Ordinal)
                && string.Equals(AuthorName, other.AuthorName, StringComparison.Ordinal)
                && Nullable.Equals(CreatedAt, other.CreatedAt)
-               && string.Equals(MessageId, other.MessageId, StringComparison.Ordinal);
+               && string.Equals(MessageId, other.MessageId, StringComparison.Ordinal));
     }
 
 
@@ -287,13 +264,13 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     {
         return new()
         {
-                AdditionalProperties = AdditionalProperties,
-                _authorName = _authorName,
-                _contents = _contents,
-                CreatedAt = CreatedAt,
-                RawRepresentation = RawRepresentation,
-                Role = Role,
-                MessageId = MessageId
+            AdditionalProperties = AdditionalProperties,
+            _authorName = _authorName,
+            _contents = _contents,
+            CreatedAt = CreatedAt,
+            RawRepresentation = RawRepresentation,
+            Role = Role,
+            MessageId = MessageId
         };
     }
 
@@ -332,17 +309,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
 
     public static bool operator ==(AIChatMessage? left, AIChatMessage? right)
     {
-        if (ReferenceEquals(left, right))
-        {
-            return true;
-        }
-
-        if (left is null || right is null)
-        {
-            return false;
-        }
-
-        return left.Equals(right);
+        return ReferenceEquals(left, right) || left is not null && right is not null && left.Equals(right);
     }
 
 

@@ -117,7 +117,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
 
 
-    public ChatHistory Messages { get; }
+    public AIChatHistory Messages { get; }
 
 
 

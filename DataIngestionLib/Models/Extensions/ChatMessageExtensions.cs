@@ -40,7 +40,7 @@ public static class ChatMessageExtensions
     public static string? GetAgentRequestMessageSourceId(this AIChatMessage message)
     {
         object? value = default;
-        var flag = message.AdditionalProperties?.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out value);
+        bool? flag = message.AdditionalProperties?.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out value);
         return flag.HasValue && flag == true && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution
                 ? agentRequestMessageSourceAttribution.SourceId
                 : null;
@@ -69,7 +69,7 @@ public static class ChatMessageExtensions
     public static AgentRequestMessageSourceType GetAgentRequestMessageSourceType(this AIChatMessage message)
     {
         object? value = default;
-        var flag = message.AdditionalProperties?.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out value);
+        bool? flag = message.AdditionalProperties?.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out value);
         return flag.HasValue && flag == true && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution
                 ? agentRequestMessageSourceAttribution.SourceType
                 : AgentRequestMessageSourceType.External;
@@ -106,7 +106,7 @@ public static class ChatMessageExtensions
     //     tagging in the AdditionalProperties.
     public static AIChatMessage WithAgentRequestMessageSource(this AIChatMessage message, AgentRequestMessageSourceType sourceType, string? sourceId = null)
     {
-        if (message.AdditionalProperties != null && message.AdditionalProperties.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out var value) && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution && agentRequestMessageSourceAttribution.SourceType == sourceType && agentRequestMessageSourceAttribution.SourceId == sourceId)
+        if (message.AdditionalProperties != null && message.AdditionalProperties.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out object? value) && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution && agentRequestMessageSourceAttribution.SourceType == sourceType && agentRequestMessageSourceAttribution.SourceId == sourceId)
         {
             return message;
         }
@@ -118,7 +118,7 @@ public static class ChatMessageExtensions
             AdditionalPropertiesDictionary additionalPropertiesDictionary = chatMessage.AdditionalProperties = [];
         }
 
-        message.AdditionalProperties[AgentRequestMessageSourceAttribution.AdditionalPropertiesKey] = new AgentRequestMessageSourceAttribution(sourceType, sourceId);
+        message.AdditionalProperties?[AgentRequestMessageSourceAttribution.AdditionalPropertiesKey] = new AgentRequestMessageSourceAttribution(sourceType, sourceId);
         return message;
     }
 }

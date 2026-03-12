@@ -45,7 +45,7 @@ public interface IChatHistoryMemoryProvider
     /// </returns>
     ValueTask<IEnumerable<AIChatMessage>> BuildContextMessagesAsync(
             string conversationId,
-            ChatHistory currentRequestMessages,
+            AIChatHistory currentRequestMessages,
             CancellationToken cancellationToken = default);
 
 
@@ -73,7 +73,7 @@ public interface IChatHistoryMemoryProvider
             string agentId,
             string userId,
             string applicationId,
-            ChatHistory requestMessages,
-            ChatHistory responseMessages,
+            AIChatHistory requestMessages,
+            AIChatHistory responseMessages,
             CancellationToken cancellationToken = default);
 }

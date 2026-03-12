@@ -29,7 +29,6 @@ internal class ToolBuilder
         WebSearchPlugin webSearchPlugin = new(httpClientFactory);
         AgentLogger logger = new(Environment.CurrentDirectory);
 
-        SystemInfoTool systemInfoTool = new();
         SandboxEventLogReader eventLogReader = new();
         SafeCommandRunner safeCommandRunner = new(Environment.CurrentDirectory);
 
@@ -44,7 +43,7 @@ internal class ToolBuilder
                 AIFunctionFactory.Create(FileSystemReaderTool.ReadFile),
                 AIFunctionFactory.Create(FullTextRagSearchTool.Search),
                 AIFunctionFactory.Create(webSearchPlugin.WebSearch),
-                AIFunctionFactory.Create(systemInfoTool.GetInfo),
+                AIFunctionFactory.Create(SystemInfoTool.GetInfo),
                 AIFunctionFactory.Create(eventLogReader.ReadLog),
                 AIFunctionFactory.Create(safeCommandRunner.Run)
 
