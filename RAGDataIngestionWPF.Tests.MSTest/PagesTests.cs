@@ -16,6 +16,7 @@ using DataIngestionLib.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using Moq;
@@ -90,11 +91,16 @@ public class PagesTests
         services.AddSingleton<IUserDataService, UserDataService>();
         //       services.AddSingleton<IIdentityCacheService, IdentityCacheService>();
         services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
+        services.AddSingleton<IApplicationIdService, ApplicationIdService>();
         Mock<IChatHistorySettingsService> chatHistorySettingsServiceMock = new();
         chatHistorySettingsServiceMock
                 .Setup(service => service.GetCurrentSettings())
                 .Returns(new ChatHistoryOptions());
         services.AddSingleton(chatHistorySettingsServiceMock.Object);
+
+        Mock<ILoggingLevelService> loggingLevelServiceMock = new();
+        loggingLevelServiceMock.Setup(s => s.GetMinimumLevel()).Returns(LogLevel.Trace);
+        services.AddSingleton(loggingLevelServiceMock.Object);
         services.AddSingleton<IPageService, PageService>();
         services.AddSingleton<INavigationService, NavigationService>();
 
