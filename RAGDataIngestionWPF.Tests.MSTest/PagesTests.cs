@@ -9,12 +9,22 @@
 
 using System.Reflection;
 
+using DataIngestionLib.Contracts.Services;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Moq;
+
+using RAGDataIngestionWPF.Contracts.Services;
+using RAGDataIngestionWPF.Core.Contracts.Services;
+using RAGDataIngestionWPF.Core.Services;
+using RAGDataIngestionWPF.Models;
+using RAGDataIngestionWPF.Services;
+using RAGDataIngestionWPF.ViewModels;
+using RAGDataIngestionWPF.Views;
 
 
 

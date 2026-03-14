@@ -7,7 +7,23 @@
 
 
 
+using System.Net.Http;
+
 using DataIngestionLib.Models;
+using DataIngestionLib.Providers;
+
+using HtmlAgilityPack;
+
+using Microsoft.Agents.AI;
+using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlTypes;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
+
+using OllamaSharp;
+using OllamaSharp.Models;
 
 
 
@@ -23,8 +39,8 @@ public class LearningHtmlRunner
     private readonly IDocRepository _docRepository;
     private readonly IHeadlessBrowser _headlessBrowser;
     private readonly ILogger<LearningHtmlRunner> _logger;
-    private readonly IOllamaApiClient _ollamaApiClient;
-    private readonly IngestionSettings _settings;
+    private readonly OllamaApiClient _ollamaApiClient;
+    //private readonly IngestionSettings _settings;
 
 
 
@@ -41,12 +57,12 @@ public class LearningHtmlRunner
     /// <param name="logger">Structured logger provided by the DI container.</param>
     /// <param name="settings">Ingestion configuration options.</param>
     /// <param name="ollamaApiClient">Ollama API client used for LLM-assisted extraction.</param>
-    public LearningHtmlRunner(IHeadlessBrowser headlessBrowser, IDocRepository docRepository, ILogger<LearningHtmlRunner> logger, IOllamaApiClient ollamaApiClient)
+    public LearningHtmlRunner(IHeadlessBrowser headlessBrowser, IDocRepository docRepository, ILogger<LearningHtmlRunner> logger, OllamaApiClient ollamaApiClient)
     {
         _headlessBrowser = headlessBrowser ?? throw new ArgumentNullException(nameof(headlessBrowser));
         _docRepository = docRepository ?? throw new ArgumentNullException(nameof(docRepository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _settings = (settings ?? throw new ArgumentNullException(nameof(settings))).Value ?? throw new ArgumentNullException(nameof(settings));
+    //    _settings = (settings ?? throw new ArgumentNullException(nameof(settings))).Value ?? throw new ArgumentNullException(nameof(settings));
         _ollamaApiClient = ollamaApiClient ?? throw new ArgumentNullException(nameof(ollamaApiClient));
     }
 
@@ -126,11 +142,11 @@ public class LearningHtmlRunner
 
 
 
-    public async Task EmbedRemoteKnowledgeSource(CancellationToken cancellationToken = default)
+    public async Task EmbedRemoteKnowledgeSource(ISettingsProvider settings,CancellationToken cancellationToken = default)
     {
 
-
-        var startingUrl = string.IsNullOrWhiteSpace(_settings.LearnBaseUrl) ? "https://learn.microsoft.com/en-us/agent-framework/" : _settings.LearnBaseUrl;
+        settings.AddUpdateAppSettings("LearnBaseUrl", "https://learn.microsoft.com/en-us/agent-framework/" );
+        var startingUrl = settings.ReadSetting("LearnBaseUrl");
         var crawlList = await TocHrefExtractor.GetTocList().ConfigureAwait(false);
 
         SqlConnection conn = new(Environment.GetEnvironmentVariable("CONN_STRING"));
@@ -483,7 +499,7 @@ public class LearningHtmlRunner
 
         try
         {
-            ChatClientAgent api = _ollamaApiClient.As<IChatClient>().AsAIAgent(ins, "", "");
+            ChatClientAgent api = _ollamaApiClient.AsAIAgent(ins, "", "");
             var r = await api.RunAsync<string>(content).ConfigureAwait(false);
             return r;
 

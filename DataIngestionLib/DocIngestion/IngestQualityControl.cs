@@ -7,7 +7,15 @@
 
 
 
+using System.Diagnostics;
+
 using DataIngestionLib.Contracts;
+
+using Microsoft.Agents.AI;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
 
 
 
@@ -38,6 +46,58 @@ namespace DataIngestionLib.DocIngestion;
 // ## Here I am just passing a simple enum to the LLM, but you can pass more complex data structures if needed, and the LLM will be able to understand and work with them,
 // ## this is a powerful feature of the MAF that allows for more complex and nuanced interactions with the LLM, and can help to improve the quality and relevance of the output.
 // ## It requires that the client implement the IChatClient interface, and that the LLM is able to understand and work with the data structures being passed to it, but it can be a powerful tool for improving the quality and relevance of the output from the LLM.
+public interface IIngestQualityControl
+{
+    List<IngestQualityControl.StructuredResults> RagResults { get; set; }
+
+
+    Task EvaluateDocument(DocPage doc);
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Initiates the asynchronous quality control process for a collection of data items by validating each item.
+    /// </summary>
+    /// <remarks>
+    ///     Invalid data items are handled by logging a message for each item that fails validation.
+    ///     Ensure that the data items are in a valid format before invoking this method.
+    /// </remarks>
+    /// <param name="dataItems">
+    ///     An enumerable collection of data items to validate. Each item is processed individually to determine its
+    ///     validity.
+    /// </param>
+    /// <returns>A task that represents the asynchronous operation of starting the quality control process.</returns>
+    Task StartQualityControlAsync(IEnumerable<DocPage> dataItems);
+
+
+
+
+
+
+
+
+    Task TestIngestQualityControlAsync();
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    Task<bool> ValidateDataAsync(string data);
+}
+
+
+
+
+
 public sealed class IngestQualityControl : IIngestQualityControl
 {
     private readonly IAgentFactory _agentFactory;

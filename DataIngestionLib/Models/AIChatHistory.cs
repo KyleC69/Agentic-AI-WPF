@@ -7,6 +7,16 @@
 
 
 
+using System.Collections;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+
+using Microsoft.Extensions.AI;
+
+
+
+
 namespace DataIngestionLib.Models;
 
 
@@ -54,7 +64,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
         _messages = [];
         foreach ((ChatRole Role, var Text) in messages)
         {
-            Add(new AIChatMessage(Role, Text));
+            ((ICollection<AIChatMessage>)this).Add(new AIChatMessage(Role, Text));
         }
     }
 
@@ -165,20 +175,6 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
 
 
 
-    /// <summary>
-    ///     Adds a message to the history.
-    /// </summary>
-    /// <param name="item">The message to add.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="item" /> is null.</exception>
-    public void Add(AIChatMessage item)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-        _messages.Add(item);
-        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
-    }
-
-
-
 
 
 
@@ -219,6 +215,27 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     {
         ArgumentNullException.ThrowIfNull(array);
         _messages.CopyTo(array, arrayIndex);
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public void Add(AIChatMessage item)
+    {
+        if (item == null)
+        {
+            throw new ArgumentNullException(nameof(item));
+        }
+
+        _messages.Add(item);
+        OnPropertyChanged(nameof(Count));
+        OnPropertyChanged("Item[]");
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, _messages.Count - 1));
     }
 
 
@@ -431,7 +448,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     public void AddMessage(ChatRole authorRole, string content)
     {
         EnsureNotNullOrWhiteSpace(content, nameof(content));
-        Add(new AIChatMessage(authorRole, content));
+        ((ICollection<AIChatMessage>)this).Add(new AIChatMessage(authorRole, content));
     }
 
 
@@ -454,7 +471,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
                 throw new ArgumentException($"All messages must have role '{expectedRole.Value}'.", parameterName);
             }
 
-            Add(message);
+            ((ICollection<AIChatMessage>)this).Add(message);
         }
     }
 
@@ -476,7 +493,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
 
         foreach (AIChatMessage item in items)
         {
-            Add(item);
+            ((ICollection<AIChatMessage>)this).Add(item);
         }
     }
 
@@ -737,4 +754,25 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
         message = null;
         return false;
     }
+
+
+
+
+
+
+
+
+    public IEnumerator GetEnumerator()
+    {
+        return _messages.GetEnumerator();
+    }
+
+
+
+
+
+
+
+
+
 }

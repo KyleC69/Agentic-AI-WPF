@@ -11,6 +11,10 @@ using Microsoft.Extensions.Logging;
 
 using Moq;
 
+using RAGDataIngestionWPF.Contracts.Services;
+using RAGDataIngestionWPF.Models;
+using RAGDataIngestionWPF.ViewModels;
+
 
 
 

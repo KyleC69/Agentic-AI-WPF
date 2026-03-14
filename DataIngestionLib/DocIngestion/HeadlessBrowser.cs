@@ -7,6 +7,14 @@
 
 
 
+using System.IO;
+
+using PuppeteerSharp;
+using PuppeteerSharp.Media;
+
+
+
+
 namespace DataIngestionLib.DocIngestion;
 
 

@@ -11,6 +11,10 @@ using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+
 using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
 
@@ -141,7 +145,7 @@ public sealed class ChatConversationService : IChatConversationService
         AIChatMessage assistantMessage = new(ChatRole.Assistant, assistantText);
         if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
         {
-            ChatHistory.Add(assistantMessage);
+            ((ICollection<AIChatMessage>)ChatHistory).Add(assistantMessage);
         }
 
         return assistantMessage;

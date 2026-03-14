@@ -10,6 +10,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Models;
+
 
 
 
@@ -203,7 +206,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         try
         {
             AIChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _responseCancellationTokenSource.Token);
-            Messages.Add(assistantMessage);
+            ((ICollection<AIChatMessage>)Messages).Add(assistantMessage);
         }
         catch (OperationCanceledException)
         {

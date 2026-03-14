@@ -10,6 +10,8 @@
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
+using Microsoft.Agents.AI;
+
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 

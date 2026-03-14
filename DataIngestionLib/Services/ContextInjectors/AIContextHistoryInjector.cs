@@ -7,9 +7,14 @@
 
 
 
+using System.Text.Json;
+using System.Windows.Automation.Peers;
+
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Models.Extensions;
+
+using Microsoft.Agents.AI;
 
 using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
@@ -164,7 +169,10 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
         AIChatHistory filteredRequestMessages = FilterMessages(requestMessages, ShouldPersistRequestMessage);
         AIChatHistory filteredResponseMessages = FilterMessages(responseMessages, ShouldPersistResponseMessage);
 
-        AIChatHistory messagesToStore = [.. filteredRequestMessages, .. filteredResponseMessages];
+        AIChatHistory messagesToStore = new();
+        messagesToStore.AddRange(filteredRequestMessages);
+        messagesToStore.AddRange(filteredResponseMessages);
+        
         if (messagesToStore.Count == 0)
         {
             return;
@@ -178,16 +186,16 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
             PersistedChatMessage persistedMessage = new()
             {
-                    MessageId = Guid.NewGuid(),
-                    ConversationId = conversationId.Trim(),
-                    SessionId = sessionId.Trim(),
-                    AgentId = agentId.Trim(),
-                    UserId = userId.Trim(),
-                    ApplicationId = applicationId.Trim(),
-                    Role = message.Role.Value,
-                    Content = message.Text ?? string.Empty,
-                    TimestampUtc = now.AddTicks(index),
-                    Metadata = CreateMetadata(message)
+                MessageId = Guid.NewGuid(),
+                ConversationId = conversationId.Trim(),
+                SessionId = sessionId.Trim(),
+                AgentId = agentId.Trim(),
+                UserId = userId.Trim(),
+                ApplicationId = applicationId.Trim(),
+                Role = message.Role.Value,
+                Content = message.Text ?? string.Empty,
+                TimestampUtc = now.AddTicks(index),
+                Metadata = CreateMetadata(message)
             };
 
             PersistedChatMessage unused1 = await _chatHistoryProvider.CreateMessageAsync(persistedMessage, cancellationToken).ConfigureAwait(false);
@@ -357,12 +365,13 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
         maxMessages = maxMessages <= 0 ? int.MaxValue : maxMessages;
         maxTokens = maxTokens <= 0 ? int.MaxValue : maxTokens;
 
-        AIChatHistory window = [.. historicalMessages];
+        AIChatHistory window = new();
+        window.AddRange(historicalMessages);
         AIChatHistory prunedMessages = [];
 
         while (window.Count > maxMessages || EstimateTokens(window) > maxTokens)
         {
-            prunedMessages.Add(window[0]);
+            ((ICollection<AIChatMessage>)prunedMessages).Add(window[0]);
             window.RemoveAt(0);
         }
 
@@ -411,7 +420,7 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
         return JsonSerializer.SerializeToDocument(new Dictionary<string, string?>
         {
-                ["sourceType"] = sourceType
+            ["sourceType"] = sourceType
         });
     }
 
@@ -463,7 +472,7 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
         {
             if (shouldPersist(message))
             {
-                filteredMessages.Add(message);
+                ((ICollection<AIChatMessage>)filteredMessages).Add(message);
             }
         }
 
@@ -507,12 +516,12 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
     {
         return role.Trim().ToLowerInvariant() switch
         {
-                "assistant" => AIChatRole.Assistant,
-                "rag_context" => AIChatRole.RAGContext,
-                "context" => AIChatRole.AIContext,
-                "system" => AIChatRole.System,
-                "tool" => AIChatRole.Tool,
-                _ => AIChatRole.User
+            "assistant" => AIChatRole.Assistant,
+            "rag_context" => AIChatRole.RAGContext,
+            "context" => AIChatRole.AIContext,
+            "system" => AIChatRole.System,
+            "tool" => AIChatRole.Tool,
+            _ => AIChatRole.User
         };
     }
 

@@ -7,11 +7,11 @@
 
 
 
-using Windows.UI.Notifications;
-
 using Microsoft.Toolkit.Uwp.Notifications;
 
 using RAGDataIngestionWPF.Contracts.Services;
+
+using Windows.UI.Notifications;
 
 
 

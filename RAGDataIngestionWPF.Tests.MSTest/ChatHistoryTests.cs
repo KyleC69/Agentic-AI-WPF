@@ -7,6 +7,8 @@
 
 
 
+using DataIngestionLib.Models;
+
 using Microsoft.Extensions.AI;
 
 
@@ -40,7 +42,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.AreEqual(1, history.Count);
-        Assert.AreEqual(ChatRole.Assistant, history[0].Role);
+        Assert.AreEqual<ChatRole>(ChatRole.Assistant, history[0].Role);
         Assert.AreEqual("It is sunny.", history[0].Text);
     }
 
@@ -88,7 +90,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.AreEqual(1, history.Count);
-        Assert.AreEqual(ChatRole.System, history[0].Role);
+        Assert.AreEqual<ChatRole>(ChatRole.System, history[0].Role);
     }
 
 
@@ -109,7 +111,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.AreEqual(1, history.Count);
-        Assert.AreEqual(ChatRole.User, history[0].Role);
+        Assert.AreEqual<ChatRole>(ChatRole.User, history[0].Role);
         Assert.AreEqual("What is the weather?", history[0].Text);
     }
 

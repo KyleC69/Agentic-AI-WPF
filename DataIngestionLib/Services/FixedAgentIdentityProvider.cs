@@ -7,6 +7,8 @@
 
 
 
+using CommunityToolkit.Diagnostics;
+
 using DataIngestionLib.Contracts.Services;
 
 

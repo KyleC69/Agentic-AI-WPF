@@ -10,6 +10,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using RAGDataIngestionWPF.Core.Contracts.Services;
+using RAGDataIngestionWPF.Core.Helpers;
 using RAGDataIngestionWPF.Properties;
 
 

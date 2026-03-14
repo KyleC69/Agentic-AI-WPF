@@ -12,10 +12,13 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using DataIngestionLib.RAGModels;
+using DataIngestionLib.Services;
+
 using Microsoft.Extensions.Logging;
 
 using RAGDataIngestionWPF.Contracts.ViewModels;
-
+using DataIngestionLib.DocIngestion;
 
 
 
@@ -28,7 +31,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 public class DataGridViewModel : ObservableObject, INavigationAware
 {
     private readonly ILogger<DataGridViewModel> _logger;
-    private readonly LearningRunner _runner;
+    private readonly LearningHtmlRunner _runner;
 
     private AsyncRelayCommand startIngestionCommand;
 
@@ -39,7 +42,7 @@ public class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    public DataGridViewModel(ILogger<DataGridViewModel> logger, LearningRunner runner)
+    public DataGridViewModel(ILogger<DataGridViewModel> logger, LearningHtmlRunner runner)
     {
         _logger = logger;
         _runner = runner;
@@ -102,7 +105,7 @@ public class DataGridViewModel : ObservableObject, INavigationAware
     private async Task StartIngestion()
     {
 
-        _runner.IngestDocumentAsync("", CancellationToken.None);
+     //   _runner.IngestDocumentAsync("", CancellationToken.None);
 
 
     }

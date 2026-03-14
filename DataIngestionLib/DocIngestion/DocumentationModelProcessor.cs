@@ -7,6 +7,19 @@
 
 
 
+using System.Configuration;
+using System.IO;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+
+using Microsoft.Extensions.Logging;
+
+using OllamaSharp;
+
+
+
+
 namespace DataIngestionLib.DocIngestion;
 
 
@@ -204,7 +217,7 @@ public class DocumentationModelProcessor : IDocumentationModelProcessor
     private void GetSettings()
     {
 
-        var settings = ConfigurationManager("ModelSettings");
+        var settings = ConfigurationManager.GetSection("ModelSettings") as System.Collections.Specialized.NameValueCollection;
         var baseUrl = settings["OllamaBaseUrl"] ?? "http://127.0.0.1:11434";
         var model = settings["OllamaModel"] ?? "testmod:latest";
 

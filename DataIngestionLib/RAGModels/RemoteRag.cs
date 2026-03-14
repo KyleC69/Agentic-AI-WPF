@@ -7,6 +7,11 @@
 
 
 
+using Microsoft.Data.SqlTypes;
+
+
+
+
 namespace DataIngestionLib.RAGModels;
 
 

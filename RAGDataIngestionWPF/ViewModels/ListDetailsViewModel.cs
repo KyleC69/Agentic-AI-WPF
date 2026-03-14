@@ -12,6 +12,8 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 using RAGDataIngestionWPF.Contracts.ViewModels;
+using RAGDataIngestionWPF.Core.Contracts.Services;
+using RAGDataIngestionWPF.Core.Models;
 
 
 

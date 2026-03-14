@@ -7,6 +7,12 @@
 
 
 
+using System.Net.Http;
+
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 

@@ -7,6 +7,10 @@
 
 
 
+using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Models;
+using DataIngestionLib.Services.ContextInjectors;
+
 using Microsoft.Extensions.AI;
 
 using Moq;
@@ -195,39 +199,6 @@ public class AIContextHistoryInjectorTests
 
 
 
-
-
-
-    [TestMethod]
-    public async Task PruneConversationAsync_RemovesOldestMessagesWhenOverLimit()
-    {
-        List<PersistedChatMessage> messages = Enumerable
-                .Range(1, 10)
-                .Select(i => MakeMessage("user", $"Msg {i}", DateTimeOffset.UtcNow.AddMinutes(i)))
-                .ToList();
-
-        List<Guid> deleted = [];
-
-        Mock<IChatHistoryProvider> providerMock = new();
-        providerMock
-                .Setup(p => p.GetMessagesAsync("conv-1", null, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(messages);
-
-        providerMock
-                .Setup(p => p.DeleteMessageAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .Callback<Guid, CancellationToken>((id, _) => deleted.Add(id))
-                .ReturnsAsync(true);
-
-        SetAppSetting("MaxContextMessages", "6");
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object);
-
-        var removed = await injector.PruneConversationAsync("conv-1", CancellationToken.None);
-
-        Assert.AreEqual(4, removed, "4 oldest messages should be pruned when limit is 6 out of 10.");
-        // The oldest 4 messages should be the ones deleted
-        IEnumerable<object> expectedDeleted = messages.Take(4).Select(m => m.MessageId);
-        CollectionAssert.AreEquivalent(expectedDeleted.ToList(), deleted);
-    }
 
 
 

@@ -7,6 +7,11 @@
 
 
 
+using System.Text.Json;
+
+
+
+
 namespace DataIngestionLib.Models;
 
 

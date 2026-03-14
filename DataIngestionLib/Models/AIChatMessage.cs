@@ -7,6 +7,13 @@
 
 
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+
+using Microsoft.Extensions.AI;
+
+using Newtonsoft.Json;
+
 using AIContent = Microsoft.Extensions.AI.AIContent;
 using TextContent = Microsoft.Extensions.AI.TextContent;
 

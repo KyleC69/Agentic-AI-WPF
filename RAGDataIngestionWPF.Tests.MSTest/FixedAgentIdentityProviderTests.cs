@@ -7,6 +7,9 @@
 
 
 
+using DataIngestionLib.Models;
+using DataIngestionLib.Services;
+
 using Microsoft.Extensions.AI;
 
 

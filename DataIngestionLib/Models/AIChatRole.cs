@@ -7,6 +7,20 @@
 
 
 
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+
+using Microsoft.Extensions.AI;
+
+using Newtonsoft.Json;
+
+using JsonSerializer = Newtonsoft.Json.JsonSerializer;
+
+
+
+
 namespace DataIngestionLib.Models;
 
 
@@ -294,7 +308,7 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 public sealed class Converter : JsonConverter<AIChatRole>
 {
     /// <inheritdoc />
-    public override AIChatRole Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public  AIChatRole Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         return new(reader.GetString()!);
     }
@@ -307,8 +321,34 @@ public sealed class Converter : JsonConverter<AIChatRole>
 
 
     /// <inheritdoc />
-    public override void Write(Utf8JsonWriter writer, AIChatRole value, JsonSerializerOptions options)
+    public  void Write(Utf8JsonWriter writer, AIChatRole value, JsonSerializerOptions options)
     {
         writer.WriteStringValue(value.Value);
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public override void WriteJson(JsonWriter writer, AIChatRole value, JsonSerializer serializer)
+    {
+        throw new NotImplementedException();
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public override AIChatRole ReadJson(JsonReader reader, Type objectType, AIChatRole existingValue, bool hasExistingValue, JsonSerializer serializer)
+    {
+        throw new NotImplementedException();
     }
 }
