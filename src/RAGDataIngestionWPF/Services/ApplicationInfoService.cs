@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         ApplicationInfoService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091012
 
 
 
@@ -28,16 +24,16 @@ namespace RAGDataIngestionWPF.Services;
 
 
 public sealed class ApplicationInfoService : IApplicationInfoService
-    {
+{
 
     [NotNull]
     public Version GetVersion()
-        {
+    {
         // Set the app version in RAGDataIngestionWPF > Properties > Package > PackageVersion
         var assemblyLocation = Assembly.GetExecutingAssembly().Location;
         var version = FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
         return Version.TryParse(version, out Version parsedVersion)
-            ? parsedVersion
-            : Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0);
-        }
+                ? parsedVersion
+                : Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0);
     }
+}

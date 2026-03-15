@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IVectorChatHistoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090937
 
 
 
@@ -24,7 +20,7 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 public interface IVectorChatHistoryProvider
-    {
+{
     IReadOnlyList<string> StateKeys { get; }
 
 
@@ -41,4 +37,4 @@ public interface IVectorChatHistoryProvider
 
 
     ValueTask<IEnumerable<ChatMessage>> InvokingAsync(ChatHistoryProvider.InvokingContext context, CancellationToken cancellationToken);
-    }
+}

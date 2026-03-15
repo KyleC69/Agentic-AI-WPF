@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         AIContextRAGInjector.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090952
 
 
 
@@ -28,7 +24,7 @@ namespace DataIngestionLib.Services.ContextInjectors;
 
 
 public sealed class AIContextRAGInjector : MessageAIContextProvider
-    {
+{
     private readonly IReadOnlyList<IRagContextSource> _sources;
 
 
@@ -39,10 +35,10 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
     public AIContextRAGInjector(IEnumerable<IRagContextSource> sources)
-        {
+    {
         ArgumentNullException.ThrowIfNull(sources);
         _sources = sources.ToArray();
-        }
+    }
 
 
 
@@ -52,7 +48,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
     protected override async ValueTask<IEnumerable<ChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
-        {
+    {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(context);
 
@@ -62,31 +58,31 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
                         .Select(m => new AIChatMessage(m.Role, m.Text))
         ];
         if (_sources.Count == 0)
-            {
+        {
             return [];
-            }
+        }
 
         List<AIChatMessage> aggregatedContext = [];
         foreach (IRagContextSource source in _sources)
-            {
+        {
             cancellationToken.ThrowIfCancellationRequested();
             AIChatHistory sourceMessages = await source
                     .GetContextMessagesAsync(requestMessages, context.Session, cancellationToken)
                     .ConfigureAwait(false);
 
             if (sourceMessages.Count == 0)
-                {
+            {
                 continue;
-                }
+            }
 
             aggregatedContext.AddRange(sourceMessages.Where(static message => !string.IsNullOrWhiteSpace(message.Text)));
-            }
+        }
 
         return aggregatedContext
                 .Where(m => !string.IsNullOrWhiteSpace(m.Text))
                 .Select(m => new ChatMessage(m.Role, m.Text))
                 .ToArray();
-        }
+    }
 
 
 
@@ -96,7 +92,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
     protected override ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = default)
-        {
+    {
         return ValueTask.CompletedTask;
-        }
     }
+}

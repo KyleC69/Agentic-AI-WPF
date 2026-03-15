@@ -9,6 +9,8 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<LangVersion>preview</LangVersion>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<BaseOutputPath>e:\Released\RAGWPF</BaseOutputPath>
 	</PropertyGroup>
 
 
@@ -27,7 +29,7 @@
 		<PackageReference Include="MahApps.Metro" Version="3.0.0-rc0529" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />
-
+		<PackageReference Include="Markdig" Version="0.30.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\DataIngestionLib\DataIngestionLib.csproj" />

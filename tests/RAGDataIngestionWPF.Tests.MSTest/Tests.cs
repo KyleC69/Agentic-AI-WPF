@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         Tests.cs
 // Author: Kyle L. Crowder
-// Build Num: 043335
+// Build Num: 091007
 
 
 
@@ -16,9 +16,9 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 // TODO: Add appropriate unit tests.
 [TestClass]
 public class Tests
-    {
+{
     [TestMethod]
     public void TestMethod1()
-        {
-        }
+    {
     }
+}

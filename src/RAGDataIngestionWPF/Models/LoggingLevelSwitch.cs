@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         LoggingLevelSwitch.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091011
 
 
 
@@ -28,7 +24,7 @@ namespace RAGDataIngestionWPF.Models;
 ///     changes propagate to every <see cref="ILogger" /> without rebuilding the host.
 /// </summary>
 public sealed class LoggingLevelSwitch
-    {
+{
     private volatile int _minimumLevel = (int)LogLevel.Trace;
 
 
@@ -50,7 +46,8 @@ public sealed class LoggingLevelSwitch
     ///     operations to preserve correctness.
     /// </remarks>
     public LogLevel MinimumLevel
-        {
-        get => (LogLevel)_minimumLevel; set => _minimumLevel = (int)value;
-        }
+    {
+        get { return (LogLevel)_minimumLevel; }
+        set { _minimumLevel = (int)value; }
     }
+}

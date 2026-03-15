@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ToolResultTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 043335
+// Build Num: 091007
 
 
 
@@ -24,14 +24,14 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 /// </summary>
 [TestClass]
 public class ToolResultTests
-    {
+{
 
 
 
 
     [TestMethod]
     public void FailValueTypeResultReturnsFailWithError()
-        {
+    {
         // Arrange / Act
         var result = ToolResult<int>.Fail("integer error");
 
@@ -39,7 +39,7 @@ public class ToolResultTests
         Assert.IsFalse(result.Success);
         Assert.AreEqual("integer error", result.Error);
         Assert.AreEqual(default, result.Value);
-        }
+    }
 
 
 
@@ -53,10 +53,10 @@ public class ToolResultTests
     [DataRow("")]
     [DataRow("   ")]
     public void FailWithNullOrWhitespaceMessageThrowsArgumentException(string message)
-        {
+    {
         // Arrange / Act / Assert
         Assert.ThrowsExactly<ArgumentException>(() => ToolResult<string>.Fail(message!));
-        }
+    }
 
 
 
@@ -67,7 +67,7 @@ public class ToolResultTests
 
     [TestMethod]
     public void FailWithValidMessageSetsSuccessFalseAndError()
-        {
+    {
         // Arrange / Act
         var result = ToolResult<string>.Fail("something went wrong");
 
@@ -75,7 +75,7 @@ public class ToolResultTests
         Assert.IsFalse(result.Success);
         Assert.AreEqual("something went wrong", result.Error);
         Assert.IsNull(result.Value);
-        }
+    }
 
 
 
@@ -86,7 +86,7 @@ public class ToolResultTests
 
     [TestMethod]
     public void OkComplexObjectResultPreservesReference()
-        {
+    {
         // Arrange
         List<string> list = ["a", "b", "c"];
 
@@ -96,7 +96,7 @@ public class ToolResultTests
         // Assert
         Assert.IsTrue(result.Success);
         Assert.AreSame(list, result.Value);
-        }
+    }
 
 
 
@@ -107,7 +107,7 @@ public class ToolResultTests
 
     [TestMethod]
     public void OkValueTypeResultSetsValueCorrectly()
-        {
+    {
         // Arrange / Act
         var result = ToolResult<int>.Ok(42);
 
@@ -115,7 +115,7 @@ public class ToolResultTests
         Assert.IsTrue(result.Success);
         Assert.AreEqual(42, result.Value);
         Assert.IsNull(result.Error);
-        }
+    }
 
 
 
@@ -126,10 +126,10 @@ public class ToolResultTests
 
     [TestMethod]
     public void OkWithNullValueThrowsArgumentNullException()
-        {
+    {
         // Arrange / Act / Assert
         Assert.ThrowsExactly<ArgumentNullException>(() => ToolResult<string>.Ok(null!));
-        }
+    }
 
 
 
@@ -140,7 +140,7 @@ public class ToolResultTests
 
     [TestMethod]
     public void OkWithValidValueSetsSuccessTrueAndValue()
-        {
+    {
         // Arrange / Act
         var result = ToolResult<string>.Ok("hello");
 
@@ -148,5 +148,5 @@ public class ToolResultTests
         Assert.IsTrue(result.Success);
         Assert.AreEqual("hello", result.Value);
         Assert.IsNull(result.Error);
-        }
     }
+}

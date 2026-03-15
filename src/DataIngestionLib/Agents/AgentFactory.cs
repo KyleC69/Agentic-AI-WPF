@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090935
 
 
 
@@ -31,21 +27,21 @@ namespace DataIngestionLib.Agents;
 
 
 /// <summary>
-/// This class is intended to be an Agent Factory that will create and configure agents.
+///     This class is intended to be an Agent Factory that will create and configure agents.
 /// </summary>
 public sealed class AgentFactory : IAgentFactory, IDisposable
-    {
-    private readonly AIContextHistoryInjector _contextHistoryInjector;
-    private readonly ILoggerFactory _factory;
-
-    /// <summary>
-    /// Base client that will be decorated with additional functionality using the builder pattern.
-    /// </summary>
-    private IChatClient? _innerClient;
+{
 
     //
     private readonly Dictionary<string, string> _agents = [];
     private readonly IAppSettings _appSettings;
+    private readonly AIContextHistoryInjector _contextHistoryInjector;
+    private readonly ILoggerFactory _factory;
+
+    /// <summary>
+    ///     Base client that will be decorated with additional functionality using the builder pattern.
+    /// </summary>
+    private IChatClient? _innerClient;
 
 
 
@@ -59,14 +55,15 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
             IAppSettings appSettings,
             AIContextHistoryInjector contextHistoryInjector
     )
-        {
+    {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(appSettings);
         ArgumentNullException.ThrowIfNull(contextHistoryInjector);
+
         _factory = factory;
         _contextHistoryInjector = contextHistoryInjector;
         _appSettings = appSettings;
-        }
+    }
 
 
 
@@ -76,42 +73,55 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
     public AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null)
-        {
+    {
 
         if (agentId == null)
-            {
+        {
             throw new ArgumentNullException(nameof(agentId));
-            }
+        }
 
         if (model == null)
-            {
+        {
             throw new ArgumentNullException(nameof(model));
-            }
+        }
 
         if (_agents.ContainsKey(agentId))
-            {
+        {
             throw new InvalidOperationException($"An agent with the ID '{agentId}' already exists.");
-            }
+        }
 
         _agents.Add(agentId, model);
         _innerClient = new OllamaApiClient(_appSettings.OllamaHost + ":" + _appSettings.OllamaPort, model);
 
         IChatClient outer = new ChatClientBuilder(_innerClient)
                 .UseLogging(_factory)
-                .UseFunctionInvocation()
+                .UseFunctionInvocation(_factory)
                 .UseAIContextProviders(_contextHistoryInjector)
                 .ConfigureOptions(chatOptions =>
                 {
-                    chatOptions.Instructions = instructions ?? GetModelInstructions();
+                    chatOptions.ConversationId = Guid.NewGuid().ToString();
+                    chatOptions.Instructions = GetModelInstructions();
                     chatOptions.Temperature = 0.7f;
 
                 })
                 .Build();
 
 
-        return outer.AsAIAgent(name: agentId, description: agentDescription, tools: ToolBuilder.GetAiTools());
+        return outer.AsAIAgent(name: agentId, description: agentDescription, tools: ToolBuilder.GetAiTools(), loggerFactory: _factory);
 
-        }
+    }
+
+
+
+
+
+
+
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
 
 
 
@@ -121,7 +131,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
     private static string GetModelInstructions()
-        {
+    {
         return """
                -- Your name is Maxx, using a name helps personalize the experience and allows users to refer to you in a more natural way. It also helps establish a consistent identity for you as an AI agent.
                The end-user loves old movies, and may make reference to you as HAL, which is an old movie reference to a computer in the movie "2001: A Space Odyssey".
@@ -138,10 +148,5 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                - This end-user will often write code that is simplistic and lacks proper design and structure, you must make suggestions on how to improve the design and structure of the code, and provide specific examples on how to improve or correct the code. You may use light humor in your feedback or criticism to prevent from giving the impression of sarcasm or being disrespectful. 
 
                """;
-        }
-
-    public void Dispose()
-        {
-        throw new NotImplementedException();
-        }
     }
+}

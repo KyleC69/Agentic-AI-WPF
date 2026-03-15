@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091026
 
 
 
@@ -60,7 +56,7 @@ namespace RAGDataIngestionWPF;
 
 
 public sealed partial class App
-    {
+{
     private IHost? _host;
     private bool _isHostStarted;
 
@@ -76,7 +72,7 @@ public sealed partial class App
 
 
     private IHost BuildHost()
-        {
+    {
         _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel)
                 ? configLevel
                 : LogLevel.Trace;
@@ -85,7 +81,7 @@ public sealed partial class App
                 {
                     IConfigurationBuilder unused4 = c.SetBasePath(Environment.CurrentDirectory);
                 })
-                .ConfigureServices(this.ConfigureServices)
+                .ConfigureServices(ConfigureServices)
                 .ConfigureLogging(logging =>
                 {
                     ILoggingBuilder unused3 = logging.AddDebug();
@@ -98,7 +94,7 @@ public sealed partial class App
                     ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
                 })
                 .Build();
-        }
+    }
 
 
 
@@ -108,7 +104,7 @@ public sealed partial class App
 
 
     private void ConfigureServices(HostBuilderContext context, IServiceCollection services)
-        {
+    {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(services);
 
@@ -119,7 +115,7 @@ public sealed partial class App
         RegisterApplicationServices(services);
         RegisterViewsAndViewModels(services);
 
-        }
+    }
 
 
 
@@ -129,32 +125,32 @@ public sealed partial class App
 
 
     private async Task EnsureHostStartedAsync()
-        {
+    {
         if (_host is null || _isHostStarted)
-            {
+        {
             return;
-            }
+        }
 
 
         try
-            {
+        {
             if (_isHostStarted)
-                {
+            {
                 return;
-                }
+            }
 
             await _host.StartAsync();
             _isHostStarted = true;
-            }
+        }
         catch (Exception ex)
-            {
-            ILogger<App>? logger = _host?.Services.GetService<ILogger<App>>();
+        {
+            var logger = _host?.Services.GetService<ILogger<App>>();
             if (logger != null)
-                {
+            {
                 LogUnhandledUiException(logger, ex);
-                }
             }
         }
+    }
 
 
 
@@ -165,14 +161,14 @@ public sealed partial class App
 
     [UsedImplicitly]
     private static string GetAppLocation()
-        {
+    {
         var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
         var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
                 ? AppContext.BaseDirectory
                 : Path.GetDirectoryName(entryAssemblyLocation);
 
         return string.IsNullOrWhiteSpace(appLocation) ? AppContext.BaseDirectory : appLocation;
-        }
+    }
 
 
 
@@ -182,16 +178,16 @@ public sealed partial class App
 
 
     private async Task HandleToastActivationAsync(string toastArgument)
-        {
+    {
         if (_host is null)
-            {
+        {
             return;
-            }
+        }
 
         IConfiguration configuration = _host.Services.GetRequiredService<IConfiguration>();
         configuration[ToastNotificationActivationHandler.ACTIVATION_ARGUMENTS] = toastArgument;
-        await this.EnsureHostStartedAsync();
-        }
+        await EnsureHostStartedAsync();
+    }
 
 
 
@@ -211,15 +207,15 @@ public sealed partial class App
 
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-        {
-        ILogger<App>? logger = _host?.Services.GetService<ILogger<App>>();
+    {
+        var logger = _host?.Services.GetService<ILogger<App>>();
         if (logger != null)
-            {
+        {
             LogUnhandledUiException(logger, e.Exception);
-            }
+        }
 
         e.Handled = false;
-        }
+    }
 
 
 
@@ -229,41 +225,41 @@ public sealed partial class App
 
 
     private async void OnExit(object sender, ExitEventArgs e)
-        {
+    {
         if (_host is null)
-            {
+        {
             return;
-            }
+        }
 
-        ILogger<App>? logger = _host.Services.GetService<ILogger<App>>();
+        var logger = _host.Services.GetService<ILogger<App>>();
 
         try
-            {
+        {
             if (_isHostStarted)
-                {
+            {
                 await _host.StopAsync();
-                }
             }
+        }
         catch (InvalidOperationException ex)
-            {
+        {
             if (logger != null)
-                {
-                LogUnhandledUiException(logger, ex);
-                }
-            }
-        catch (OperationCanceledException ex)
             {
+                LogUnhandledUiException(logger, ex);
+            }
+        }
+        catch (OperationCanceledException ex)
+        {
             Debug.Assert(logger != null, nameof(logger) + " != null");
             LogUnhandledUiException(logger, ex);
-            }
+        }
         finally
-            {
+        {
             _host.Dispose();
             _host = null;
             _isHostStarted = false;
 
-            }
         }
+    }
 
 
 
@@ -273,24 +269,24 @@ public sealed partial class App
 
 
     private async void OnStartup(object sender, StartupEventArgs e)
-        {
+    {
         // https://docs.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast?tabs=desktop
         ToastNotificationManagerCompat.OnActivated += toastArgs =>
         {
-            Task unused = Current.Dispatcher.Invoke(() => _ = this.HandleToastActivationAsync(toastArgs.Argument));
+            Task unused = Current.Dispatcher.Invoke(() => _ = HandleToastActivationAsync(toastArgs.Argument));
         };
         // For more information about .NET generic host see  https://docs.microsoft.com/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-3.0
 
-        _host = this.BuildHost();
+        _host = BuildHost();
 
         if (ToastNotificationManagerCompat.WasCurrentProcessToastActivated())
-            {
+        {
             // ToastNotificationActivator code will run after this completes and will show a window if necessary.
             return;
-            }
-
-        await this.EnsureHostStartedAsync();
         }
+
+        await EnsureHostStartedAsync();
+    }
 
 
 
@@ -300,10 +296,10 @@ public sealed partial class App
 
 
     private static void RegisterActivationHandlers(IServiceCollection services)
-        {
+    {
         ArgumentNullException.ThrowIfNull(services);
         _ = services.AddSingleton<IActivationHandler, ToastNotificationActivationHandler>();
-        }
+    }
 
 
 
@@ -313,7 +309,7 @@ public sealed partial class App
 
 
     private static void RegisterAgentServices(IServiceCollection services)
-        {
+    {
         ArgumentNullException.ThrowIfNull(services);
 
 
@@ -323,7 +319,7 @@ public sealed partial class App
         IServiceCollection unused2 = services.AddSingleton<IAgentFactory, AgentFactory>();
 
         IServiceCollection unused1 = services.AddSingleton<AIContextHistoryInjector>();
-        }
+    }
 
 
 
@@ -333,7 +329,7 @@ public sealed partial class App
 
 
     private static void RegisterApplicationServices(IServiceCollection services)
-        {
+    {
         ArgumentNullException.ThrowIfNull(services);
         _ = services.AddSingleton<IToastNotificationsService, ToastNotificationsService>();
         _ = services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
@@ -345,7 +341,7 @@ public sealed partial class App
         _ = services.AddSingleton<IPageService, PageService>();
         _ = services.AddSingleton<INavigationService, NavigationService>();
         _ = services.AddSingleton<IUserDataService, UserDataService>();
-        }
+    }
 
 
 
@@ -355,11 +351,11 @@ public sealed partial class App
 
 
     private static void RegisterCoreServices(IServiceCollection services)
-        {
+    {
         ArgumentNullException.ThrowIfNull(services);
         _ = services.AddSingleton<IIdentityService, IdentityService>();
         _ = services.AddSingleton<IFileService, FileService>();
-        }
+    }
 
 
 
@@ -369,11 +365,11 @@ public sealed partial class App
 
 
     private static void RegisterHostServices(IServiceCollection services)
-        {
+    {
         ArgumentNullException.ThrowIfNull(services);
         _ = services.AddHostedService<ApplicationHostService>();
         _ = services.AddHostedService<ChatHistoryInitializationService>();
-        }
+    }
 
 
 
@@ -383,7 +379,7 @@ public sealed partial class App
 
 
     private static void RegisterViewsAndViewModels(IServiceCollection services)
-        {
+    {
         ArgumentNullException.ThrowIfNull(services);
         _ = services.AddTransient<IShellWindow, ShellWindow>();
         _ = services.AddTransient<ShellViewModel>();
@@ -401,5 +397,5 @@ public sealed partial class App
         _ = services.AddTransient<SettingsPage>();
         _ = services.AddTransient<ILogInWindow, LogInWindow>();
         _ = services.AddTransient<LogInViewModel>();
-        }
     }
+}

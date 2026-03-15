@@ -6,10 +6,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:vm="clr-namespace:RAGDataIngestionWPF.ViewModels"
+    xmlns:converters="clr-namespace:RAGDataIngestionWPF.Converters"
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=True}"
     d:DesignHeight="750" d:DesignWidth="1100">
+
+    <Page.Resources>
+        <converters:MarkdownToFlowDocumentConverter x:Key="MarkdownToFlowDocumentConverter" />
+    </Page.Resources>
 
     <Grid>
         <Grid.Background>
@@ -59,6 +64,7 @@
                          BorderThickness="0"
                          Background="Transparent"
                          ItemsSource="{Binding Messages}"
+                         ScrollViewer.CanContentScroll="False"
                          ScrollViewer.VerticalScrollBarVisibility="Auto" IsManipulationEnabled="True"
                          SelectionMode="Multiple">
                     <ListBox.ItemTemplate>
@@ -86,10 +92,16 @@
                                     <TextBlock
                                         FontWeight="SemiBold"
                                         Text="{Binding Role}" />
-                                    <TextBlock
+                                    <FlowDocumentScrollViewer
                                         Margin="0,6,0,0"
-                                        TextWrapping="Wrap"
-                                        Text="{Binding Text, Mode=OneWay}" />
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Document="{Binding Text, Mode=OneWay, Converter={StaticResource MarkdownToFlowDocumentConverter}}"
+                                        Focusable="False"
+                                        Foreground="{DynamicResource MahApps.Brushes.Text}"
+                                        IsToolBarVisible="False"
+                                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                        ScrollViewer.VerticalScrollBarVisibility="Disabled" />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

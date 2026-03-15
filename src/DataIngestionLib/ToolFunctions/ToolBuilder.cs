@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ToolBuilder.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091000
 
 
 
@@ -25,10 +21,10 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 internal sealed class ToolBuilder
-    {
+{
 
     public static IList<AITool> GetAiTools()
-        {
+    {
         WebSearchPlugin webSearchPlugin = new(new HttpClient());
         AgentLogger logger = new();
 
@@ -38,7 +34,8 @@ internal sealed class ToolBuilder
 
 
 
-        return [
+        return
+        [
 
                 AIFunctionFactory.Create(logger.LogMessage),
                 AIFunctionFactory.Create(FileSystemWriterTool.WriteText),
@@ -50,5 +47,5 @@ internal sealed class ToolBuilder
                 AIFunctionFactory.Create(safeCommandRunner.Run)
 
         ];
-        }
     }
+}

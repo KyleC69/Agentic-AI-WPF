@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         FrameExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091010
 
 
 
@@ -26,15 +22,15 @@ namespace RAGDataIngestionWPF.Helpers;
 
 
 public static class FrameExtensions
-    {
+{
 
     public static void CleanNavigation([NotNull] this Frame frame)
-        {
+    {
         while (frame.CanGoBack)
-            {
+        {
             _ = frame.RemoveBackEntry();
-            }
         }
+    }
 
 
 
@@ -45,8 +41,8 @@ public static class FrameExtensions
 
     [CanBeNull]
     public static object GetDataContext([NotNull] this Frame frame)
-        {
+    {
         return frame.Content is FrameworkElement element ? element.DataContext : null;
 
-        }
     }
+}

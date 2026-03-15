@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         DataGridViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091015
 
 
 
@@ -35,12 +31,19 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 public sealed class DataGridViewModel : ObservableObject, INavigationAware
-    {
+{
     private AsyncRelayCommand _startIngestionCommand;
 
+
+
+
+
+
+
+
     public DataGridViewModel()
-        {
-        }
+    {
+    }
 
 
 
@@ -50,10 +53,10 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
     public DataGridViewModel(ILogger<DataGridViewModel> logger, LearningHtmlRunner runner)
-        {
+    {
         _ = logger;
         _ = runner;
-        }
+    }
 
 
 
@@ -69,7 +72,10 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
     [NotNull]
-    public IAsyncRelayCommand StartIngestionCommand => _startIngestionCommand ??= new AsyncRelayCommand(this.StartIngestion);
+    public IAsyncRelayCommand StartIngestionCommand
+    {
+        get { return _startIngestionCommand ??= new AsyncRelayCommand(StartIngestion); }
+    }
 
 
 
@@ -79,10 +85,10 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
     public void OnNavigatedTo(object parameter)
-        {
+    {
         Source.Clear();
 
-        }
+    }
 
 
 
@@ -92,8 +98,8 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
     public void OnNavigatedFrom()
-        {
-        }
+    {
+    }
 
 
 
@@ -104,7 +110,7 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
     [NotNull]
     private Task StartIngestion()
-        {
+    {
         return Task.CompletedTask;
-        }
     }
+}

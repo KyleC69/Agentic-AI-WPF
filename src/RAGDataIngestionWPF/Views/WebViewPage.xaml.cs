@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         WebViewPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091025
 
 
 
@@ -25,7 +21,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 public sealed partial class WebViewPage
-    {
+{
     private readonly WebViewViewModel _viewModel;
 
 
@@ -36,12 +32,12 @@ public sealed partial class WebViewPage
 
 
     public WebViewPage(WebViewViewModel viewModel)
-        {
-        this.InitializeComponent();
+    {
+        InitializeComponent();
         DataContext = viewModel;
         _viewModel = viewModel;
         _viewModel.Initialize(WebView);
-        }
+    }
 
 
 
@@ -51,7 +47,7 @@ public sealed partial class WebViewPage
 
 
     private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
-        {
+    {
         _viewModel.OnNavigationCompleted(sender, e);
-        }
     }
+}

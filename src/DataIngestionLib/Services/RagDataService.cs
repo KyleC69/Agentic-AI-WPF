@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         RagDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090955
 
 
 
@@ -31,9 +27,8 @@ namespace DataIngestionLib.Services;
 
 
 
-
 public class RagDataService(ILogger<RagDataService> logger)
-    {
+{
     private readonly ILogger<RagDataService> _logger = logger;
 
 
@@ -44,7 +39,7 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
     public static string FullTextSearch(string query, int topK = 5)
-        {
+    {
         //Database full text search logic here, return the search results as a string. 
         List<FullTextResults> results = [];
         using SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
@@ -56,19 +51,19 @@ public class RagDataService(ILogger<RagDataService> logger)
         conn.Open();
         using SqlDataReader reader = cmd.ExecuteReader();
         while (reader.Read())
-            {
+        {
             results.Add(new FullTextResults
-                {
-                Id = reader.GetInt32(0),
-                Title = reader.GetString(1),
-                Summary = reader.GetString(2),
-                Keywords = reader.GetString(3).Split(','),
-                Score = reader.GetDouble(4)
-                });
-            }
+            {
+                    Id = reader.GetInt32(0),
+                    Title = reader.GetString(1),
+                    Summary = reader.GetString(2),
+                    Keywords = reader.GetString(3).Split(','),
+                    Score = reader.GetDouble(4)
+            });
+        }
 
         return JsonConvert.SerializeObject(results);
-        }
+    }
 
 
 
@@ -78,25 +73,25 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
     public ObservableCollection<RemoteRag> GetRagDataEntries()
-        {
+    {
         ObservableCollection<RemoteRag> rags = [];
 
         try
-            {
+        {
 
             RAGContext context = new();
             context.RemoteRags.Load();
             rags = context.RemoteRags.Local.ToObservableCollection();
 
-            }
+        }
         catch (Exception ex)
-            {
+        {
 
             _logger.LogError(ex, "Error fetching RAG data entries: {Message}", ex.Message);
-            }
+        }
 
         return rags;
-        }
+    }
 
 
 
@@ -106,7 +101,7 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
     public static string HybridSearch(string query, int topK = 5)
-        {
+    {
         //Database vector search logic here, return the search results as a string. 
         List<FullTextResults> results = [];
         using SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
@@ -118,31 +113,31 @@ public class RagDataService(ILogger<RagDataService> logger)
         conn.Open();
         using SqlDataReader reader = cmd.ExecuteReader();
         while (reader.Read())
-            {
+        {
             results.Add(new FullTextResults
-                {
-                Id = reader.GetInt32(0),
-                Title = reader.GetString(1),
-                Summary = reader.GetString(2),
-                Keywords = reader.GetString(3).Split(','),
-                Score = reader.GetDouble(4)
-                });
-            }
+            {
+                    Id = reader.GetInt32(0),
+                    Title = reader.GetString(1),
+                    Summary = reader.GetString(2),
+                    Keywords = reader.GetString(3).Split(','),
+                    Score = reader.GetDouble(4)
+            });
+        }
 
         return JsonConvert.SerializeObject(results);
 
-        }
     }
+}
 
 
 
 
 
 public sealed class FullTextResults
-    {
+{
     public int Id { get; init; }
     public string[] Keywords { get; init; } = [];
     public double Score { get; init; }
     public required string Summary { get; init; }
     public required string Title { get; init; }
-    }
+}

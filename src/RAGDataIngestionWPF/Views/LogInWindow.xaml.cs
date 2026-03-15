@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         LogInWindow.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091023
 
 
 
@@ -24,12 +20,12 @@ namespace RAGDataIngestionWPF.Views;
 
 
 public sealed partial class LogInWindow : ILogInWindow
-    {
+{
     public LogInWindow(LogInViewModel viewModel)
-        {
-        this.InitializeComponent();
+    {
+        InitializeComponent();
         DataContext = viewModel;
-        }
+    }
 
 
 
@@ -39,9 +35,9 @@ public sealed partial class LogInWindow : ILogInWindow
 
 
     public void ShowWindow()
-        {
+    {
         this.Show();
-        }
+    }
 
 
 
@@ -51,7 +47,7 @@ public sealed partial class LogInWindow : ILogInWindow
 
 
     public void CloseWindow()
-        {
+    {
         this.Close();
-        }
     }
+}

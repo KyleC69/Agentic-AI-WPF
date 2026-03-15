@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Core
+// File:         User.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091029
 
 
 
@@ -20,7 +16,7 @@ namespace RAGDataIngestionWPF.Core.Models;
 // This class contains user members to download user information from Microsoft Graph
 // https://docs.microsoft.com/graph/api/resources/user?view=graph-rest-1.0
 public class User
-    {
+{
 
     public List<string> BusinessPhones { get; set; }
 
@@ -44,4 +40,4 @@ public class User
     public string Surname { get; set; }
 
     public string UserPrincipalName { get; set; }
-    }
+}

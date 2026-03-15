@@ -14,7 +14,7 @@ end_of_line = crlf
 insert_final_newline = false
 
 # Microsoft .NET properties
-csharp_indent_braces = true
+csharp_indent_braces = false
 csharp_indent_switch_labels = true
 csharp_new_line_before_catch = true
 csharp_new_line_before_else = true

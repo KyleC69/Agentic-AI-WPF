@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         MainPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091024
 
 
 
@@ -31,7 +27,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 public sealed partial class MainPage
-    {
+{
     private ScrollViewer _messagesScrollViewer;
 
 
@@ -42,13 +38,13 @@ public sealed partial class MainPage
 
 
     public MainPage(MainViewModel viewModel)
-        {
-        this.InitializeComponent();
+    {
+        InitializeComponent();
         DataContext = viewModel;
 
-        Loaded += this.OnLoaded;
-        Unloaded += this.OnUnloaded;
-        }
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+    }
 
 
 
@@ -60,25 +56,25 @@ public sealed partial class MainPage
     [CanBeNull]
     private static T FindVisualChild<T>([NotNull] DependencyObject parent)
             where T : DependencyObject
-        {
+    {
         var childrenCount = VisualTreeHelper.GetChildrenCount(parent);
         for (var index = 0; index < childrenCount; index++)
-            {
+        {
             DependencyObject child = VisualTreeHelper.GetChild(parent, index);
             if (child is T typedChild)
-                {
+            {
                 return typedChild;
-                }
+            }
 
             T nestedChild = FindVisualChild<T>(child);
             if (nestedChild is not null)
-                {
+            {
                 return nestedChild;
-                }
             }
+        }
 
         return null;
-        }
+    }
 
 
 
@@ -88,11 +84,11 @@ public sealed partial class MainPage
 
 
     private void OnLoaded(object sender, RoutedEventArgs e)
-        {
+    {
         _messagesScrollViewer ??= FindVisualChild<ScrollViewer>(MessagesListBox);
-        MessagesListBox.ItemContainerGenerator.ItemsChanged += this.OnMessagesItemsChanged;
-        this.ScrollMessagesToBottom();
-        }
+        MessagesListBox.ItemContainerGenerator.ItemsChanged += OnMessagesItemsChanged;
+        ScrollMessagesToBottom();
+    }
 
 
 
@@ -102,9 +98,9 @@ public sealed partial class MainPage
 
 
     private void OnMessagesItemsChanged(object sender, ItemsChangedEventArgs e)
-        {
-        this.ScrollMessagesToBottom();
-        }
+    {
+        ScrollMessagesToBottom();
+    }
 
 
 
@@ -114,9 +110,9 @@ public sealed partial class MainPage
 
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
-        {
-        MessagesListBox.ItemContainerGenerator.ItemsChanged -= this.OnMessagesItemsChanged;
-        }
+    {
+        MessagesListBox.ItemContainerGenerator.ItemsChanged -= OnMessagesItemsChanged;
+    }
 
 
 
@@ -126,11 +122,11 @@ public sealed partial class MainPage
 
 
     private void ScrollMessagesToBottom()
-        {
+    {
         if (MessagesListBox.Items.Count == 0)
-            {
+        {
             return;
-            }
+        }
 
         DispatcherOperation unused = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
         {
@@ -138,5 +134,5 @@ public sealed partial class MainPage
             MessagesListBox.ScrollIntoView(lastItem);
             _messagesScrollViewer?.ScrollToEnd();
         }));
-        }
     }
+}

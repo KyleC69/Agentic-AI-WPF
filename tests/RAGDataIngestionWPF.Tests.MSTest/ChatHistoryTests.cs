@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ChatHistoryTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 043331
+// Build Num: 091003
 
 
 
@@ -26,14 +26,14 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 /// </summary>
 [TestClass]
 public class ChatHistoryTests
-    {
+{
 
 
 
 
     [TestMethod]
     public void AddAssistantMessageAddsMessageWithAssistantRole()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
 
@@ -44,7 +44,7 @@ public class ChatHistoryTests
         Assert.AreEqual(1, history.Count);
         Assert.AreEqual<ChatRole>(ChatRole.Assistant, history[0].Role);
         Assert.AreEqual("It is sunny.", history[0].Text);
-        }
+    }
 
 
 
@@ -55,7 +55,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void AddRangeAddsAllProvidedMessages()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
         List<AIChatMessage> messages =
@@ -70,7 +70,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.AreEqual(3, history.Count);
-        }
+    }
 
 
 
@@ -81,7 +81,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void AddSystemMessageAddsMessageWithSystemRole()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
 
@@ -91,7 +91,7 @@ public class ChatHistoryTests
         // Assert
         Assert.AreEqual(1, history.Count);
         Assert.AreEqual<ChatRole>(ChatRole.System, history[0].Role);
-        }
+    }
 
 
 
@@ -102,7 +102,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void AddUserMessageAddsMessageWithUserRole()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
 
@@ -113,7 +113,7 @@ public class ChatHistoryTests
         Assert.AreEqual(1, history.Count);
         Assert.AreEqual<ChatRole>(ChatRole.User, history[0].Role);
         Assert.AreEqual("What is the weather?", history[0].Text);
-        }
+    }
 
 
 
@@ -127,13 +127,13 @@ public class ChatHistoryTests
     [DataRow("")]
     [DataRow("   ")]
     public void AddUserMessageWithNullOrWhitespaceContentThrowsArgumentException(string content)
-        {
+    {
         // Arrange
         AIChatHistory history = [];
 
         // Act / Assert
         ArgumentException unused = Assert.ThrowsExactly<ArgumentException>(() => history.AddUserMessage(content!));
-        }
+    }
 
 
 
@@ -144,7 +144,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void EstimateContextTokenCountRespectsMaxTokenBudget()
-        {
+    {
         // Arrange — add several long messages that individually exceed a small budget.
         // The heuristic estimates 1 token per 4 characters (Math.Max(1, text.Length / 4)),
         // so 400-character messages each cost ~100 tokens.
@@ -159,7 +159,7 @@ public class ChatHistoryTests
         // Assert
         Assert.IsLessThanOrEqualTo(150, tokens, "Token count must not exceed the configured budget.");
         Assert.IsGreaterThan(0, tokens, "At least one message should fit within the budget.");
-        }
+    }
 
 
 
@@ -170,14 +170,14 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void EstimateContextTokenCountWithNonPositiveMaxTokensThrowsArgumentOutOfRangeException()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
         history.AddUserMessage("some text");
 
         // Act / Assert
         ArgumentOutOfRangeException unused = Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => history.EstimateContextTokenCount(0));
-        }
+    }
 
 
 
@@ -188,7 +188,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void EstimateTokenCountReturnsPositiveCountForNonEmptyHistory()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
         history.AddUserMessage("This is a reasonably long user message for token estimation.");
@@ -198,7 +198,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.IsGreaterThan(0, tokens, "Token count should be positive for non-empty text.");
-        }
+    }
 
 
 
@@ -209,7 +209,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void EstimateTokenCountReturnsZeroForEmptyHistory()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
 
@@ -218,7 +218,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.AreEqual(0, tokens);
-        }
+    }
 
 
 
@@ -229,7 +229,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void GetLastMessageTextReturnsCorrectTextForMatchingRole()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
         history.AddUserMessage("ask something");
@@ -240,7 +240,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.AreEqual("reply text", text);
-        }
+    }
 
 
 
@@ -251,7 +251,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void GetLastMessageTextReturnsEmptyStringWhenRoleNotPresent()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
 
@@ -260,7 +260,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.AreEqual(string.Empty, text);
-        }
+    }
 
 
 
@@ -271,7 +271,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void LastMessageReturnsNewestMessage()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
         history.AddUserMessage("older message");
@@ -279,7 +279,7 @@ public class ChatHistoryTests
 
         // Act / Assert
         Assert.AreEqual("newest message", history.LastMessage?.Text);
-        }
+    }
 
 
 
@@ -290,13 +290,13 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void LastMessageReturnsNullWhenHistoryIsEmpty()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
 
         // Act / Assert
         Assert.IsNull(history.LastMessage);
-        }
+    }
 
 
 
@@ -307,7 +307,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void TryGetLastMessageReturnsFalseWhenRoleNotPresent()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
         history.AddUserMessage("user only");
@@ -318,7 +318,7 @@ public class ChatHistoryTests
         // Assert
         Assert.IsFalse(found);
         Assert.IsNull(message);
-        }
+    }
 
 
 
@@ -329,7 +329,7 @@ public class ChatHistoryTests
 
     [TestMethod]
     public void TryGetLastMessageReturnsLatestMessageMatchingRole()
-        {
+    {
         // Arrange
         AIChatHistory history = [];
         history.AddUserMessage("First user message");
@@ -343,5 +343,5 @@ public class ChatHistoryTests
         Assert.IsTrue(found);
         Assert.IsNotNull(message);
         Assert.AreEqual("Second user message", message.Text);
-        }
     }
+}

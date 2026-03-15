@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         SettingsPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091024
 
 
 
@@ -23,10 +19,10 @@ namespace RAGDataIngestionWPF.Views;
 
 
 public sealed partial class SettingsPage
-    {
+{
     public SettingsPage(SettingsViewModel viewModel)
-        {
-        this.InitializeComponent();
+    {
+        InitializeComponent();
         DataContext = viewModel;
-        }
     }
+}
