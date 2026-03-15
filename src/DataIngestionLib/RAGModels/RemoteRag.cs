@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         RemoteRag.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090952
 
 
 
@@ -25,7 +21,7 @@ namespace DataIngestionLib.RAGModels;
 
 
 public sealed class RemoteRag
-    {
+{
 
     public string Description { get; init; } = null!;
 
@@ -42,8 +38,7 @@ public sealed class RemoteRag
 
     public double? Score { get; init; }
 
-    [MaxLength(4000)]
-    public string? Summary { get; init; }
+    [MaxLength(4000)] public string? Summary { get; init; }
 
     public string Title { get; init; } = null!;
 
@@ -52,4 +47,4 @@ public sealed class RemoteRag
     public DateTime? UpdatedAt { get; init; }
 
     public int? Version { get; init; }
-    }
+}

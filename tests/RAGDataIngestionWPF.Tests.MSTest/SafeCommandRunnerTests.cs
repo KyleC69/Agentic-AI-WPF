@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         SafeCommandRunnerTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 043334
+// Build Num: 091006
 
 
 
@@ -26,7 +26,7 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 /// </summary>
 [TestClass]
 public class SafeCommandRunnerTests
-    {
+{
     private string _sandboxDir = string.Empty;
 
 
@@ -38,7 +38,7 @@ public class SafeCommandRunnerTests
 
     [TestMethod]
     public void RunCatCommandWithExistingFileReturnsFileContent()
-        {
+    {
         // Arrange
         const string fileName = "read_me.txt";
         const string expectedContent = "cat test content";
@@ -52,7 +52,7 @@ public class SafeCommandRunnerTests
         // Assert
         Assert.IsTrue(result.Success);
         Assert.AreEqual(expectedContent, result.Value);
-        }
+    }
 
 
 
@@ -63,7 +63,7 @@ public class SafeCommandRunnerTests
 
     [TestMethod]
     public void RunCatCommandWithNonexistentFileReturnsFileNotFound()
-        {
+    {
         // Arrange
         SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
@@ -73,7 +73,7 @@ public class SafeCommandRunnerTests
         // Assert
         Assert.IsFalse(result.Success);
         Assert.AreEqual("File not found.", result.Error);
-        }
+    }
 
 
 
@@ -84,7 +84,7 @@ public class SafeCommandRunnerTests
 
     [TestMethod]
     public void RunCatCommandWithPathTraversalReturnsDenied()
-        {
+    {
         // Arrange
         SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
@@ -94,7 +94,7 @@ public class SafeCommandRunnerTests
         // Assert
         Assert.IsFalse(result.Success);
         Assert.AreEqual("Access denied.", result.Error);
-        }
+    }
 
 
 
@@ -105,7 +105,7 @@ public class SafeCommandRunnerTests
 
     [TestMethod]
     public void RunEchoCommandReturnsArguments()
-        {
+    {
         // Arrange
         SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
@@ -115,7 +115,7 @@ public class SafeCommandRunnerTests
         // Assert
         Assert.IsTrue(result.Success);
         Assert.AreEqual("hello world", result.Value);
-        }
+    }
 
 
 
@@ -126,7 +126,7 @@ public class SafeCommandRunnerTests
 
     [TestMethod]
     public void RunEchoWithNoArgsReturnsEmptyString()
-        {
+    {
         // Arrange
         SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
@@ -136,7 +136,7 @@ public class SafeCommandRunnerTests
         // Assert
         Assert.IsTrue(result.Success);
         Assert.AreEqual(string.Empty, result.Value);
-        }
+    }
 
 
 
@@ -147,7 +147,7 @@ public class SafeCommandRunnerTests
 
     [TestMethod]
     public void RunLsCommandReturnsSandboxFileNames()
-        {
+    {
         // Arrange
         File.WriteAllText(Path.Combine(_sandboxDir, "alpha.txt"), "a");
         File.WriteAllText(Path.Combine(_sandboxDir, "beta.txt"), "b");
@@ -161,7 +161,7 @@ public class SafeCommandRunnerTests
         Assert.IsTrue(result.Success);
         Assert.Contains("alpha.txt", result.Value!);
         Assert.Contains("beta.txt", result.Value!);
-        }
+    }
 
 
 
@@ -172,7 +172,7 @@ public class SafeCommandRunnerTests
 
     [TestMethod]
     public void RunWithDisallowedCommandReturnsNotAllowedMessage()
-        {
+    {
         // Arrange
         SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
@@ -182,7 +182,7 @@ public class SafeCommandRunnerTests
         // Assert
         Assert.IsFalse(result.Success);
         Assert.Contains("not allowed", result.Error!);
-        }
+    }
 
 
 
@@ -196,7 +196,7 @@ public class SafeCommandRunnerTests
     [DataRow("")]
     [DataRow("   ")]
     public void RunWithNullOrWhitespaceInputReturnsNoCommandProvided([NotNull] string input)
-        {
+    {
         // Arrange
         SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
@@ -206,7 +206,7 @@ public class SafeCommandRunnerTests
         // Assert
         Assert.IsFalse(result.Success);
         Assert.AreEqual("No command provided.", result.Error);
-        }
+    }
 
 
 
@@ -217,10 +217,10 @@ public class SafeCommandRunnerTests
 
     [TestInitialize]
     public void SetUp()
-        {
+    {
         _sandboxDir = Path.Combine(Path.GetTempPath(), $"SafeCommandRunnerTests_{Guid.NewGuid():N}");
         _ = Directory.CreateDirectory(_sandboxDir);
-        }
+    }
 
 
 
@@ -231,10 +231,10 @@ public class SafeCommandRunnerTests
 
     [TestCleanup]
     public void TearDown()
-        {
+    {
         if (Directory.Exists(_sandboxDir))
-            {
+        {
             Directory.Delete(_sandboxDir, true);
-            }
         }
     }
+}

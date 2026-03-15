@@ -1,16 +1,16 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         AssemblyInfo.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091001
+
+
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
+
 
 // In SDK-style projects such as this one, several assembly attributes that were historically
 // defined in this file are now automatically added during build and populated with

@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ChatHistoryBehaviorTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 043330
+// Build Num: 091002
 
 
 
@@ -22,16 +22,16 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 
 [TestClass]
 public class ChatHistoryBehaviorTests
-    {
+{
 
     [TestMethod]
     public void AddAssistantMessagesRejectsMessageWithUnexpectedRole()
-        {
+    {
         AIChatHistory history = [];
         AIChatMessage invalidMessage = new AIChatMessage(ChatRole.User, "wrong role");
 
         Assert.ThrowsExactly<ArgumentException>(() => history.AddAssistantMessages(new[] { invalidMessage }));
-        }
+    }
 
 
 
@@ -42,12 +42,12 @@ public class ChatHistoryBehaviorTests
 
     [TestMethod]
     public void AddSystemMessagesRejectsNullMessageElement()
-        {
+    {
         AIChatHistory history = [];
         AIChatMessage[] invalidMessages = [null!];
 
         Assert.ThrowsExactly<ArgumentNullException>(() => history.AddSystemMessages(invalidMessages));
-        }
+    }
 
 
 
@@ -58,7 +58,7 @@ public class ChatHistoryBehaviorTests
 
     [TestMethod]
     public void AddUserMessagesAddsAllMessagesWhenRolesMatch()
-        {
+    {
         AIChatHistory history = [];
 
         history.AddUserMessages(
@@ -69,7 +69,7 @@ public class ChatHistoryBehaviorTests
 
         Assert.AreEqual(2, history.Count);
         Assert.AreEqual("second", history.LastMessage?.Text);
-        }
+    }
 
 
 
@@ -80,14 +80,14 @@ public class ChatHistoryBehaviorTests
 
     [TestMethod]
     public void ConstructorWithMessagesCopiesValuesIntoIndependentInstances()
-        {
+    {
         AIChatMessage originalMessage = new AIChatMessage(ChatRole.User, "original");
         AIChatHistory history = new AIChatHistory(new[] { originalMessage });
 
         Assert.AreEqual(1, history.Count);
         Assert.AreEqual("original", history[0].Text);
         Assert.AreNotSame(originalMessage, history[0]);
-        }
+    }
 
 
 
@@ -98,14 +98,14 @@ public class ChatHistoryBehaviorTests
 
     [TestMethod]
     public void ConstructorWithMessageTuplesPreservesOrderAndValues()
-        {
+    {
         AIChatHistory history = new AIChatHistory(new[] { (ChatRole.System, "system"), (ChatRole.User, "question"), (ChatRole.Assistant, "answer") });
 
         Assert.AreEqual(3, history.Count);
         Assert.AreEqual("system", history[0].Text);
         Assert.AreEqual<ChatRole>(ChatRole.User, history[1].Role);
         Assert.AreEqual("answer", history.LastMessage?.Text);
-        }
+    }
 
 
 
@@ -116,13 +116,13 @@ public class ChatHistoryBehaviorTests
 
     [TestMethod]
     public void ConstructorWithSystemMessageCreatesSingleSystemEntry()
-        {
+    {
         AIChatHistory history = new AIChatHistory("You are helpful.");
 
         Assert.AreEqual(1, history.Count);
         Assert.AreEqual<ChatRole>(ChatRole.System, history[0].Role);
         Assert.AreEqual("You are helpful.", history[0].Text);
-        }
+    }
 
 
 
@@ -133,11 +133,11 @@ public class ChatHistoryBehaviorTests
 
     [TestMethod]
     public void EstimateTokenCountSkipsWhitespaceOnlyMessages()
-        {
+    {
         AIChatHistory history = new AIChatHistory(new[] { new AIChatMessage(ChatRole.User, "    "), new AIChatMessage(ChatRole.Assistant, "abcd") });
 
         Assert.AreEqual(1, history.EstimateTokenCount());
-        }
+    }
 
 
 
@@ -148,7 +148,7 @@ public class ChatHistoryBehaviorTests
 
     [TestMethod]
     public void RemoveRangeRemovesRequestedSlice()
-        {
+    {
         AIChatHistory history = [];
         history.AddUserMessage("first");
         history.AddAssistantMessage("second");
@@ -158,5 +158,5 @@ public class ChatHistoryBehaviorTests
 
         Assert.AreEqual(1, history.Count);
         Assert.AreEqual("first", history[0].Text);
-        }
     }
+}

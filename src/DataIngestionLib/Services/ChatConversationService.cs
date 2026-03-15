@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090953
 
 
 
@@ -19,8 +15,6 @@ using DataIngestionLib.Services.Contracts;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-
-using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
 
 
@@ -35,11 +29,11 @@ namespace DataIngestionLib.Services;
 ///     Class is responsible for managing the chat conversation round with LLM, self-contained and keeps viewmodel clean.
 /// </summary>
 public sealed class ChatConversationService : IChatConversationService
-    {
-    private AIAgent _agent;
-    private AgentSession _agentSession;
-    private readonly IAppSettings _appSettings;
+{
     private readonly IAgentFactory _agentFactory;
+    private readonly IAppSettings _appSettings;
+    private AIAgent? _agent;
+    private AgentSession? _agentSession;
 
 
 
@@ -49,7 +43,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
     public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings)
-        {
+    {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(agentFactory);
         _appSettings = settings;
@@ -57,32 +51,25 @@ public sealed class ChatConversationService : IChatConversationService
         _agentFactory = agentFactory;
 
 
-        }
+    }
 
 
 
-    private async Task InitializeAsync()
-        {
-        if (Initialized)
-            {
-            return;
-            }
-
-        // Create the system default agent with the specified Model.
-        // A different agent could be created with different instructions and tools if desired.
-        // AgentId must be unique for each agent created, it is used in history persistence to associate messages with the agent that generated them.
-        // This allows for long term behavior analysis on the performance of agent presets and tools.
-        _agent = _agentFactory.GetCodingAssistantAgent("Agentic-Max", AIModels.GPTOSS, "Agentic-Max Description");
-
-        _agentSession = await _agent.CreateSessionAsync();
-
-
-        Initialized = true;
-
-        }
 
 
 
+
+
+    public string ApplicationId
+    {
+        get { return _appSettings.ApplicationId ?? Guid.NewGuid().ToString(); }
+    }
+
+
+
+
+
+    private TokenBudget ConversationTokenBudget { get; }
 
 
 
@@ -94,20 +81,18 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public static string ApplicationId => SystemConfigurationManager.AppSettings["ApplicationId"] ?? AppDomain.CurrentDomain.FriendlyName;
-
-
-
-
-
-    public static string UserId => Environment.UserName;
+    public static string UserId
+    {
+        get { return Environment.UserName; }
+    }
 
 
 
 
 
     /// <summary>
-    /// Duplicate history objects?  We should not need to track sepearately the session holds the context and our sql backed chat history should be handling all the history objects.
+    ///     Duplicate history objects?  We should not need to track sepearately the session holds the context and our sql
+    ///     backed chat history should be handling all the history objects.
     /// </summary>
     public AIChatHistory ChatHistory { get; } = [];
 
@@ -115,7 +100,10 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public int ContextTokenCount => this.CalculateContextTokenCount();
+    public int ContextTokenCount
+    {
+        get { return CalculateContextTokenCount(); }
+    }
 
 
 
@@ -132,18 +120,19 @@ public sealed class ChatConversationService : IChatConversationService
     /// <returns>The generated assistant chat message.</returns>
     /// <exception cref="ArgumentException"></exception>
     public async ValueTask<AIChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
-        {
+    {
+        await InitializeAsync();
         if (string.IsNullOrWhiteSpace(content))
-            {
+        {
             throw new ArgumentException("User message cannot be empty.", nameof(content));
-            }
+        }
 
         //Add user message to ChatHistory
         ChatHistory.AddUserMessage(content);
         AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
         var assistantText = response.Text.Trim();
         if (string.IsNullOrWhiteSpace(assistantText))
-            {
+        {
 
             //What is this extra item!!!
             //Too much duplication
@@ -153,45 +142,45 @@ public sealed class ChatConversationService : IChatConversationService
                             .Where(static message => message.Role == ChatRole.Assistant)
                             .Select(static message => message.Text.Trim())
                             .Where(static text => !string.IsNullOrWhiteSpace(text)));
-            }
-
-        AIChatMessage assistantMessage = new(ChatRole.Assistant, assistantText);
-        if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
-            {
-            ChatHistory.Add(assistantMessage);
-            }
-
-        return assistantMessage;
         }
 
+        AIChatMessage assistantMessage = new AIChatMessage(ChatRole.Assistant, assistantText);
+        if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
+        {
+            ChatHistory.Add(assistantMessage);
+        }
+
+        return assistantMessage;
+    }
 
 
-    private TokenBudget ConversationTokenBudget { get; set; }
+
+
 
 
 
 
     private int CalculateContextTokenCount()
-        {
+    {
         //TODO: this needs to be adapted to include all budgets
 
 
         var tokenCount = 0;
 
         for (var index = ChatHistory.Count - 1; index >= 0; index--)
-            {
+        {
             var content = ChatHistory[index].Text;
             var messageTokenCount = EstimateTokenCount(content);
             if (tokenCount + messageTokenCount > ConversationTokenBudget.SessionBudget)
-                {
+            {
                 break;
-                }
-
-            tokenCount += messageTokenCount;
             }
 
-        return tokenCount;
+            tokenCount += messageTokenCount;
         }
+
+        return tokenCount;
+    }
 
 
 
@@ -201,7 +190,34 @@ public sealed class ChatConversationService : IChatConversationService
 
 
     private static int EstimateTokenCount(string content)
-        {
+    {
         return string.IsNullOrWhiteSpace(content) ? 0 : Math.Max(1, content.Length / 4);
-        }
     }
+
+
+
+
+
+
+
+
+    private async Task InitializeAsync()
+    {
+        if (Initialized)
+        {
+            return;
+        }
+
+        // Create the system default agent with the specified Model.
+        // A different agent could be created with different instructions and tools if desired.
+        // AgentId must be unique for each agent created, it is used in history persistence to associate messages with the agent that generated them.
+        // This allows for long term behavior analysis on the performance of agent presets and tools.
+        _agent = _agentFactory.GetCodingAssistantAgent("Agentic-Max", AIModels.GPTOSS, "Agentic-Max Description");
+
+        _agentSession = await _agent.CreateSessionAsync();
+
+
+        Initialized = true;
+
+    }
+}

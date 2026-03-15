@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         NavigationService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091013
 
 
 
@@ -30,7 +26,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 public sealed class NavigationService : INavigationService
-    {
+{
     private readonly IPageService _pageService;
     private Frame _frame;
     private object _lastParameterUsed;
@@ -43,9 +39,9 @@ public sealed class NavigationService : INavigationService
 
 
     public NavigationService(IPageService pageService)
-        {
+    {
         _pageService = pageService;
-        }
+    }
 
 
 
@@ -60,7 +56,10 @@ public sealed class NavigationService : INavigationService
 
 
 
-    public bool CanGoBack => _frame.CanGoBack;
+    public bool CanGoBack
+    {
+        get { return _frame.CanGoBack; }
+    }
 
 
 
@@ -70,13 +69,13 @@ public sealed class NavigationService : INavigationService
 
 
     public void Initialize(Frame shellFrame)
-        {
+    {
         if (_frame == null)
-            {
+        {
             _frame = shellFrame;
-            _frame.Navigated += this.OnNavigated;
-            }
+            _frame.Navigated += OnNavigated;
         }
+    }
 
 
 
@@ -86,10 +85,10 @@ public sealed class NavigationService : INavigationService
 
 
     public void UnsubscribeNavigation()
-        {
-        _frame.Navigated -= this.OnNavigated;
+    {
+        _frame.Navigated -= OnNavigated;
         _frame = null;
-        }
+    }
 
 
 
@@ -99,17 +98,17 @@ public sealed class NavigationService : INavigationService
 
 
     public void GoBack()
-        {
+    {
         if (_frame.CanGoBack)
-            {
+        {
             var vmBeforeNavigation = _frame.GetDataContext();
             _frame.GoBack();
             if (vmBeforeNavigation is INavigationAware navigationAware)
-                {
+            {
                 navigationAware.OnNavigatedFrom();
-                }
             }
         }
+    }
 
 
 
@@ -119,29 +118,29 @@ public sealed class NavigationService : INavigationService
 
 
     public bool NavigateTo(string pageKey, [CanBeNull] object parameter = null, bool clearNavigation = false)
-        {
+    {
         Type pageType = _pageService.GetPageType(pageKey);
 
         if (_frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(_lastParameterUsed)))
-            {
+        {
             _frame.Tag = clearNavigation;
             Page page = _pageService.GetPage(pageKey);
             var navigated = _frame.Navigate(page, parameter);
             if (navigated)
-                {
+            {
                 _lastParameterUsed = parameter;
                 var dataContext = _frame.GetDataContext();
                 if (dataContext is INavigationAware navigationAware)
-                    {
+                {
                     navigationAware.OnNavigatedFrom();
-                    }
                 }
-
-            return navigated;
             }
 
-        return false;
+            return navigated;
         }
+
+        return false;
+    }
 
 
 
@@ -151,9 +150,9 @@ public sealed class NavigationService : INavigationService
 
 
     public void CleanNavigation()
-        {
+    {
         _frame.CleanNavigation();
-        }
+    }
 
 
 
@@ -163,22 +162,22 @@ public sealed class NavigationService : INavigationService
 
 
     private void OnNavigated(object sender, NavigationEventArgs e)
-        {
+    {
         if (sender is Frame frame)
-            {
+        {
             var clearNavigation = (bool)frame.Tag;
             if (clearNavigation)
-                {
+            {
                 frame.CleanNavigation();
-                }
+            }
 
             var dataContext = frame.GetDataContext();
             if (dataContext is INavigationAware navigationAware)
-                {
+            {
                 navigationAware.OnNavigatedTo(e.ExtraData);
-                }
+            }
 
             Navigated?.Invoke(sender, dataContext?.GetType().FullName);
-            }
         }
     }
+}

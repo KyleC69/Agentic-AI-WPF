@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         LogInViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091017
 
 
 
@@ -30,7 +26,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 public sealed partial class LogInViewModel(IIdentityService identityService) : ObservableObject
-    {
+{
     private readonly IIdentityService _identityService = identityService;
 
 
@@ -38,28 +34,30 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
 
 
     public bool IsBusy
-        {
+    {
         get;
         set
-            {
+        {
             _ = this.SetProperty(ref field, value);
             LoginCommand.NotifyCanExecuteChanged();
-            }
         }
+    }
 
 
 
 
 
     [NotNull]
-    public RelayCommand LoginCommand => field ??= new RelayCommand(this.OnLogin, () => !IsBusy);
+    public RelayCommand LoginCommand
+    {
+        get { return field ??= new RelayCommand(OnLogin, () => !IsBusy); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial string StatusMessage { get; set; }
+    [ObservableProperty] public partial string StatusMessage { get; set; }
 
 
 
@@ -69,15 +67,15 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
 
 
     private static string GetStatusMessage(LoginResultType loginResult)
-        {
+    {
         return loginResult switch
-            {
+        {
                 LoginResultType.Unauthorized => Resources.StatusUnauthorized,
                 LoginResultType.NoNetworkAvailable => Resources.StatusNoNetworkAvailable,
                 LoginResultType.UnknownError => Resources.StatusLoginFails,
                 _ => string.Empty
-                };
-        }
+        };
+    }
 
 
 
@@ -87,11 +85,11 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
 
 
     private async void OnLogin()
-        {
+    {
         IsBusy = true;
         StatusMessage = string.Empty;
         LoginResultType loginResult = await _identityService.LoginAsync();
         StatusMessage = GetStatusMessage(loginResult);
         IsBusy = false;
-        }
     }
+}

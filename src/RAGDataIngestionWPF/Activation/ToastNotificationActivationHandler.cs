@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         ToastNotificationActivationHandler.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091007
 
 
 
@@ -31,7 +27,7 @@ namespace RAGDataIngestionWPF.Activation;
 // https://docs.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast?tabs=desktop
 // and https://github.com/microsoft/TemplateStudio/blob/main/docs/WPF/features/toast-notifications.md
 public sealed class ToastNotificationActivationHandler : IActivationHandler
-    {
+{
 
     private readonly IConfiguration _config;
     public const string ACTIVATION_ARGUMENTS = "ToastNotificationActivationArguments";
@@ -44,9 +40,9 @@ public sealed class ToastNotificationActivationHandler : IActivationHandler
 
 
     public ToastNotificationActivationHandler(IConfiguration config)
-        {
+    {
         _config = config;
-        }
+    }
 
 
 
@@ -56,9 +52,9 @@ public sealed class ToastNotificationActivationHandler : IActivationHandler
 
 
     public bool CanHandle()
-        {
+    {
         return !string.IsNullOrEmpty(_config[ACTIVATION_ARGUMENTS]);
-        }
+    }
 
 
 
@@ -68,25 +64,25 @@ public sealed class ToastNotificationActivationHandler : IActivationHandler
 
 
     public async Task HandleAsync()
-        {
+    {
         if (!Application.Current.Windows.OfType<IShellWindow>().Any())
-            {
+        {
             // Here you can get an instance of the ShellWindow and choose navigate
             // to a specific page depending on the toast notification arguments
-            }
+        }
         else
-            {
+        {
             if (Application.Current.MainWindow != null)
-                {
+            {
                 _ = Application.Current.MainWindow.Activate();
                 if (Application.Current.MainWindow.WindowState == WindowState.Minimized)
-                    {
+                {
                     Application.Current.MainWindow.WindowState = WindowState.Normal;
-                    }
                 }
-
             }
 
-        await Task.CompletedTask;
         }
+
+        await Task.CompletedTask;
     }
+}

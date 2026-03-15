@@ -139,5 +139,14 @@ namespace RAGDataIngestionWPF.Properties {
                 return ((int)(this["MaximumContext"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("[Guid(\"15A53D0F-041D-44DD-A150-DFB8D0F133FF\")]")]
+        public string ApplicationId {
+            get {
+                return ((string)(this["ApplicationId"]));
+            }
+        }
     }
 }

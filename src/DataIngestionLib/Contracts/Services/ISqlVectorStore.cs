@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ISqlVectorStore.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090937
 
 
 
@@ -18,7 +14,7 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 public interface ISqlVectorStore
-    {
+{
 
 
     /// <summary>
@@ -42,4 +38,4 @@ public interface ISqlVectorStore
     /// <param name="message">Message content to persist.</param>
     /// <param name="timestamp">Message timestamp. Values are normalized to UTC before persistence.</param>
     void SaveChatHistory(string userId, string message, DateTime timestamp);
-    }
+}

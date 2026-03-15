@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         PersistAndRestoreService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091014
 
 
 
@@ -23,15 +19,15 @@ namespace RAGDataIngestionWPF.Services;
 
 
 public sealed class PersistAndRestoreService : IPersistAndRestoreService
-    {
+{
 
 
 
 
 
     public void PersistData()
-        {
-        }
+    {
+    }
 
 
 
@@ -41,6 +37,6 @@ public sealed class PersistAndRestoreService : IPersistAndRestoreService
 
 
     public void RestoreData()
-        {
-        }
+    {
     }
+}

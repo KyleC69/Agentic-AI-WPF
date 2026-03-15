@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         ShellWindow.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091024
 
 
 
@@ -26,12 +22,12 @@ namespace RAGDataIngestionWPF.Views;
 
 
 public sealed partial class ShellWindow : IShellWindow
-    {
+{
     public ShellWindow(ShellViewModel viewModel)
-        {
-        this.InitializeComponent();
+    {
+        InitializeComponent();
         DataContext = viewModel;
-        }
+    }
 
 
 
@@ -41,9 +37,9 @@ public sealed partial class ShellWindow : IShellWindow
 
 
     public Frame GetNavigationFrame()
-        {
+    {
         return ShellFrame;
-        }
+    }
 
 
 
@@ -53,9 +49,9 @@ public sealed partial class ShellWindow : IShellWindow
 
 
     public void ShowWindow()
-        {
+    {
         this.Show();
-        }
+    }
 
 
 
@@ -65,7 +61,7 @@ public sealed partial class ShellWindow : IShellWindow
 
 
     public void CloseWindow()
-        {
+    {
         this.Close();
-        }
     }
+}

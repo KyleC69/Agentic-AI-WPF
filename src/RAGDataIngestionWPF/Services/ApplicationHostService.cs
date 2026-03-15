@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         ApplicationHostService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091011
 
 
 
@@ -40,7 +36,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 public sealed class ApplicationHostService : IHostedService
-    {
+{
 
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly INavigationService _navigationService;
@@ -60,13 +56,13 @@ public sealed class ApplicationHostService : IHostedService
 
 
     public ApplicationHostService(IServiceProvider serviceProvider, IEnumerable<IActivationHandler> activationHandlers, INavigationService navigationService, IToastNotificationsService toastNotificationsService, IUserDataService userDataService)
-        {
+    {
         _serviceProvider = serviceProvider;
         _activationHandlers = activationHandlers;
         _navigationService = navigationService;
         _toastNotificationsService = toastNotificationsService;
         _userDataService = userDataService;
-        }
+    }
 
 
 
@@ -76,15 +72,15 @@ public sealed class ApplicationHostService : IHostedService
 
 
     public async Task StartAsync(CancellationToken cancellationToken)
-        {
-        await this.InitializeAsync();
+    {
+        await InitializeAsync();
 
-        await this.HandleActivationAsync();
+        await HandleActivationAsync();
 
         // Tasks after activation
-        await this.StartupAsync();
+        await StartupAsync();
         _isInitialized = true;
-        }
+    }
 
 
 
@@ -94,9 +90,9 @@ public sealed class ApplicationHostService : IHostedService
 
 
     public async Task StopAsync(CancellationToken cancellationToken)
-        {
+    {
         await Task.CompletedTask;
-        }
+    }
 
 
 
@@ -106,20 +102,20 @@ public sealed class ApplicationHostService : IHostedService
 
 
     private static void ApplyTheme(AppTheme theme)
-        {
+    {
         _ = ThemeManager.Current.AddLibraryTheme(new LibraryTheme(new Uri(HcDarkTheme), MahAppsLibraryThemeProvider.DefaultInstance));
         _ = ThemeManager.Current.AddLibraryTheme(new LibraryTheme(new Uri(HcLightTheme), MahAppsLibraryThemeProvider.DefaultInstance));
         if (theme == AppTheme.Default)
-            {
+        {
             ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
             ThemeManager.Current.SyncTheme();
             return;
-            }
+        }
 
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithHighContrast;
         ThemeManager.Current.SyncTheme();
         _ = ThemeManager.Current.ChangeTheme(Application.Current, $"{theme}.Blue", SystemParameters.HighContrast);
-        }
+    }
 
 
 
@@ -129,26 +125,26 @@ public sealed class ApplicationHostService : IHostedService
 
 
     private async Task HandleActivationAsync()
-        {
+    {
         IActivationHandler activationHandler = _activationHandlers.FirstOrDefault(h => h.CanHandle());
 
         if (activationHandler != null)
-            {
+        {
             await activationHandler.HandleAsync();
-            }
+        }
 
         await Task.CompletedTask;
 
         if (!Application.Current.Windows.OfType<IShellWindow>().Any())
-            {
+        {
             // Default activation that navigates to the apps default page
             _shellWindow = _serviceProvider.GetRequiredService<IShellWindow>();
             _navigationService.Initialize(_shellWindow.GetNavigationFrame());
             _shellWindow.ShowWindow();
             var unused = _navigationService.NavigateTo(typeof(MainViewModel).FullName);
             await Task.CompletedTask;
-            }
         }
+    }
 
 
 
@@ -158,14 +154,14 @@ public sealed class ApplicationHostService : IHostedService
 
 
     private async Task InitializeAsync()
-        {
+    {
         if (!_isInitialized)
-            {
+        {
             ApplyTheme(ParseTheme(SystemConfigurationManager.AppSettings["Theme"] ?? "Dark"));
             _userDataService.Initialize();
             await Task.CompletedTask;
-            }
         }
+    }
 
 
 
@@ -175,9 +171,9 @@ public sealed class ApplicationHostService : IHostedService
 
 
     private static AppTheme ParseTheme([CanBeNull] string themeName)
-        {
+    {
         return Enum.TryParse(themeName, out AppTheme theme) ? theme : AppTheme.Dark;
-        }
+    }
 
 
 
@@ -187,11 +183,11 @@ public sealed class ApplicationHostService : IHostedService
 
 
     private async Task StartupAsync()
-        {
+    {
         if (!_isInitialized)
-            {
+        {
             _toastNotificationsService.ShowToastNotificationSample();
             await Task.CompletedTask;
-            }
         }
     }
+}

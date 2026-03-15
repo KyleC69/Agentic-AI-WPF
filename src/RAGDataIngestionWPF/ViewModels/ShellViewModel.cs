@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         ShellViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091021
 
 
 
@@ -34,7 +30,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 public sealed partial class ShellViewModel : ObservableObject
-    {
+{
     private readonly INavigationService _navigationService;
     private readonly IUserDataService _userDataService;
 
@@ -46,10 +42,10 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     public ShellViewModel(INavigationService navigationService, IUserDataService userDataService)
-        {
+    {
         _navigationService = navigationService;
         _userDataService = userDataService;
-        }
+    }
 
 
 
@@ -59,21 +55,30 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     [NotNull]
-    public RelayCommand GoBackCommand => field ??= new RelayCommand(this.OnGoBack, this.CanGoBack);
+    public RelayCommand GoBackCommand
+    {
+        get { return field ??= new RelayCommand(OnGoBack, CanGoBack); }
+    }
 
 
 
 
 
     [NotNull]
-    public ICommand LoadedCommand => field ??= new RelayCommand(this.OnLoaded);
+    public ICommand LoadedCommand
+    {
+        get { return field ??= new RelayCommand(OnLoaded); }
+    }
 
 
 
 
 
     [NotNull]
-    public ICommand MenuItemInvokedCommand => field ??= new RelayCommand(this.OnMenuItemInvoked);
+    public ICommand MenuItemInvokedCommand
+    {
+        get { return field ??= new RelayCommand(OnMenuItemInvoked); }
+    }
 
 
 
@@ -99,28 +104,32 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     [NotNull]
-    public ICommand OptionsMenuItemInvokedCommand => field ??= new RelayCommand(this.OnOptionsMenuItemInvoked);
+    public ICommand OptionsMenuItemInvokedCommand
+    {
+        get { return field ??= new RelayCommand(OnOptionsMenuItemInvoked); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial HamburgerMenuItem SelectedMenuItem { get; set; }
+    [ObservableProperty] public partial HamburgerMenuItem SelectedMenuItem { get; set; }
 
 
 
 
 
-    [ObservableProperty]
-    public partial HamburgerMenuItem SelectedOptionsMenuItem { get; set; }
+    [ObservableProperty] public partial HamburgerMenuItem SelectedOptionsMenuItem { get; set; }
 
 
 
 
 
     [NotNull]
-    public ICommand UnloadedCommand => field ??= new RelayCommand(this.OnUnloaded);
+    public ICommand UnloadedCommand
+    {
+        get { return field ??= new RelayCommand(OnUnloaded); }
+    }
 
 
 
@@ -130,9 +139,9 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     private bool CanGoBack()
-        {
+    {
         return _navigationService.CanGoBack;
-        }
+    }
 
 
 
@@ -142,12 +151,12 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     private void NavigateTo([CanBeNull] Type targetViewModel)
-        {
+    {
         if (targetViewModel != null)
-            {
+        {
             _ = _navigationService.NavigateTo(targetViewModel.FullName);
-            }
         }
+    }
 
 
 
@@ -157,9 +166,9 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     private void OnGoBack()
-        {
+    {
         _navigationService.GoBack();
-        }
+    }
 
 
 
@@ -169,19 +178,19 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     private void OnLoaded()
-        {
-        _navigationService.Navigated += this.OnNavigated;
-        _userDataService.UserDataUpdated += this.OnUserDataUpdated;
+    {
+        _navigationService.Navigated += OnNavigated;
+        _userDataService.UserDataUpdated += OnUserDataUpdated;
         UserViewModel user = _userDataService.GetUser();
         HamburgerMenuImageItem userMenuItem = new()
-            {
-            Thumbnail = user.Photo,
-            Label = user.Name,
-            Command = new RelayCommand(this.OnUserItemSelected)
-            };
+        {
+                Thumbnail = user.Photo,
+                Label = user.Name,
+                Command = new RelayCommand(OnUserItemSelected)
+        };
 
         OptionMenuItems.Insert(0, userMenuItem);
-        }
+    }
 
 
 
@@ -191,9 +200,9 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     private void OnMenuItemInvoked()
-        {
-        this.NavigateTo(SelectedMenuItem.TargetPageType);
-        }
+    {
+        NavigateTo(SelectedMenuItem.TargetPageType);
+    }
 
 
 
@@ -203,21 +212,21 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     private void OnNavigated(object sender, string viewModelName)
-        {
+    {
         HamburgerMenuItem item = MenuItems
                 .FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
         if (item != null)
-            {
+        {
             SelectedMenuItem = item;
-            }
+        }
         else
-            {
+        {
             SelectedOptionsMenuItem = OptionMenuItems
                     .FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
-            }
+        }
 
         GoBackCommand.NotifyCanExecuteChanged();
-        }
+    }
 
 
 
@@ -227,9 +236,9 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     private void OnOptionsMenuItemInvoked()
-        {
-        this.NavigateTo(SelectedOptionsMenuItem.TargetPageType);
-        }
+    {
+        NavigateTo(SelectedOptionsMenuItem.TargetPageType);
+    }
 
 
 
@@ -239,15 +248,15 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     private void OnUnloaded()
-        {
-        _navigationService.Navigated -= this.OnNavigated;
-        _userDataService.UserDataUpdated -= this.OnUserDataUpdated;
+    {
+        _navigationService.Navigated -= OnNavigated;
+        _userDataService.UserDataUpdated -= OnUserDataUpdated;
         HamburgerMenuImageItem userMenuItem = OptionMenuItems.OfType<HamburgerMenuImageItem>().FirstOrDefault();
         if (userMenuItem != null)
-            {
+        {
             var unused = OptionMenuItems.Remove(userMenuItem);
-            }
         }
+    }
 
 
 
@@ -257,14 +266,14 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     private void OnUserDataUpdated(object sender, UserViewModel user)
-        {
+    {
         HamburgerMenuImageItem userMenuItem = OptionMenuItems.OfType<HamburgerMenuImageItem>().FirstOrDefault();
         if (userMenuItem != null)
-            {
+        {
             userMenuItem.Label = user.Name;
             userMenuItem.Thumbnail = user.Photo;
-            }
         }
+    }
 
 
 
@@ -274,7 +283,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
     private void OnUserItemSelected()
-        {
-        this.NavigateTo(typeof(SettingsViewModel));
-        }
+    {
+        NavigateTo(typeof(SettingsViewModel));
     }
+}

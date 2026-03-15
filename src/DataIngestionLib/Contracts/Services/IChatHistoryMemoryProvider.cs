@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IChatHistoryMemoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090936
 
 
 
@@ -23,17 +19,17 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 /// <summary>
-/// Defines the contract for providing and persisting chat history context during AI agent interactions.
+///     Defines the contract for providing and persisting chat history context during AI agent interactions.
 /// </summary>
 /// <remarks>
-/// This interface is intentionally narrowed to the two operations required for context injection
-/// (retrieving history for context and storing new messages), rather than exposing the broader
-/// management surface implemented by the concrete chat-history context injector. Consumers that
-/// only need to read and write history should depend on this interface so they remain decoupled
-/// from pruning, update, and delete operations.
+///     This interface is intentionally narrowed to the two operations required for context injection
+///     (retrieving history for context and storing new messages), rather than exposing the broader
+///     management surface implemented by the concrete chat-history context injector. Consumers that
+///     only need to read and write history should depend on this interface so they remain decoupled
+///     from pruning, update, and delete operations.
 /// </remarks>
 public interface IChatHistoryMemoryProvider
-    {
+{
     /// <summary>
     ///     Builds a windowed set of historical chat messages suitable for injecting into the current
     ///     request context.
@@ -80,4 +76,4 @@ public interface IChatHistoryMemoryProvider
             AIChatHistory requestMessages,
             AIChatHistory responseMessages,
             CancellationToken cancellationToken = default);
-    }
+}

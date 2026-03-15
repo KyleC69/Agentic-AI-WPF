@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         PagesTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 043333
+// Build Num: 091004
 
 
 
@@ -39,7 +39,7 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 
 [TestClass]
 public class PagesTests
-    {
+{
     private readonly IHost _host;
 
 
@@ -50,19 +50,19 @@ public class PagesTests
 
 
     public PagesTests()
-        {
+    {
         var appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location);
         _host = Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c =>
                 {
                     if (appLocation != null)
-                        {
+                    {
                         c.SetBasePath(appLocation);
-                        }
+                    }
                 })
                 .ConfigureServices(ConfigureServices)
                 .Build();
-        }
+    }
 
 
 
@@ -72,7 +72,7 @@ public class PagesTests
 
 
     private void ConfigureServices(HostBuilderContext context, [NotNull] IServiceCollection services)
-        {
+    {
         // Core Services
         IServiceCollection unused14 = services.AddSingleton<IFileService, FileService>();
         IServiceCollection unused13 = services.AddSingleton<IIdentityService, IdentityService>();
@@ -109,7 +109,7 @@ public class PagesTests
         IServiceCollection unused2 = services.AddTransient<ListDetailsViewModel>();
         IServiceCollection unused1 = services.AddTransient<DataGridViewModel>();
         IServiceCollection unused = services.AddTransient<BlankViewModel>();
-        }
+    }
 
 
 
@@ -119,20 +119,20 @@ public class PagesTests
 
 
     private static void SetAppSetting(string key, string value)
-        {
+    {
         System.Configuration.Configuration config = System.Configuration.ConfigurationManager.OpenExeConfiguration(System.Configuration.ConfigurationUserLevel.None);
         if (config.AppSettings.Settings[key] is null)
-            {
+        {
             config.AppSettings.Settings.Add(key, value);
-            }
+        }
         else
-            {
+        {
             config.AppSettings.Settings[key].Value = value;
-            }
+        }
 
         config.Save(System.Configuration.ConfigurationSaveMode.Modified);
         System.Configuration.ConfigurationManager.RefreshSection("appSettings");
-        }
+    }
 
 
 
@@ -144,10 +144,10 @@ public class PagesTests
     // TODO: Add tests for functionality you add to BlankViewModel.
     [TestMethod]
     public void TestBlankViewModelCreation()
-        {
+    {
         var vm = _host.Services.GetService(typeof(BlankViewModel));
         Assert.IsNotNull(vm);
-        }
+    }
 
 
 
@@ -159,10 +159,10 @@ public class PagesTests
     // TODO: Add tests for functionality you add to DataGridViewModel.
     [TestMethod]
     public void TestDataGridViewModelCreation()
-        {
+    {
         var vm = _host.Services.GetService(typeof(DataGridViewModel));
         Assert.IsNotNull(vm);
-        }
+    }
 
 
 
@@ -173,17 +173,17 @@ public class PagesTests
 
     [TestMethod]
     public void TestGetBlankPageType()
-        {
+    {
         if (_host.Services.GetService(typeof(IPageService)) is IPageService pageService)
-            {
+        {
             Type pageType = pageService.GetPageType(typeof(BlankViewModel).FullName);
             Assert.AreEqual(typeof(BlankPage), pageType);
-            }
-        else
-            {
-            Assert.Fail($"Can't resolve {nameof(IPageService)}");
-            }
         }
+        else
+        {
+            Assert.Fail($"Can't resolve {nameof(IPageService)}");
+        }
+    }
 
 
 
@@ -194,17 +194,17 @@ public class PagesTests
 
     [TestMethod]
     public void TestGetDataGridPageType()
-        {
+    {
         if (_host.Services.GetService(typeof(IPageService)) is IPageService pageService)
-            {
+        {
             Type pageType = pageService.GetPageType(typeof(DataGridViewModel).FullName);
             Assert.AreEqual(typeof(DataGridPage), pageType);
-            }
-        else
-            {
-            Assert.Fail($"Can't resolve {nameof(IPageService)}");
-            }
         }
+        else
+        {
+            Assert.Fail($"Can't resolve {nameof(IPageService)}");
+        }
+    }
 
 
 
@@ -215,17 +215,17 @@ public class PagesTests
 
     [TestMethod]
     public void TestGetListDetailsPageType()
-        {
+    {
         if (_host.Services.GetService(typeof(IPageService)) is IPageService pageService)
-            {
+        {
             Type pageType = pageService.GetPageType(typeof(ListDetailsViewModel).FullName);
             Assert.AreEqual(typeof(ListDetailsPage), pageType);
-            }
-        else
-            {
-            Assert.Fail($"Can't resolve {nameof(IPageService)}");
-            }
         }
+        else
+        {
+            Assert.Fail($"Can't resolve {nameof(IPageService)}");
+        }
+    }
 
 
 
@@ -236,17 +236,17 @@ public class PagesTests
 
     [TestMethod]
     public void TestGetMainPageType()
-        {
+    {
         if (_host.Services.GetService(typeof(IPageService)) is IPageService pageService)
-            {
+        {
             Type pageType = pageService.GetPageType(typeof(MainViewModel).FullName);
             Assert.AreEqual(typeof(MainPage), pageType);
-            }
-        else
-            {
-            Assert.Fail($"Can't resolve {nameof(IPageService)}");
-            }
         }
+        else
+        {
+            Assert.Fail($"Can't resolve {nameof(IPageService)}");
+        }
+    }
 
 
 
@@ -257,17 +257,17 @@ public class PagesTests
 
     [TestMethod]
     public void TestGetSettingsPageType()
-        {
+    {
         if (_host.Services.GetService(typeof(IPageService)) is IPageService pageService)
-            {
+        {
             Type pageType = pageService.GetPageType(typeof(SettingsViewModel).FullName);
             Assert.AreEqual(typeof(SettingsPage), pageType);
-            }
-        else
-            {
-            Assert.Fail($"Can't resolve {nameof(IPageService)}");
-            }
         }
+        else
+        {
+            Assert.Fail($"Can't resolve {nameof(IPageService)}");
+        }
+    }
 
 
 
@@ -278,17 +278,17 @@ public class PagesTests
 
     [TestMethod]
     public void TestGetWebViewPageType()
-        {
+    {
         if (_host.Services.GetService(typeof(IPageService)) is IPageService pageService)
-            {
+        {
             Type pageType = pageService.GetPageType(typeof(WebViewViewModel).FullName);
             Assert.AreEqual(typeof(WebViewPage), pageType);
-            }
-        else
-            {
-            Assert.Fail($"Can't resolve {nameof(IPageService)}");
-            }
         }
+        else
+        {
+            Assert.Fail($"Can't resolve {nameof(IPageService)}");
+        }
+    }
 
 
 
@@ -300,10 +300,10 @@ public class PagesTests
     // TODO: Add tests for functionality you add to ListDetailsViewModel.
     [TestMethod]
     public void TestListDetailsViewModelCreation()
-        {
+    {
         var vm = _host.Services.GetService(typeof(ListDetailsViewModel));
         Assert.IsNotNull(vm);
-        }
+    }
 
 
 
@@ -315,10 +315,10 @@ public class PagesTests
     // TODO: Add tests for functionality you add to MainViewModel.
     [TestMethod]
     public void TestMainViewModelCreation()
-        {
+    {
         var vm = _host.Services.GetService(typeof(MainViewModel));
         Assert.IsNotNull(vm);
-        }
+    }
 
 
 
@@ -330,10 +330,10 @@ public class PagesTests
     // TODO: Add tests for functionality you add to SettingsViewModel.
     [TestMethod]
     public void TestSettingsViewModelCreation()
-        {
+    {
         var vm = _host.Services.GetService(typeof(SettingsViewModel));
         Assert.IsNotNull(vm);
-        }
+    }
 
 
 
@@ -345,8 +345,8 @@ public class PagesTests
     // TODO: Add tests for functionality you add to WebViewViewModel.
     [TestMethod]
     public void TestWebViewViewModelCreation()
-        {
+    {
         var vm = _host.Services.GetService(typeof(WebViewViewModel));
         Assert.IsNotNull(vm);
-        }
     }
+}

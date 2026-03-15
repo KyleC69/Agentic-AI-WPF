@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         EventLogModels.cs
 // Author: Kyle L. Crowder
-// Build Num: 043332
+// Build Num: 091003
 
 
 
@@ -21,20 +21,20 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 
 
 public sealed class EventLogEntryDto
-    {
+{
     public EventLogEntryType EntryType { get; init; }
     public int EventId { get; init; }
     public string Message { get; init; } = "";
     public string Source { get; init; } = "";
     public DateTime TimeGenerated { get; init; }
-    }
+}
 
 
 
 
 
 public sealed class EventLogReadResult
-    {
+{
     public IReadOnlyList<EventLogEntryDto> Entries { get; init; }
     public string Error { get; init; }
     public bool Success { get; init; }
@@ -48,9 +48,9 @@ public sealed class EventLogReadResult
 
     [NotNull]
     public static EventLogReadResult Fail(string message)
-        {
+    {
         return new() { Success = false, Error = message };
-        }
+    }
 
 
 
@@ -61,17 +61,17 @@ public sealed class EventLogReadResult
 
     [NotNull]
     public static EventLogReadResult Ok(IReadOnlyList<EventLogEntryDto> entries)
-        {
+    {
         return new() { Success = true, Entries = entries };
-        }
     }
+}
 
 
 
 
 
 public sealed class SandboxEventLogReader
-    {
+{
     private readonly int _maxEvents;
 
 
@@ -82,9 +82,9 @@ public sealed class SandboxEventLogReader
 
 
     public SandboxEventLogReader(int maxEvents = 100)
-        {
+    {
         _maxEvents = Math.Max(1, maxEvents);
-        }
+    }
 
 
 
@@ -95,18 +95,18 @@ public sealed class SandboxEventLogReader
 
     [NotNull]
     public EventLogReadResult ReadLog([CanBeNull] string logName)
-        {
+    {
         try
-            {
+        {
             if (string.IsNullOrWhiteSpace(logName))
-                {
+            {
                 return EventLogReadResult.Fail("Log name cannot be empty.");
-                }
+            }
 
             if (!EventLog.Exists(logName))
-                {
+            {
                 return EventLogReadResult.Fail($"Event log '{logName}' does not exist.");
-                }
+            }
 
             using EventLog log = new EventLog(logName);
 
@@ -115,21 +115,21 @@ public sealed class SandboxEventLogReader
                     .Reverse() // newest first
                     .Take(_maxEvents)
                     .Select(e => new EventLogEntryDto
-                        {
-                        TimeGenerated = e.TimeGenerated,
-                        Source = e.Source,
-                        Message = e.Message,
-                        EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
-                        EntryType = e.EntryType
-                        })
+                    {
+                            TimeGenerated = e.TimeGenerated,
+                            Source = e.Source,
+                            Message = e.Message,
+                            EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
+                            EntryType = e.EntryType
+                    })
                     .ToList()
                     .AsReadOnly();
 
             return EventLogReadResult.Ok(entries);
-            }
+        }
         catch (Exception ex)
-            {
+        {
             return EventLogReadResult.Fail(ex.Message);
-            }
         }
     }
+}

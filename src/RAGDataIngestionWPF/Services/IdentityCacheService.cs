@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         IdentityCacheService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091012
 
 
 
@@ -29,7 +25,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 internal sealed class IdentityCacheService : IIdentityCacheService
-    {
+{
     private readonly Lock _fileLock = new();
     public static readonly string MsalCacheFileName = ".msalcache.bin3";
     public static readonly string MsalCacheFilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{Assembly.GetExecutingAssembly().GetName().Name}";
@@ -43,19 +39,19 @@ internal sealed class IdentityCacheService : IIdentityCacheService
 
     [CanBeNull]
     public byte[] ReadMsalToken()
-        {
+    {
         lock (_fileLock)
-            {
+        {
             var filePath = Path.Combine(MsalCacheFilePath, MsalCacheFileName);
             if (File.Exists(filePath))
-                {
+            {
                 var encryptedData = File.ReadAllBytes(filePath);
                 return ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
-                }
+            }
 
             return default;
-            }
         }
+    }
 
 
 
@@ -65,17 +61,17 @@ internal sealed class IdentityCacheService : IIdentityCacheService
 
 
     public void SaveMsalToken([NotNull] byte[] token)
-        {
+    {
         lock (_fileLock)
-            {
+        {
             if (!Directory.Exists(MsalCacheFilePath))
-                {
+            {
                 _ = Directory.CreateDirectory(MsalCacheFilePath);
-                }
+            }
 
             var encryptedData = ProtectedData.Protect(token, null, DataProtectionScope.CurrentUser);
             var filePath = Path.Combine(MsalCacheFilePath, MsalCacheFileName);
             File.WriteAllBytes(filePath, encryptedData);
-            }
         }
     }
+}

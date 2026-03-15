@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         WebViewViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091022
 
 
 
@@ -34,7 +30,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 public sealed partial class WebViewViewModel : ObservableObject
-    {
+{
 
     private readonly ISystemService _systemService;
     private WebView2 _webView;
@@ -50,10 +46,10 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
     public WebViewViewModel(ISystemService systemService)
-        {
+    {
         _systemService = systemService;
         Source = DefaultUrl;
-        }
+    }
 
 
 
@@ -63,74 +59,86 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
     [NotNull]
-    public RelayCommand BrowserBackCommand => field ??= new RelayCommand(() => _webView?.GoBack(), () => _webView?.CanGoBack ?? false);
+    public RelayCommand BrowserBackCommand
+    {
+        get { return field ??= new RelayCommand(() => _webView?.GoBack(), () => _webView?.CanGoBack ?? false); }
+    }
 
 
 
 
 
     [NotNull]
-    public RelayCommand BrowserForwardCommand => field ??= new RelayCommand(() => _webView?.GoForward(), () => _webView?.CanGoForward ?? false);
+    public RelayCommand BrowserForwardCommand
+    {
+        get { return field ??= new RelayCommand(() => _webView?.GoForward(), () => _webView?.CanGoForward ?? false); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial Visibility FailedMesageVisibility { get; set; } = Visibility.Collapsed;
+    [ObservableProperty] public partial Visibility FailedMesageVisibility { get; set; } = Visibility.Collapsed;
+
+
+
 
 
     public bool IsLoading
-        {
+    {
         get;
         set
-            {
+        {
             _ = this.SetProperty(ref field, value);
             IsLoadingVisibility = value ? Visibility.Visible : Visibility.Collapsed;
-            }
-        } = true;
+        }
+    } = true;
 
 
 
 
 
-    [ObservableProperty]
-    public partial Visibility IsLoadingVisibility { get; set; } = Visibility.Visible;
+    [ObservableProperty] public partial Visibility IsLoadingVisibility { get; set; } = Visibility.Visible;
 
 
 
 
 
     public bool IsShowingFailedMessage
-        {
+    {
         get;
         set
-            {
+        {
             _ = this.SetProperty(ref field, value);
             FailedMesageVisibility = value ? Visibility.Visible : Visibility.Collapsed;
-            }
         }
+    }
 
 
 
 
 
     [NotNull]
-    public ICommand OpenInBrowserCommand => field ??= new RelayCommand(this.OnOpenInBrowser);
+    public ICommand OpenInBrowserCommand
+    {
+        get { return field ??= new RelayCommand(this.OnOpenInBrowser); }
+    }
 
 
 
 
 
     [NotNull]
-    public ICommand RefreshCommand => field ??= new RelayCommand(this.OnRefresh);
+    public ICommand RefreshCommand
+    {
+        get { return field ??= new RelayCommand(this.OnRefresh); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial string Source { get; set; }
+    [ObservableProperty] public partial string Source { get; set; }
 
 
 
@@ -140,9 +148,9 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
     public void Initialize(WebView2 webView)
-        {
+    {
         _webView = webView;
-        }
+    }
 
 
 
@@ -152,17 +160,17 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
     public void OnNavigationCompleted(object sender, [CanBeNull] CoreWebView2NavigationCompletedEventArgs e)
-        {
+    {
         IsLoading = false;
         if (e != null && !e.IsSuccess)
-            {
+        {
             // Use `e.WebErrorStatus` to vary the displayed message based on the error reason
             IsShowingFailedMessage = true;
-            }
+        }
 
         BrowserBackCommand.NotifyCanExecuteChanged();
         BrowserForwardCommand.NotifyCanExecuteChanged();
-        }
+    }
 
 
 
@@ -172,9 +180,9 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
     private void OnOpenInBrowser()
-        {
+    {
         _systemService.OpenInWebBrowser(Source);
-        }
+    }
 
 
 
@@ -184,9 +192,9 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
     private void OnRefresh()
-        {
+    {
         IsShowingFailedMessage = false;
         IsLoading = true;
         _webView?.Reload();
-        }
     }
+}

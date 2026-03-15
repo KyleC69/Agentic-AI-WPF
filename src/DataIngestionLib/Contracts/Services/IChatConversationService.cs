@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090936
 
 
 
@@ -23,7 +19,7 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 public interface IChatConversationService
-    {
+{
 
     /// <summary>
     ///     Gets the active Semantic Kernel chat history for the current conversation.
@@ -45,4 +41,4 @@ public interface IChatConversationService
 
 
     //   ChatMessage AddAssistantMessage(string responseCanceled);
-    }
+}

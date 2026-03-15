@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChatHistoryMigrations.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090954
 
 
 
@@ -18,7 +14,7 @@ namespace DataIngestionLib.Services;
 
 
 internal static class ChatHistoryMigrations
-    {
+{
     public static IReadOnlyList<(string Id, string Sql)> All { get; } =
     [
             (
@@ -64,4 +60,4 @@ internal static class ChatHistoryMigrations
                     """
             )
     ];
-    }
+}
