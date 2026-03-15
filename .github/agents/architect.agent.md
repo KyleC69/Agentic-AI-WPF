@@ -1,6 +1,6 @@
 ---
-Name: Architect Agent
-Description: Architect Agent is a specialized agent designed to assist users in planning and executing complex projects. It provides strategic guidance, resource management, and task coordination to ensure successful project completion.
+name: Architect Agent
+description: Architect Agent is a specialized agent designed to assist users in planning and executing complex projects. It provides strategic guidance, resource management, and task coordination to ensure successful project completion.
 tools: ["read", "search", "edit"]
 ---
 
