@@ -126,9 +126,18 @@ public static class ChatMessageExtensions
 
         message = message.Clone();
         AIChatMessage chatMessage = message;
-        if (chatMessage.AdditionalProperties == null)
+        if (chatMessage.AdditionalProperties is null)
             {
             chatMessage.AdditionalProperties = [];
+            }
+        else
+            {
+            IEnumerable<KeyValuePair<string, object?>> existingProperties = chatMessage.AdditionalProperties;
+            chatMessage.AdditionalProperties = [];
+            foreach (KeyValuePair<string, object?> property in existingProperties)
+                {
+                chatMessage.AdditionalProperties[property.Key] = property.Value;
+                }
             }
 
         message.AdditionalProperties?[AgentRequestMessageSourceAttribution.AdditionalPropertiesKey] = new AgentRequestMessageSourceAttribution(sourceType, sourceId);
