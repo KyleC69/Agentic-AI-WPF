@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IAgentIdentityProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090936
 
 
 
@@ -26,7 +22,7 @@ namespace DataIngestionLib.Contracts.Services;
 ///     agent framework, or from any other appropriate source.
 /// </remarks>
 public interface IAgentIdentityProvider
-    {
+{
     /// <summary>
     ///     Returns the identifier of the active agent.
     /// </summary>
@@ -34,4 +30,4 @@ public interface IAgentIdentityProvider
     ///     A non-null, non-empty string that uniquely identifies the agent within the application.
     /// </returns>
     string GetAgentId();
-    }
+}

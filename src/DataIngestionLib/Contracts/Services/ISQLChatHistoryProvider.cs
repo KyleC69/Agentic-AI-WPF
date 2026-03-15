@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ISQLChatHistoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090937
 
 
 
@@ -37,11 +33,11 @@ public sealed record ChatHistorySessionSnapshot(string ConversationId, string Se
 ///     Extends <see cref="IChatHistoryProvider" /> with SQL Server-specific capabilities.
 /// </summary>
 public interface ISQLChatHistoryProvider : IChatHistoryProvider
-    {
+{
     /// <summary>
     ///     Returns the most recent session snapshot (conversation ID and session ID) recorded in the
     ///     database, or <see langword="null" /> when no history exists yet.
     /// </summary>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     ValueTask<ChatHistorySessionSnapshot?> GetLatestSessionSnapshotAsync(CancellationToken cancellationToken = default);
-    }
+}

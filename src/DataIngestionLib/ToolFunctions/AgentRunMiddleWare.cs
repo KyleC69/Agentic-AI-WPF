@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         AgentRunMiddleWare.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090958
 
 
 
@@ -26,7 +22,7 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 public sealed class AgentRunMiddleWare
-    {
+{
 
     private readonly IChatClient _baseAgent;
     private readonly ILoggerFactory _factory;
@@ -39,12 +35,12 @@ public sealed class AgentRunMiddleWare
 
 
     public AgentRunMiddleWare(IChatClient baseAgent, ILoggerFactory factory, ILogger<AgentRunMiddleWare> logger, IHttpClientFactory httpClientFactory)
-        {
+    {
         _baseAgent = baseAgent;
         _factory = factory;
         _ = logger;
         _ = httpClientFactory;
-        }
+    }
 
 
 
@@ -54,9 +50,9 @@ public sealed class AgentRunMiddleWare
 
 
     internal void Run()
-        {
+    {
         _ = new ChatClientBuilder(_baseAgent)
                 .UseLogging(_factory)
                 .UseFunctionInvocation().Build();
-        }
     }
+}

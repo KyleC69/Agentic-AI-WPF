@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         DocumentExtractionPrompts.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090945
 
 
 
@@ -23,11 +19,11 @@ namespace DataIngestionLib.DocIngestion;
 
 
 internal sealed class DocumentExtractionPrompts
-    {
+{
     public static string GetModelInstructions()
-        {
+    {
         throw new NotImplementedException();
-        }
+    }
 
 
 
@@ -37,7 +33,7 @@ internal sealed class DocumentExtractionPrompts
 
 
     public static JsonElement GetOutputSchema()
-        {
+    {
         throw new NotImplementedException();
-        }
     }
+}

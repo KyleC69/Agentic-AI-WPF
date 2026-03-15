@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         AIChatRoleTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 043330
+// Build Num: 091002
 
 
 
@@ -22,15 +22,15 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 
 [TestClass]
 public class AIChatRoleTests
-    {
+{
 
     [TestMethod]
     [DataRow("")]
     [DataRow("   ")]
     public void ConstructorWithEmptyOrWhitespaceValueThrowsArgumentException(string value)
-        {
+    {
         Assert.ThrowsExactly<ArgumentException>(() => new AIChatRole(value));
-        }
+    }
 
 
 
@@ -41,9 +41,9 @@ public class AIChatRoleTests
 
     [TestMethod]
     public void ConstructorWithNullValueThrowsArgumentNullException()
-        {
+    {
         Assert.ThrowsExactly<ArgumentNullException>(() => new AIChatRole(null!));
-        }
+    }
 
 
 
@@ -54,7 +54,7 @@ public class AIChatRoleTests
 
     [TestMethod]
     public void EqualityIsCaseInsensitiveAcrossAIChatRoleAndChatRole()
-        {
+    {
         AIChatRole aiRole = new AIChatRole("USER");
         ChatRole chatRole = new ChatRole("user");
 
@@ -62,7 +62,7 @@ public class AIChatRoleTests
         Assert.IsTrue(aiRole == chatRole);
         Assert.IsTrue(chatRole == aiRole);
         Assert.IsFalse(aiRole != chatRole);
-        }
+    }
 
 
 
@@ -73,12 +73,12 @@ public class AIChatRoleTests
 
     [TestMethod]
     public void HashCodeMatchesForValuesThatDifferOnlyByCase()
-        {
+    {
         AIChatRole uppercase = new AIChatRole("RAG_CONTEXT");
         AIChatRole lowercase = new AIChatRole("rag_context");
 
         Assert.AreEqual(uppercase.GetHashCode(), lowercase.GetHashCode());
-        }
+    }
 
 
 
@@ -89,7 +89,7 @@ public class AIChatRoleTests
 
     [TestMethod]
     public void ImplicitConversionsPreserveCustomRoleValue()
-        {
+    {
         AIChatRole originalRole = new AIChatRole("domain_specific_role");
 
         ChatRole asChatRole = originalRole;
@@ -97,7 +97,7 @@ public class AIChatRoleTests
 
         Assert.AreEqual("domain_specific_role", asChatRole.Value);
         Assert.AreEqual(originalRole, roundTrippedRole);
-        }
+    }
 
 
 
@@ -108,9 +108,9 @@ public class AIChatRoleTests
 
     [TestMethod]
     public void ToStringReturnsUnderlyingRoleValue()
-        {
+    {
         AIChatRole role = AIChatRole.AIContext;
 
         Assert.AreEqual("context", role.ToString());
-        }
     }
+}

@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         UserDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091015
 
 
 
@@ -27,7 +23,7 @@ namespace RAGDataIngestionWPF.Services;
 ///     Provides minimal runtime user information used by the settings page.
 /// </summary>
 public sealed class UserDataService : IUserDataService
-    {
+{
     private UserViewModel _currentUser = new();
 
     public event EventHandler<UserViewModel> UserDataUpdated;
@@ -40,9 +36,9 @@ public sealed class UserDataService : IUserDataService
 
 
     public UserViewModel GetUser()
-        {
+    {
         return _currentUser;
-        }
+    }
 
 
 
@@ -52,13 +48,13 @@ public sealed class UserDataService : IUserDataService
 
 
     public void Initialize()
-        {
+    {
         _currentUser = new UserViewModel
-            {
-            Name = Environment.UserName,
-            UserPrincipalName = Environment.UserName
-            };
+        {
+                Name = Environment.UserName,
+                UserPrincipalName = Environment.UserName
+        };
 
         UserDataUpdated?.Invoke(this, _currentUser);
-        }
     }
+}

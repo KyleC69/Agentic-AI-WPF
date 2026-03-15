@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         AppConfig.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091011
 
 
 
@@ -18,7 +14,7 @@ namespace RAGDataIngestionWPF.Models;
 
 
 public class AppSettings
-    {
+{
     public const string CONFIGURATION_SECTION_NAME = "AppConfig";
 
     public string AppPropertiesFileName { get; init; }
@@ -29,4 +25,4 @@ public class AppSettings
 
     public string PrivacyStatement { get; init; }
     public string UserFileName { get; init; }
-    }
+}

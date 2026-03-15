@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Core
+// File:         SampleDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091030
 
 
 
@@ -31,14 +27,14 @@ namespace RAGDataIngestionWPF.Core.Services;
 // 4. Models/SampleOrder.cs
 // 5. Models/SampleOrderDetail.cs
 public sealed class SampleDataService : ISampleDataService
-    {
+{
 
     // Remove this once your DataGrid pages are displaying real data.
     public async Task<IEnumerable<SampleOrder>> GetGridDataAsync()
-        {
+    {
         await Task.CompletedTask;
         return AllOrders();
-        }
+    }
 
 
 
@@ -49,10 +45,10 @@ public sealed class SampleDataService : ISampleDataService
 
     // Remove this once your ListDetails pages are displaying real data.
     public async Task<IEnumerable<SampleOrder>> GetListDetailsDataAsync()
-        {
+    {
         await Task.CompletedTask;
         return AllOrders();
-        }
+    }
 
 
 
@@ -62,7 +58,7 @@ public sealed class SampleDataService : ISampleDataService
 
 
     private static IEnumerable<SampleCompany> AllCompanies()
-        {
+    {
         return
         [
                 new()
@@ -522,7 +518,7 @@ public sealed class SampleDataService : ISampleDataService
                         ]
                 }
         ];
-        }
+    }
 
 
 
@@ -532,9 +528,9 @@ public sealed class SampleDataService : ISampleDataService
 
 
     private static IEnumerable<SampleOrder> AllOrders()
-        {
+    {
         // The following is order summary data
-        IEnumerable<SampleCompany> companies = AllCompanies();
+        var companies = AllCompanies();
         return companies.SelectMany(c => c.Orders);
-        }
     }
+}

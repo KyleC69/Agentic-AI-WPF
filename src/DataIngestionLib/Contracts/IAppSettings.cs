@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IAppSettings.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090937
 
 
 
@@ -20,13 +16,14 @@ namespace DataIngestionLib.Contracts;
 
 
 
+
+
 public interface IAppSettings
-    {
+{
+    string ApplicationId { get; set; }
 
-    string OllamaHost { get; }
 
-
-    int OllamaPort { get; }
+    string ChatHistoryConnectionString { get; }
 
 
     string ChatModel { get; }
@@ -39,18 +36,20 @@ public interface IAppSettings
 
 
     string LogDirectory { get; }
+    int MaximumContext { get; }
+    int MetaBudget { get; }
+
+    string OllamaHost { get; }
 
 
-    string ChatHistoryConnectionString { get; }
+    int OllamaPort { get; }
+    int RAGBudget { get; }
 
     string RemoteRAGConnectionString { get; }
     int SessionBudget { get; }
     int SystemBudget { get; }
-    int RAGBudget { get; }
     int ToolBudget { get; }
-    int MetaBudget { get; }
-    int MaximumContext { get; }
 
 
     TokenBudget GetTokenBudget();
-    }
+}

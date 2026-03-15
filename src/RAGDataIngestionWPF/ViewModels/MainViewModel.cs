@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         MainViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091017
 
 
 
@@ -29,7 +25,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 public sealed partial class MainViewModel : ObservableObject, IDisposable
-    {
+{
     private readonly IChatConversationService _chatConversationService;
     private CancellationTokenSource _responseCancellationTokenSource;
 
@@ -41,12 +37,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
     public MainViewModel()
-        {
+    {
         Messages = [];
         ContextTokenCount = 0;
-        SendMessageCommand = new AsyncRelayCommand(this.SendMessageAsync, this.CanSendMessage);
-        CancelMessageCommand = new RelayCommand(this.CancelMessage, this.CanCancelMessage);
-        }
+        SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
+        CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
+    }
 
 
 
@@ -56,16 +52,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
     public MainViewModel([NotNull] IChatConversationService chatConversationService)
-        {
+    {
         ArgumentNullException.ThrowIfNull(chatConversationService);
 
         _chatConversationService = chatConversationService;
         Messages = [];
         ContextTokenCount = _chatConversationService.ContextTokenCount;
 
-        SendMessageCommand = new AsyncRelayCommand(this.SendMessageAsync, this.CanSendMessage);
-        CancelMessageCommand = new RelayCommand(this.CancelMessage, this.CanCancelMessage);
-        }
+        SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
+        CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
+    }
 
 
 
@@ -80,41 +76,40 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
 
-    [ObservableProperty]
-    public partial int ContextTokenCount { get; set; }
+    [ObservableProperty] public partial int ContextTokenCount { get; set; }
 
 
 
 
 
     public bool IsGenerating
-        {
+    {
         get;
         set
-            {
+        {
             if (this.SetProperty(ref field, value))
-                {
+            {
                 SendMessageCommand.NotifyCanExecuteChanged();
                 CancelMessageCommand.NotifyCanExecuteChanged();
-                }
             }
         }
+    }
 
 
 
 
 
     public string MessageInput
-        {
+    {
         get;
         set
-            {
+        {
             if (this.SetProperty(ref field, value))
-                {
+            {
                 SendMessageCommand.NotifyCanExecuteChanged();
-                }
             }
-        } = string.Empty;
+        }
+    } = string.Empty;
 
 
 
@@ -137,9 +132,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     /// <inheritdoc />
     public void Dispose()
-        {
+    {
 
-        }
+    }
 
 
 
@@ -149,9 +144,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
     private bool CanCancelMessage()
-        {
+    {
         return IsGenerating;
-        }
+    }
 
 
 
@@ -161,9 +156,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
     private void CancelMessage()
-        {
+    {
         _responseCancellationTokenSource?.Cancel();
-        }
+    }
 
 
 
@@ -173,9 +168,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
     private bool CanSendMessage()
-        {
+    {
         return !IsGenerating && !string.IsNullOrWhiteSpace(MessageInput);
-        }
+    }
 
 
 
@@ -185,12 +180,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
     private async Task SendMessageAsync()
-        {
+    {
         var content = MessageInput.Trim();
         if (string.IsNullOrWhiteSpace(content))
-            {
+        {
             return;
-            }
+        }
 
         //Add Users message to UI collection
         Messages.AddUserMessage(content);
@@ -207,25 +202,25 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _responseCancellationTokenSource = new CancellationTokenSource();
 
         try
-            {
+        {
             AIChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _responseCancellationTokenSource.Token);
             Messages.Add(assistantMessage);
-            }
+        }
         catch (OperationCanceledException)
-            {
+        {
 
             //   AppendMessage(_chatConversationService.AddAssistantMessage("Response canceled."));
-            }
+        }
         finally
-            {
+        {
             IsGenerating = false;
             _responseCancellationTokenSource?.Dispose();
             _responseCancellationTokenSource = null;
             //update token count last
             ContextTokenCount = _chatConversationService.ContextTokenCount;
-            }
-
-
-
         }
+
+
+
     }
+}

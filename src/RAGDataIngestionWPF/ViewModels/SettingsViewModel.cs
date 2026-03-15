@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         SettingsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091019
 
 
 
@@ -42,7 +38,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 // TODO: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
 public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService) : ObservableObject, INavigationAware
-    {
+{
     private readonly IApplicationInfoService _applicationInfoService = applicationInfoService;
 
     private readonly LoggingLevelSwitch _loggingLevelSwitch = loggingLevelSwitch;
@@ -66,8 +62,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [ObservableProperty]
-    public partial Guid ApplicationId { get; set; }
+    [ObservableProperty] public partial Guid ApplicationId { get; set; }
 
 
 
@@ -85,98 +80,115 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [ObservableProperty]
-    public partial string ChatHistoryConnectionString { get; set; }
+    [ObservableProperty] public partial string ChatHistoryConnectionString { get; set; }
 
 
 
 
 
-    [ObservableProperty]
-    public partial bool ChatHistoryContextEnabled { get; set; }
+    [ObservableProperty] public partial bool ChatHistoryContextEnabled { get; set; }
 
 
 
 
 
-    public static string ChatHistoryContextEnabledLabelText => GetResourceString(SettingsPageChatHistoryContextEnabledLabelKey, "Enable Chat History Context Injection");
+    public static string ChatHistoryContextEnabledLabelText
+    {
+        get { return GetResourceString(SettingsPageChatHistoryContextEnabledLabelKey, "Enable Chat History Context Injection"); }
+    }
 
 
 
 
 
-    public static string ChatHistorySaveStatusText => GetResourceString(SettingsPageChatHistorySaveStatusKey, "Chat history settings saved.");
+    public static string ChatHistorySaveStatusText
+    {
+        get { return GetResourceString(SettingsPageChatHistorySaveStatusKey, "Chat history settings saved."); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial string ChatHistorySettingsStatus { get; set; }
+    [ObservableProperty] public partial string ChatHistorySettingsStatus { get; set; }
 
 
 
 
 
-    public static string ChatHistoryTitleText => GetResourceString(SettingsPageChatHistoryTitleKey, "Chat History");
+    public static string ChatHistoryTitleText
+    {
+        get { return GetResourceString(SettingsPageChatHistoryTitleKey, "Chat History"); }
+    }
 
 
 
 
 
-    public static string ChatModelLabelText => GetResourceString(SettingsPageChatModelLabelKey, "Chat Model");
+    public static string ChatModelLabelText
+    {
+        get { return GetResourceString(SettingsPageChatModelLabelKey, "Chat Model"); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial string ChatModelName { get; set; }
+    [ObservableProperty] public partial string ChatModelName { get; set; }
 
 
 
 
 
-    public static string ConnectionStringLabelText => GetResourceString(SettingsPageConnectionStringLabelKey, "Connection String");
+    public static string ConnectionStringLabelText
+    {
+        get { return GetResourceString(SettingsPageConnectionStringLabelKey, "Connection String"); }
+    }
 
 
 
 
 
-    public static string EmbeddingsModelLabelText => GetResourceString(SettingsPageEmbeddingsModelLabelKey, "Embeddings Model");
+    public static string EmbeddingsModelLabelText
+    {
+        get { return GetResourceString(SettingsPageEmbeddingsModelLabelKey, "Embeddings Model"); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial string EmbeddingsModelName { get; set; }
+    [ObservableProperty] public partial string EmbeddingsModelName { get; set; }
 
 
 
 
 
-    [ObservableProperty]
-    public partial int MaxContextMessages { get; set; }
+    [ObservableProperty] public partial int MaxContextMessages { get; set; }
 
 
 
 
 
-    public static string MaxContextMessagesLabelText => GetResourceString(SettingsPageMaxContextMessagesLabelKey, "Max Context Messages");
+    public static string MaxContextMessagesLabelText
+    {
+        get { return GetResourceString(SettingsPageMaxContextMessagesLabelKey, "Max Context Messages"); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial int? MaxContextTokens { get; set; }
+    [ObservableProperty] public partial int? MaxContextTokens { get; set; }
 
 
 
 
 
-    public static string MaxContextTokensLabelText => GetResourceString(SettingsPageMaxContextTokensLabelKey, "Max Context Tokens");
+    public static string MaxContextTokensLabelText
+    {
+        get { return GetResourceString(SettingsPageMaxContextTokensLabelKey, "Max Context Tokens"); }
+    }
 
 
 
@@ -191,75 +203,92 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     [NotNull]
-    public ICommand PrivacyStatementCommand => field ??= new RelayCommand(this.OnPrivacyStatement);
+    public ICommand PrivacyStatementCommand
+    {
+        get { return field ??= new RelayCommand(this.OnPrivacyStatement); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial bool RAGKnowledgeEnabled { get; set; }
+    [ObservableProperty] public partial bool RAGKnowledgeEnabled { get; set; }
 
 
 
 
 
-    public static string RagKnowledgeEnabledLabelText => GetResourceString(SettingsPageRagKnowledgeEnabledLabelKey, "Enable RAG Knowledge Context Injection");
-
-
-
-
-
-    [NotNull]
-    public ICommand RenewApplicationIdCommand => field ??= new RelayCommand(this.OnRenewApplicationId);
-
-
-
-
-
-    public static string SaveChatHistoryButtonText => GetResourceString(SettingsPageSaveChatHistoryButtonTextKey, "Save Chat History Settings");
+    public static string RagKnowledgeEnabledLabelText
+    {
+        get { return GetResourceString(SettingsPageRagKnowledgeEnabledLabelKey, "Enable RAG Knowledge Context Injection"); }
+    }
 
 
 
 
 
     [NotNull]
-    public ICommand SaveChatHistorySettingsCommand => field ??= new RelayCommand(this.OnSaveChatHistorySettings);
+    public ICommand RenewApplicationIdCommand
+    {
+        get { return field ??= new RelayCommand(this.OnRenewApplicationId); }
+    }
+
+
+
+
+
+    public static string SaveChatHistoryButtonText
+    {
+        get { return GetResourceString(SettingsPageSaveChatHistoryButtonTextKey, "Save Chat History Settings"); }
+    }
 
 
 
 
 
     [NotNull]
-    public ICommand SetLogLevelCommand => field ??= new RelayCommand(this.OnSetLogLevel);
+    public ICommand SaveChatHistorySettingsCommand
+    {
+        get { return field ??= new RelayCommand(this.OnSaveChatHistorySettings); }
+    }
 
 
 
 
 
     [NotNull]
-    public ICommand SetThemeCommand => field ??= new RelayCommand<string>(this.OnSetTheme);
+    public ICommand SetLogLevelCommand
+    {
+        get { return field ??= new RelayCommand(this.OnSetLogLevel); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial AppTheme Theme { get; set; }
+    [NotNull]
+    public ICommand SetThemeCommand
+    {
+        get { return field ??= new RelayCommand<string>(this.OnSetTheme); }
+    }
 
 
 
 
 
-    [ObservableProperty]
-    public partial UserViewModel User { get; set; }
+    [ObservableProperty] public partial AppTheme Theme { get; set; }
 
 
 
 
 
-    [ObservableProperty]
-    public partial string VersionDescription { get; set; }
+    [ObservableProperty] public partial UserViewModel User { get; set; }
+
+
+
+
+
+    [ObservableProperty] public partial string VersionDescription { get; set; }
 
 
 
@@ -269,18 +298,18 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     public void OnNavigatedTo(object parameter)
-        {
+    {
         VersionDescription = $"{Properties.Resources.AppDisplayName} - {_applicationInfoService.GetVersion()}";
         ApplicationId = GetApplicationId();
         Theme = ParseTheme(GetAppSetting("Theme", "Dark"));
         if (Theme == AppTheme.Default)
-            {
+        {
             Theme = AppTheme.Dark;
             ApplyTheme(Theme);
             SetAppSetting("Theme", Theme.ToString());
-            }
+        }
 
-        _userDataService.UserDataUpdated += this.OnUserDataUpdated;
+        _userDataService.UserDataUpdated += OnUserDataUpdated;
         User = _userDataService.GetUser();
 
         ChatModelName = GetAppSetting("ChatModelName", "gpt-oss:20b-cloud");
@@ -294,7 +323,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
         MinimumLogLevel = Enum.TryParse(GetAppSetting("MinimumLogLevel", LogLevel.Trace.ToString()), true, out LogLevel level) ? level : LogLevel.Trace;
         _loggingLevelSwitch.MinimumLevel = MinimumLogLevel;
-        }
+    }
 
 
 
@@ -304,9 +333,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     public void OnNavigatedFrom()
-        {
-        this.UnregisterEvents();
-        }
+    {
+        UnregisterEvents();
+    }
 
 
 
@@ -316,20 +345,20 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private static void ApplyTheme(AppTheme theme)
-        {
+    {
         _ = ThemeManager.Current.AddLibraryTheme(new LibraryTheme(new Uri(HcDarkTheme), MahAppsLibraryThemeProvider.DefaultInstance));
         _ = ThemeManager.Current.AddLibraryTheme(new LibraryTheme(new Uri(HcLightTheme), MahAppsLibraryThemeProvider.DefaultInstance));
         if (theme == AppTheme.Default)
-            {
+        {
             ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
             ThemeManager.Current.SyncTheme();
             return;
-            }
+        }
 
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithHighContrast;
         ThemeManager.Current.SyncTheme();
         _ = ThemeManager.Current.ChangeTheme(Application.Current, $"{theme}.Blue", SystemParameters.HighContrast);
-        }
+    }
 
 
 
@@ -339,17 +368,17 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private static Guid GetApplicationId()
-        {
+    {
         var raw = GetAppSetting("ApplicationId", string.Empty);
         if (Guid.TryParse(raw, out Guid applicationId))
-            {
+        {
             return applicationId;
-            }
+        }
 
         Guid created = Guid.NewGuid();
         SetAppSetting("ApplicationId", created.ToString("D"));
         return created;
-        }
+    }
 
 
 
@@ -359,10 +388,10 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private static string GetAppSetting(string key, string fallback)
-        {
+    {
         var value = SystemConfigurationManager.AppSettings[key];
         return string.IsNullOrWhiteSpace(value) ? fallback : value;
-        }
+    }
 
 
 
@@ -372,9 +401,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private static string GetResourceString([NotNull] string key, string fallback)
-        {
+    {
         return Properties.Resources.ResourceManager.GetString(key) ?? fallback;
-        }
+    }
 
 
 
@@ -384,9 +413,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private void OnPrivacyStatement()
-        {
+    {
         _systemService.OpenInWebBrowser(GetAppSetting("PrivacyStatement", "https://YourPrivacyUrlGoesHere"));
-        }
+    }
 
 
 
@@ -396,9 +425,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private void OnRenewApplicationId()
-        {
+    {
         ApplicationId = RenewApplicationId();
-        }
+    }
 
 
 
@@ -408,7 +437,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private void OnSaveChatHistorySettings()
-        {
+    {
         SetAppSetting("ChatModelName", ChatModelName?.Trim() ?? string.Empty);
         SetAppSetting("ChatHistoryConnectionString", ChatHistoryConnectionString?.Trim() ?? string.Empty);
         SetAppSetting("EmbeddingsModelName", EmbeddingsModelName?.Trim() ?? string.Empty);
@@ -417,7 +446,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
         SetAppSetting("RagKnowledgeEnabled", RAGKnowledgeEnabled.ToString());
         SetAppSetting("ChatHistoryContextEnabled", ChatHistoryContextEnabled.ToString());
         ChatHistorySettingsStatus = ChatHistorySaveStatusText;
-        }
+    }
 
 
 
@@ -427,10 +456,10 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private void OnSetLogLevel()
-        {
+    {
         _loggingLevelSwitch.MinimumLevel = MinimumLogLevel;
         SetAppSetting("MinimumLogLevel", MinimumLogLevel.ToString());
-        }
+    }
 
 
 
@@ -440,11 +469,11 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private void OnSetTheme([NotNull] string themeName)
-        {
+    {
         AppTheme theme = Enum.Parse<AppTheme>(themeName);
         ApplyTheme(theme);
         SetAppSetting("Theme", theme.ToString());
-        }
+    }
 
 
 
@@ -454,9 +483,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private void OnUserDataUpdated(object sender, UserViewModel userData)
-        {
+    {
         User = userData;
-        }
+    }
 
 
 
@@ -466,9 +495,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private static bool ParseBool([CanBeNull] string value, bool fallback)
-        {
+    {
         return bool.TryParse(value, out var parsed) ? parsed : fallback;
-        }
+    }
 
 
 
@@ -478,9 +507,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private static int ParseInt([CanBeNull] string value, int fallback, int min)
-        {
+    {
         return int.TryParse(value, out var parsed) && parsed >= min ? parsed : fallback;
-        }
+    }
 
 
 
@@ -490,9 +519,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private static int? ParseNullableInt([CanBeNull] string value, int fallback)
-        {
+    {
         return string.IsNullOrWhiteSpace(value) ? null : int.TryParse(value, out var parsed) && parsed > 0 ? parsed : fallback;
-        }
+    }
 
 
 
@@ -502,9 +531,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private static AppTheme ParseTheme([CanBeNull] string themeName)
-        {
+    {
         return Enum.TryParse(themeName, out AppTheme theme) ? theme : AppTheme.Default;
-        }
+    }
 
 
 
@@ -514,11 +543,11 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private static Guid RenewApplicationId()
-        {
+    {
         Guid created = Guid.NewGuid();
         SetAppSetting("ApplicationId", created.ToString("D"));
         return created;
-        }
+    }
 
 
 
@@ -528,20 +557,20 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private static void SetAppSetting(string key, string value)
-        {
+    {
         System.Configuration.Configuration config = SystemConfigurationManager.OpenExeConfiguration(System.Configuration.ConfigurationUserLevel.None);
         if (config.AppSettings.Settings[key] is null)
-            {
+        {
             config.AppSettings.Settings.Add(key, value);
-            }
+        }
         else
-            {
+        {
             config.AppSettings.Settings[key].Value = value;
-            }
+        }
 
         config.Save(System.Configuration.ConfigurationSaveMode.Modified);
         SystemConfigurationManager.RefreshSection("appSettings");
-        }
+    }
 
 
 
@@ -551,7 +580,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
     private void UnregisterEvents()
-        {
-        _userDataService.UserDataUpdated -= this.OnUserDataUpdated;
-        }
+    {
+        _userDataService.UserDataUpdated -= OnUserDataUpdated;
     }
+}

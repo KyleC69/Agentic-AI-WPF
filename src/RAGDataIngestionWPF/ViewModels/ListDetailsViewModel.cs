@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         ListDetailsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091016
 
 
 
@@ -29,7 +25,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 public sealed partial class ListDetailsViewModel : ObservableObject, INavigationAware
-    {
+{
     private readonly ISampleDataService _sampleDataService;
 
 
@@ -40,9 +36,9 @@ public sealed partial class ListDetailsViewModel : ObservableObject, INavigation
 
 
     public ListDetailsViewModel(ISampleDataService sampleDataService)
-        {
+    {
         _sampleDataService = sampleDataService;
-        }
+    }
 
 
 
@@ -57,8 +53,7 @@ public sealed partial class ListDetailsViewModel : ObservableObject, INavigation
 
 
 
-    [ObservableProperty]
-    public partial SampleOrder Selected { get; set; }
+    [ObservableProperty] public partial SampleOrder Selected { get; set; }
 
 
 
@@ -68,18 +63,15 @@ public sealed partial class ListDetailsViewModel : ObservableObject, INavigation
 
 
     public async void OnNavigatedTo(object parameter)
-        {
+    {
         SampleItems.Clear();
 
-        IEnumerable<SampleOrder> data = await _sampleDataService.GetListDetailsDataAsync();
+        var data = await _sampleDataService.GetListDetailsDataAsync();
 
-        foreach (SampleOrder item in data)
-            {
-            SampleItems.Add(item);
-            }
+        foreach (SampleOrder item in data) SampleItems.Add(item);
 
         Selected = SampleItems.First();
-        }
+    }
 
 
 
@@ -89,6 +81,6 @@ public sealed partial class ListDetailsViewModel : ObservableObject, INavigation
 
 
     public void OnNavigatedFrom()
-        {
-        }
+    {
     }
+}

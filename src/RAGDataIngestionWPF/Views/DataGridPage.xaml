@@ -50,7 +50,7 @@
                                    FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                                    MinHeight="20" />
                             <TextBox Width="85"
-                                      AutomationProperties.LabeledBy="{Binding ElementName=Label3, Mode=OneWay}"
+                                     AutomationProperties.LabeledBy="{Binding ElementName=Label3, Mode=OneWay}"
                                      VerticalAlignment="Top" MinHeight="20" Background="{x:Null}" Foreground="White"
                                      Text="0" FontSize="14" BorderThickness="0,0,0,0" />
                         </StackPanel>

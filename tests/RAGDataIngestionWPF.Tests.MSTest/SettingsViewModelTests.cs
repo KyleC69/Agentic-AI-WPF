@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         SettingsViewModelTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 043335
+// Build Num: 091006
 
 
 
@@ -28,15 +28,15 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 
 [TestClass]
 public class SettingsViewModelTests
-    {
+{
 
     [TestMethod]
     public void AvailableLogLevelsDoesNotContainNone()
-        {
+    {
         SettingsViewModel viewModel = CreateViewModel();
 
         Assert.IsFalse(viewModel.AvailableLogLevels.Contains(LogLevel.None));
-        }
+    }
 
 
 
@@ -47,7 +47,7 @@ public class SettingsViewModelTests
 
     [NotNull]
     private static SettingsViewModel CreateViewModel()
-        {
+    {
         EnsureAppSetting("ChatModelName", "gpt-oss:20b-cloud");
         EnsureAppSetting("ChatHistoryConnectionString", "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;");
         EnsureAppSetting("EmbeddingsModelName", "mxbai-embed-large-v1:latest");
@@ -60,11 +60,11 @@ public class SettingsViewModelTests
         EnsureAppSetting("PrivacyStatement", "https://example.test/privacy");
 
         LoggingLevelSwitch loggingLevelSwitch = new LoggingLevelSwitch();
-        Mock<ISystemService> systemServiceMock = new Mock<ISystemService>();
-        Mock<IApplicationInfoService> applicationInfoServiceMock = new Mock<IApplicationInfoService>();
+        var systemServiceMock = new Mock<ISystemService>();
+        var applicationInfoServiceMock = new Mock<IApplicationInfoService>();
         applicationInfoServiceMock.Setup(service => service.GetVersion()).Returns(new Version(1, 0, 0, 0));
 
-        Mock<IUserDataService> userDataServiceMock = new Mock<IUserDataService>();
+        var userDataServiceMock = new Mock<IUserDataService>();
         userDataServiceMock.Setup(service => service.GetUser()).Returns(new UserViewModel { Name = "User" });
 
         return new(
@@ -72,7 +72,7 @@ public class SettingsViewModelTests
                 systemServiceMock.Object,
                 applicationInfoServiceMock.Object,
                 userDataServiceMock.Object);
-        }
+    }
 
 
 
@@ -82,12 +82,12 @@ public class SettingsViewModelTests
 
 
     private static void EnsureAppSetting(string key, string value)
-        {
+    {
         if (System.Configuration.ConfigurationManager.AppSettings[key] is null)
-            {
+        {
             SetAppSetting(key, value);
-            }
         }
+    }
 
 
 
@@ -98,14 +98,14 @@ public class SettingsViewModelTests
 
     [TestMethod]
     public void OnNavigatedToLoadsChatModelNameFromChatHistorySettings()
-        {
+    {
         SetAppSetting("ChatModelName", "model-x");
         SettingsViewModel viewModel = CreateViewModel();
 
         viewModel.OnNavigatedTo(null!);
 
         Assert.AreEqual("model-x", viewModel.ChatModelName);
-        }
+    }
 
 
 
@@ -116,14 +116,14 @@ public class SettingsViewModelTests
 
     [TestMethod]
     public void OnNavigatedToLoadsMinimumLogLevelFromLoggingLevelService()
-        {
+    {
         SetAppSetting("MinimumLogLevel", LogLevel.Warning.ToString());
 
         SettingsViewModel viewModel = CreateViewModel();
         viewModel.OnNavigatedTo(null!);
 
         Assert.AreEqual(LogLevel.Warning, viewModel.MinimumLogLevel);
-        }
+    }
 
 
 
@@ -134,7 +134,7 @@ public class SettingsViewModelTests
 
     [TestMethod]
     public void SaveChatHistorySettingsCommandPersistsChatModelName()
-        {
+    {
         SettingsViewModel viewModel = CreateViewModel();
 
         viewModel.OnNavigatedTo(null!);
@@ -143,7 +143,7 @@ public class SettingsViewModelTests
         viewModel.SaveChatHistorySettingsCommand.Execute(null);
 
         Assert.AreEqual("saved-model", System.Configuration.ConfigurationManager.AppSettings["ChatModelName"]);
-        }
+    }
 
 
 
@@ -154,14 +154,14 @@ public class SettingsViewModelTests
 
     [TestMethod]
     public void SaveChatHistorySettingsCommandSetsStatusMessage()
-        {
+    {
         SettingsViewModel viewModel = CreateViewModel();
 
         viewModel.OnNavigatedTo(null!);
         viewModel.SaveChatHistorySettingsCommand.Execute(null);
 
         Assert.AreEqual(SettingsViewModel.ChatHistorySaveStatusText, viewModel.ChatHistorySettingsStatus);
-        }
+    }
 
 
 
@@ -171,20 +171,20 @@ public class SettingsViewModelTests
 
 
     private static void SetAppSetting(string key, string value)
-        {
+    {
         System.Configuration.Configuration config = System.Configuration.ConfigurationManager.OpenExeConfiguration(System.Configuration.ConfigurationUserLevel.None);
         if (config.AppSettings.Settings[key] is null)
-            {
+        {
             config.AppSettings.Settings.Add(key, value);
-            }
+        }
         else
-            {
+        {
             config.AppSettings.Settings[key].Value = value;
-            }
+        }
 
         config.Save(System.Configuration.ConfigurationSaveMode.Modified);
         System.Configuration.ConfigurationManager.RefreshSection("appSettings");
-        }
+    }
 
 
 
@@ -195,7 +195,7 @@ public class SettingsViewModelTests
 
     [TestMethod]
     public void SetLogLevelCommandDelegatesToLoggingLevelService()
-        {
+    {
         SetAppSetting("MinimumLogLevel", LogLevel.Trace.ToString());
 
         SettingsViewModel viewModel = CreateViewModel();
@@ -205,5 +205,5 @@ public class SettingsViewModelTests
         viewModel.SetLogLevelCommand.Execute(null);
 
         Assert.AreEqual(LogLevel.Error.ToString(), System.Configuration.ConfigurationManager.AppSettings["MinimumLogLevel"]);
-        }
     }
+}

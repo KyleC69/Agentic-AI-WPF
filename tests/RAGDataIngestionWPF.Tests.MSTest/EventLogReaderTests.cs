@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         EventLogReaderTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 043332
+// Build Num: 091004
 
 
 
@@ -15,14 +15,14 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 
 [TestClass]
 public class EventLogReaderTests
-    {
+{
     [TestMethod]
     public void ConstructorWithDefaultMaxEventsCreatesInstance()
-        {
+    {
         SandboxEventLogReader reader = new SandboxEventLogReader();
 
         Assert.IsNotNull(reader);
-        }
+    }
 
 
 
@@ -33,11 +33,11 @@ public class EventLogReaderTests
 
     [TestMethod]
     public void ConstructorWithNegativeMaxEventsClampsToOne()
-        {
+    {
         SandboxEventLogReader reader = new SandboxEventLogReader(-10);
 
         Assert.IsNotNull(reader);
-        }
+    }
 
 
 
@@ -48,11 +48,11 @@ public class EventLogReaderTests
 
     [TestMethod]
     public void ConstructorWithPositiveMaxEventsCreatesInstance()
-        {
+    {
         SandboxEventLogReader reader = new SandboxEventLogReader(50);
 
         Assert.IsNotNull(reader);
-        }
+    }
 
 
 
@@ -63,12 +63,12 @@ public class EventLogReaderTests
 
     [TestMethod]
     public void ConstructorWithZeroMaxEventsClampsToOne()
-        {
+    {
         // SandboxEventLogReader clamps maxEvents to at least 1 via Math.Max(1, maxEvents)
         SandboxEventLogReader reader = new SandboxEventLogReader(0);
 
         Assert.IsNotNull(reader);
-        }
+    }
 
 
 
@@ -79,14 +79,14 @@ public class EventLogReaderTests
 
     [TestMethod]
     public void EventLogEntryDtoDefaultPropertiesAreInitialized()
-        {
+    {
         EventLogEntryDto dto = new EventLogEntryDto();
 
         Assert.AreEqual(string.Empty, dto.Source);
         Assert.AreEqual(string.Empty, dto.Message);
         Assert.AreEqual(0, dto.EventId);
         Assert.AreEqual(default, dto.EntryType);
-        }
+    }
 
 
 
@@ -97,7 +97,7 @@ public class EventLogReaderTests
 
     [TestMethod]
     public void EventLogReadResultFailFactorySetsSuccessFalse()
-        {
+    {
         const string errorMessage = "Test error message";
 
         EventLogReadResult result = EventLogReadResult.Fail(errorMessage);
@@ -105,7 +105,7 @@ public class EventLogReaderTests
         Assert.IsFalse(result.Success);
         Assert.AreEqual(errorMessage, result.Error);
         Assert.IsNull(result.Entries);
-        }
+    }
 
 
 
@@ -116,7 +116,7 @@ public class EventLogReaderTests
 
     [TestMethod]
     public void EventLogReadResultOkFactorySetsSuccessTrue()
-        {
+    {
         IReadOnlyList<EventLogEntryDto> entries = new List<EventLogEntryDto>().AsReadOnly();
 
         EventLogReadResult result = EventLogReadResult.Ok(entries);
@@ -124,7 +124,7 @@ public class EventLogReaderTests
         Assert.IsTrue(result.Success);
         Assert.IsNotNull(result.Entries);
         Assert.IsNull(result.Error);
-        }
+    }
 
 
 
@@ -135,7 +135,7 @@ public class EventLogReaderTests
 
     [TestMethod]
     public void ReadLogWithEmptyLogNameReturnsFail()
-        {
+    {
         SandboxEventLogReader reader = new SandboxEventLogReader();
 
         EventLogReadResult result = reader.ReadLog(string.Empty);
@@ -143,7 +143,7 @@ public class EventLogReaderTests
         Assert.IsFalse(result.Success);
         Assert.IsNotNull(result.Error);
         Assert.IsNull(result.Entries);
-        }
+    }
 
 
 
@@ -154,7 +154,7 @@ public class EventLogReaderTests
 
     [TestMethod]
     public void ReadLogWithNonExistentLogNameReturnsFail()
-        {
+    {
         SandboxEventLogReader reader = new SandboxEventLogReader();
 
         EventLogReadResult result = reader.ReadLog("ThisEventLogDoesNotExist_RAGDataIngestion_XYZ");
@@ -162,7 +162,7 @@ public class EventLogReaderTests
         Assert.IsFalse(result.Success);
         Assert.IsNotNull(result.Error);
         Assert.IsNull(result.Entries);
-        }
+    }
 
 
 
@@ -173,7 +173,7 @@ public class EventLogReaderTests
 
     [TestMethod]
     public void ReadLogWithWhitespaceLogNameReturnsFail()
-        {
+    {
         SandboxEventLogReader reader = new SandboxEventLogReader();
 
         EventLogReadResult result = reader.ReadLog("   ");
@@ -181,5 +181,5 @@ public class EventLogReaderTests
         Assert.IsFalse(result.Success);
         Assert.IsNotNull(result.Error);
         Assert.IsNull(result.Entries);
-        }
     }
+}

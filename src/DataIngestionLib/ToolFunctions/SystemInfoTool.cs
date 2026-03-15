@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         SystemInfoTool.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091000
 
 
 
@@ -22,27 +18,27 @@ namespace DataIngestionLib.ToolFunctions;
 ///     machine name, processor count, and .NET runtime version.
 /// </summary>
 public sealed class SystemInfoTool
-    {
+{
     public static ToolResult<SystemInfoSnapshot> GetInfo()
-        {
+    {
         return ToolResult<SystemInfoSnapshot>.Ok(new()
-            {
-            Os = Environment.OSVersion.ToString(),
-            MachineName = Environment.MachineName,
-            ProcessorCount = Environment.ProcessorCount,
-            DotNetVersion = Environment.Version.ToString()
-            });
-        }
+        {
+                Os = Environment.OSVersion.ToString(),
+                MachineName = Environment.MachineName,
+                ProcessorCount = Environment.ProcessorCount,
+                DotNetVersion = Environment.Version.ToString()
+        });
     }
+}
 
 
 
 
 
 public sealed class SystemInfoSnapshot
-    {
+{
     public string DotNetVersion { get; init; } = "";
     public string MachineName { get; init; } = "";
     public string Os { get; init; } = "";
     public int ProcessorCount { get; init; }
-    }
+}

@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         PersistedChatMessage.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 090951
 
 
 
@@ -23,7 +19,7 @@ namespace DataIngestionLib.Models;
 
 
 public sealed record PersistedChatMessage
-    {
+{
 
     public string AgentId { get; init; } = string.Empty;
 
@@ -43,4 +39,4 @@ public sealed record PersistedChatMessage
     public DateTimeOffset TimestampUtc { get; init; }
 
     public string UserId { get; init; } = string.Empty;
-    }
+}

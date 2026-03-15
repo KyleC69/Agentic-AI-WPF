@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         IUserDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 091008
 
 
 
@@ -23,7 +19,7 @@ namespace RAGDataIngestionWPF.Contracts.Services;
 
 
 public interface IUserDataService
-    {
+{
 
 
     UserViewModel GetUser();
@@ -33,4 +29,4 @@ public interface IUserDataService
 
 
     event EventHandler<UserViewModel> UserDataUpdated;
-    }
+}

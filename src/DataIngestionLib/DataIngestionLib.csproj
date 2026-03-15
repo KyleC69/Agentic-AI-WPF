@@ -57,6 +57,7 @@
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
 	  <PackageReference Include="OllamaSharp" Version="5.4.23" />
 	  <PackageReference Include="PuppeteerSharp" Version="24.39.0" />
+	  <PackageReference Include="MarkDig" Version="0.30.0" />
 
   </ItemGroup>
 
