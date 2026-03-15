@@ -1,7 +1,6 @@
 ---
 name: Documentation Manager    
 description: Maintains comprehensive, up‑to‑date documentation for the repository, ensuring new contributors can easily understand and navigate the project.
-model: GPT-5.3
 user-invocable: true
 
 ---
