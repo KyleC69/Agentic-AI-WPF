@@ -9,6 +9,7 @@ A **WPF desktop application** that demonstrates key capabilities of the [Microso
 ## Table of Contents
 
 - [Project Purpose](#project-purpose)
+- [Documentation](#documentation)
 - [Architecture Overview](#architecture-overview)
 - [Solution Structure](#solution-structure)
 - [Key Agent Framework Capabilities Demonstrated](#key-agent-framework-capabilities-demonstrated)
@@ -31,6 +32,19 @@ A **WPF desktop application** that demonstrates key capabilities of the [Microso
 - **SQL Server / LocalDB** for durable, conversation-scoped chat history with EF Core 10.
 - **RAG (Retrieval-Augmented Generation)** via a hybrid SQL Server search stack (vector, semantic, full-text).
 - **WPF + MahApps.Metro** for the desktop UI shell with Generic Host lifecycle management.
+
+---
+
+## Documentation
+
+The `/docs` folder contains the developer-facing documentation entry points for this repository:
+
+- [`/docs/DocumentationManifest.md`](/docs/DocumentationManifest.md) — index of maintained documentation
+- [`/docs/Architecture.md`](/docs/Architecture.md) — high-level solution and layering overview
+- [`/docs/Capabilities.md`](/docs/Capabilities.md) — feature-oriented summary of what the repository demonstrates
+- [`/docs/ChangeLog.md`](/docs/ChangeLog.md) — narrative change log for notable repository updates
+
+Start with the manifest if you are new to the repository and want the shortest path to the right document.
 
 ---
 
@@ -324,11 +338,11 @@ private const string OllamaModel = "llama3.2"; // or whichever model you have
 ### 4. Build and run
 
 ```bash
-dotnet build RAGDataIngestionWPF.sln
-dotnet run --project RAGDataIngestionWPF/RAGDataIngestionWPF.csproj
+dotnet build src/RAGDataIngestionWPF/RAGDataIngestionWPF.csproj
+dotnet run --project src/RAGDataIngestionWPF/RAGDataIngestionWPF.csproj
 ```
 
-Or open `RAGDataIngestionWPF.sln` in Visual Studio and press **F5**.
+Or open `RAGDataIngestionWPF.slnx` in Visual Studio and press **F5**.
 
 ---
 
@@ -355,7 +369,7 @@ Or open `RAGDataIngestionWPF.sln` in Visual Studio and press **F5**.
 ## Running Tests
 
 ```bash
-dotnet test RAGDataIngestionWPF.Tests.MSTest
+dotnet test tests/RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj
 ```
 
 The test project covers:
