@@ -13,8 +13,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-using JetBrains.Annotations;
-
 using RAGDataIngestionWPF.ViewModels;
 
 
@@ -53,10 +51,11 @@ public sealed partial class MainPage
 
 
 
-    [CanBeNull]
-    private static T FindVisualChild<T>([NotNull] DependencyObject parent)
+    
+    private static T FindVisualChild<T>(DependencyObject parent)
             where T : DependencyObject
     {
+        ArgumentNullException.ThrowIfNull(parent);
         var childrenCount = VisualTreeHelper.GetChildrenCount(parent);
         for (var index = 0; index < childrenCount; index++)
         {

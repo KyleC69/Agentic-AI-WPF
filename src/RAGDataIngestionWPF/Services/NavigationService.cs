@@ -117,7 +117,7 @@ public sealed class NavigationService : INavigationService
 
 
 
-    public bool NavigateTo(string pageKey, [CanBeNull] object parameter = null, bool clearNavigation = false)
+    public bool NavigateTo(string pageKey,  object parameter = null, bool clearNavigation = false)
     {
         Type pageType = _pageService.GetPageType(pageKey);
 

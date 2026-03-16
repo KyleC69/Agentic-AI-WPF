@@ -15,8 +15,6 @@ using CommunityToolkit.Mvvm.Input;
 
 using ControlzEx.Theming;
 
-using JetBrains.Annotations;
-
 using MahApps.Metro.Theming;
 
 using Microsoft.Extensions.Logging;
@@ -62,7 +60,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [ObservableProperty] public partial Guid ApplicationId { get; set; }
+    [ObservableProperty] private Guid applicationId;
 
 
 
@@ -80,13 +78,13 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [ObservableProperty] public partial string ChatHistoryConnectionString { get; set; }
+    [ObservableProperty] private string chatHistoryConnectionString = string.Empty;
 
 
 
 
 
-    [ObservableProperty] public partial bool ChatHistoryContextEnabled { get; set; }
+    [ObservableProperty] private bool chatHistoryContextEnabled;
 
 
 
@@ -110,7 +108,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [ObservableProperty] public partial string ChatHistorySettingsStatus { get; set; }
+    [ObservableProperty] private string chatHistorySettingsStatus = string.Empty;
 
 
 
@@ -134,7 +132,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [ObservableProperty] public partial string ChatModelName { get; set; }
+    [ObservableProperty] private string chatModelName = string.Empty;
 
 
 
@@ -158,13 +156,13 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [ObservableProperty] public partial string EmbeddingsModelName { get; set; }
+    [ObservableProperty] private string embeddingsModelName = string.Empty;
 
 
 
 
 
-    [ObservableProperty] public partial int MaxContextMessages { get; set; }
+    [ObservableProperty] private int maxContextMessages;
 
 
 
@@ -179,7 +177,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [ObservableProperty] public partial int? MaxContextTokens { get; set; }
+    [ObservableProperty] private int? maxContextTokens;
 
 
 
@@ -196,13 +194,13 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
     /// <summary>Gets or sets the currently selected minimum log level.</summary>
     [ObservableProperty]
-    public partial LogLevel MinimumLogLevel { get; set; }
+    private LogLevel minimumLogLevel;
 
 
 
 
 
-    [NotNull]
+  
     public ICommand PrivacyStatementCommand
     {
         get { return field ??= new RelayCommand(this.OnPrivacyStatement); }
@@ -212,7 +210,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [ObservableProperty] public partial bool RAGKnowledgeEnabled { get; set; }
+    [ObservableProperty] private bool rAGKnowledgeEnabled;
 
 
 
@@ -227,7 +225,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [NotNull]
+  
     public ICommand RenewApplicationIdCommand
     {
         get { return field ??= new RelayCommand(this.OnRenewApplicationId); }
@@ -246,7 +244,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [NotNull]
+  
     public ICommand SaveChatHistorySettingsCommand
     {
         get { return field ??= new RelayCommand(this.OnSaveChatHistorySettings); }
@@ -256,7 +254,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [NotNull]
+  
     public ICommand SetLogLevelCommand
     {
         get { return field ??= new RelayCommand(this.OnSetLogLevel); }
@@ -266,7 +264,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [NotNull]
+  
     public ICommand SetThemeCommand
     {
         get { return field ??= new RelayCommand<string>(this.OnSetTheme); }
@@ -276,19 +274,19 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    [ObservableProperty] public partial AppTheme Theme { get; set; }
+    [ObservableProperty] private AppTheme theme;
 
 
 
 
 
-    [ObservableProperty] public partial UserViewModel User { get; set; }
+    [ObservableProperty] private UserViewModel user = new();
 
 
 
 
 
-    [ObservableProperty] public partial string VersionDescription { get; set; }
+    [ObservableProperty] private string versionDescription = string.Empty;
 
 
 
@@ -400,8 +398,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static string GetResourceString([NotNull] string key, string fallback)
+    private static string GetResourceString(string key, string fallback)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
         return Properties.Resources.ResourceManager.GetString(key) ?? fallback;
     }
 
@@ -468,8 +467,9 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private void OnSetTheme([NotNull] string themeName)
+    private void OnSetTheme(string themeName)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(themeName);
         AppTheme theme = Enum.Parse<AppTheme>(themeName);
         ApplyTheme(theme);
         SetAppSetting("Theme", theme.ToString());
@@ -494,7 +494,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static bool ParseBool([CanBeNull] string value, bool fallback)
+    private static bool ParseBool( string value, bool fallback)
     {
         return bool.TryParse(value, out var parsed) ? parsed : fallback;
     }
@@ -506,7 +506,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static int ParseInt([CanBeNull] string value, int fallback, int min)
+    private static int ParseInt( string value, int fallback, int min)
     {
         return int.TryParse(value, out var parsed) && parsed >= min ? parsed : fallback;
     }
@@ -518,7 +518,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static int? ParseNullableInt([CanBeNull] string value, int fallback)
+    private static int? ParseNullableInt( string value, int fallback)
     {
         return string.IsNullOrWhiteSpace(value) ? null : int.TryParse(value, out var parsed) && parsed > 0 ? parsed : fallback;
     }
@@ -530,7 +530,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static AppTheme ParseTheme([CanBeNull] string themeName)
+    private static AppTheme ParseTheme( string themeName)
     {
         return Enum.TryParse(themeName, out AppTheme theme) ? theme : AppTheme.Default;
     }

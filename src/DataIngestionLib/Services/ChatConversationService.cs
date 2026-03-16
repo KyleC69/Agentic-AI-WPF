@@ -15,6 +15,7 @@ using DataIngestionLib.Services.Contracts;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 
 
@@ -94,7 +95,7 @@ public sealed class ChatConversationService : IChatConversationService
     ///     Duplicate history objects?  We should not need to track sepearately the session holds the context and our sql
     ///     backed chat history should be handling all the history objects.
     /// </summary>
-    public AIChatHistory ChatHistory { get; } = [];
+    public List<ChatMessage> ChatHistory { get; } = new();
 
 
 
@@ -119,7 +120,7 @@ public sealed class ChatConversationService : IChatConversationService
     /// <param name="token">The cancellation token for interrupting generation.</param>
     /// <returns>The generated assistant chat message.</returns>
     /// <exception cref="ArgumentException"></exception>
-    public async ValueTask<AIChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
+    public async ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
     {
         await InitializeAsync();
         if (string.IsNullOrWhiteSpace(content))
@@ -128,7 +129,7 @@ public sealed class ChatConversationService : IChatConversationService
         }
 
         //Add user message to ChatHistory
-        ChatHistory.AddUserMessage(content);
+        ChatHistory.Add(new ChatMessage(ChatRole.User, content));
         AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
         var assistantText = response.Text.Trim();
         if (string.IsNullOrWhiteSpace(assistantText))
@@ -144,7 +145,7 @@ public sealed class ChatConversationService : IChatConversationService
                             .Where(static text => !string.IsNullOrWhiteSpace(text)));
         }
 
-        AIChatMessage assistantMessage = new AIChatMessage(ChatRole.Assistant, assistantText);
+        ChatMessage assistantMessage = new ChatMessage(ChatRole.Assistant, assistantText);
         if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
         {
             ChatHistory.Add(assistantMessage);

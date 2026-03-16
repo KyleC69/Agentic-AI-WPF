@@ -11,8 +11,6 @@ using System.Windows.Controls;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
-using JetBrains.Annotations;
-
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.ViewModels;
 using RAGDataIngestionWPF.Views;
@@ -56,8 +54,9 @@ public sealed class PageService : IPageService
 
 
 
-    public Type GetPageType([NotNull] string key)
+    public Type GetPageType(string key)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
         Type pageType;
         lock (_pages)
         {
@@ -77,8 +76,8 @@ public sealed class PageService : IPageService
 
 
 
-    [NotNull]
-    public Page GetPage([NotNull] string key)
+  
+    public Page GetPage(string key)
     {
         Type pageType = GetPageType(key);
         Page page = _serviceProvider.GetService(pageType) as Page;

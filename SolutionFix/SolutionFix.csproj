@@ -46,9 +46,9 @@
     <None Remove="..\src\DataIngestionLib\DocIngestion\LearnPageParser.cs" />
     <None Remove="..\src\DataIngestionLib\DocIngestion\LocalFileParser.cs" />
     <None Remove="..\src\DataIngestionLib\efpt.config.json.user" />
-    <None Remove="..\src\DataIngestionLib\Models\AIChatHistory.cs" />
-    <None Remove="..\src\DataIngestionLib\Models\AIChatMessage.cs" />
-    <None Remove="..\src\DataIngestionLib\Models\AIChatRole.cs" />
+    <None Remove="..\src\DataIngestionLib\Models\ChatHistory.cs" />
+    <None Remove="..\src\DataIngestionLib\Models\ChatMessage.cs" />
+    <None Remove="..\src\DataIngestionLib\Models\ChatRole.cs" />
     <None Remove="..\src\DataIngestionLib\Models\AIModels.cs" />
     <None Remove="..\src\DataIngestionLib\Models\ChatSessionState.cs" />
     <None Remove="..\src\DataIngestionLib\Models\Extensions\ChatMessageExtensions.cs" />

@@ -71,7 +71,7 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    [NotNull]
+  
     public IAsyncRelayCommand StartIngestionCommand
     {
         get { return _startIngestionCommand ??= new AsyncRelayCommand(StartIngestion); }
@@ -108,7 +108,7 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    [NotNull]
+  
     private Task StartIngestion()
     {
         return Task.CompletedTask;

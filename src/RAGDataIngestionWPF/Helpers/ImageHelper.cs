@@ -7,6 +7,7 @@
 
 
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows.Media.Imaging;
 
@@ -24,7 +25,7 @@ namespace RAGDataIngestionWPF.Helpers;
 public static class ImageHelper
 {
 
-    [NotNull]
+    [return: NotNull]
     public static BitmapImage ImageFromAssetsFile(string fileName)
     {
         Uri imageUri = new($"pack://application:,,,/Assets/{fileName}");
@@ -39,7 +40,7 @@ public static class ImageHelper
 
 
 
-    [NotNull]
+    [return: NotNull]
     public static BitmapImage ImageFromString([NotNull] string data)
     {
         BitmapImage image = new();

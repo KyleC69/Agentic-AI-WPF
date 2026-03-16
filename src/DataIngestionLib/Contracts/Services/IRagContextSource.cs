@@ -10,6 +10,8 @@
 using DataIngestionLib.Models;
 
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 
 
@@ -22,5 +24,5 @@ namespace DataIngestionLib.Contracts.Services;
 
 public interface IRagContextSource
 {
-    ValueTask<AIChatHistory> GetContextMessagesAsync(AIChatHistory requestMessages, AgentSession? session, CancellationToken cancellationToken = default);
+    ValueTask<List<ChatMessage>> GetContextMessagesAsync(List<ChatMessage> requestMessages, AgentSession? session, CancellationToken cancellationToken = default);
 }

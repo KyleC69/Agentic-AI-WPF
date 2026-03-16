@@ -7,6 +7,7 @@
 
 
 
+using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -39,7 +40,7 @@ public static class FrameExtensions
 
 
 
-    [CanBeNull]
+    [return: MaybeNull]
     public static object GetDataContext([NotNull] this Frame frame)
     {
         return frame.Content is FrameworkElement element ? element.DataContext : null;

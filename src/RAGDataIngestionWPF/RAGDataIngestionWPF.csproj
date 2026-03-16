@@ -7,10 +7,12 @@
 		<UseWPF>true</UseWPF>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<AnalysisLevel>latest</AnalysisLevel>
-		<LangVersion>preview</LangVersion>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<AnalysisLevel>none</AnalysisLevel>
+		<LangVersion>latest</LangVersion>
 		<BaseOutputPath>e:\Released\RAGWPF</BaseOutputPath>
+		<RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+		<EnableNETAnalyzers>False</EnableNETAnalyzers>
+		<RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
 	</PropertyGroup>
 
 
@@ -25,7 +27,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
 		<PackageReference Include="MahApps.Metro" Version="3.0.0-rc0529" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />

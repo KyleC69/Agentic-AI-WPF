@@ -3,12 +3,12 @@
 // Project:   DataIngestionLib
 // File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 090935
+// Build Num: 155934
 
 
 
 using DataIngestionLib.Contracts;
-using DataIngestionLib.Services.ContextInjectors;
+using DataIngestionLib.Providers;
 using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Agents.AI;
@@ -35,6 +35,8 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     //
     private readonly Dictionary<string, string> _agents = [];
     private readonly IAppSettings _appSettings;
+
+    private readonly SqlChatHistoryProvider _chatHistoryProvider;
     private readonly AIContextHistoryInjector _contextHistoryInjector;
     private readonly ILoggerFactory _factory;
 
@@ -53,15 +55,18 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     public AgentFactory(
             ILoggerFactory factory,
             IAppSettings appSettings,
+            SqlChatHistoryProvider chatHistoryProvider,
             AIContextHistoryInjector contextHistoryInjector
     )
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(appSettings);
+        ArgumentNullException.ThrowIfNull(chatHistoryProvider);
         ArgumentNullException.ThrowIfNull(contextHistoryInjector);
 
         _factory = factory;
         _contextHistoryInjector = contextHistoryInjector;
+        _chatHistoryProvider = chatHistoryProvider;
         _appSettings = appSettings;
     }
 
@@ -93,21 +98,33 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         _agents.Add(agentId, model);
         _innerClient = new OllamaApiClient(_appSettings.OllamaHost + ":" + _appSettings.OllamaPort, model);
 
-        IChatClient outer = new ChatClientBuilder(_innerClient)
-                .UseLogging(_factory)
-                .UseFunctionInvocation(_factory)
-                .UseAIContextProviders(_contextHistoryInjector)
-                .ConfigureOptions(chatOptions =>
+        AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
+        {
+                Id = agentId,
+                Name = agentId,
+                Description = agentDescription,
+                ChatOptions = new ChatOptions
                 {
-                    chatOptions.ConversationId = Guid.NewGuid().ToString();
-                    chatOptions.Instructions = GetModelInstructions();
-                    chatOptions.Temperature = 0.7f;
+                        ConversationId = Guid.NewGuid().ToString(),
+                        Instructions = GetModelInstructions(),
+                        Temperature = 0.7f,
+                        MaxOutputTokens = 10000,
+                        Tools = ToolBuilder.GetAiTools()
+                },
+                AIContextProviders =
+                [
+                        _contextHistoryInjector
+                ],
+                UseProvidedChatClientAsIs = false,
+                ClearOnChatHistoryProviderConflict = false,
+                WarnOnChatHistoryProviderConflict = false,
+                ThrowOnChatHistoryProviderConflict = true,
+                ChatHistoryProvider = _chatHistoryProvider
 
-                })
-                .Build();
+        }).AsBuilder().UseLogging(_factory).Build();
 
 
-        return outer.AsAIAgent(name: agentId, description: agentDescription, tools: ToolBuilder.GetAiTools(), loggerFactory: _factory);
+        return outer;
 
     }
 

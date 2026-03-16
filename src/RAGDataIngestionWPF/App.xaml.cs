@@ -22,8 +22,8 @@ using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.DocIngestion;
+using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
-using DataIngestionLib.Services.ContextInjectors;
 
 using JetBrains.Annotations;
 
@@ -159,7 +159,6 @@ public sealed partial class App
 
 
 
-    [UsedImplicitly]
     private static string GetAppLocation()
     {
         var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
@@ -314,7 +313,7 @@ public sealed partial class App
 
 
         IServiceCollection unused4 = services.AddSingleton<ISqlChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
-        IServiceCollection unused3 = services.AddSingleton<IChatHistoryProvider, SQLChatHistoryProvider>();
+        IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
         IServiceCollection unused = services.AddSingleton(sp => (ISQLChatHistoryProvider)sp.GetRequiredService<IChatHistoryProvider>());
         IServiceCollection unused2 = services.AddSingleton<IAgentFactory, AgentFactory>();
 

@@ -22,17 +22,17 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 public sealed partial class UserViewModel : ObservableObject
 {
-    [ObservableProperty] public partial string Name { get; set; }
+    [ObservableProperty] private string name = string.Empty;
 
 
 
 
 
-    [ObservableProperty] public partial BitmapImage Photo { get; set; }
+    [ObservableProperty] private BitmapImage photo;
 
 
 
 
 
-    [ObservableProperty] public partial string UserPrincipalName { get; set; }
+    [ObservableProperty] private string userPrincipalName = string.Empty;
 }

@@ -10,8 +10,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using JetBrains.Annotations;
-
 using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Core.Helpers;
 using RAGDataIngestionWPF.Properties;
@@ -47,7 +45,7 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
 
 
 
-    [NotNull]
+  
     public RelayCommand LoginCommand
     {
         get { return field ??= new RelayCommand(OnLogin, () => !IsBusy); }
@@ -57,7 +55,7 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
 
 
 
-    [ObservableProperty] public partial string StatusMessage { get; set; }
+    [ObservableProperty] private string statusMessage = string.Empty;
 
 
 

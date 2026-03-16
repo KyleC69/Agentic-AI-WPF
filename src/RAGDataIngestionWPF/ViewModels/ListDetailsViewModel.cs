@@ -53,7 +53,7 @@ public sealed partial class ListDetailsViewModel : ObservableObject, INavigation
 
 
 
-    [ObservableProperty] public partial SampleOrder Selected { get; set; }
+    [ObservableProperty] private SampleOrder selected;
 
 
 

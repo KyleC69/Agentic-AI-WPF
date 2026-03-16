@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         WebSearchPlugin.cs
 // Author: Kyle L. Crowder
-// Build Num: 094614
+// Build Num: 155946
 
 
 
@@ -48,7 +48,7 @@ public sealed class WebSearchPlugin
 
     private async Task<ToolResult<string>> ReRankResults(string documents, CancellationToken cancellationToken)
     {
-       
+
 
 
 
@@ -142,6 +142,7 @@ public sealed class WebSearchPlugin
 
 
 
+
     [Description("Search the web for information about a topic and return summarized results with links.")]
     public async Task<ToolResult<string>> WebSearch(string strquery, int maxResults = 5, CancellationToken cancellationToken = default)
     {
@@ -198,10 +199,10 @@ public sealed class WebSearchPlugin
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
-            
-          var rerankedresponse = await ReRankResults( jsonResponse , cancellationToken);
 
-return rerankedresponse;
+            var rerankedresponse = await ReRankResults(jsonResponse, cancellationToken);
+
+            return rerankedresponse;
 
         }
         catch (HttpRequestException ex)

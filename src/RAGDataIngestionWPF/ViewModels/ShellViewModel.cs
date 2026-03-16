@@ -13,8 +13,6 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using JetBrains.Annotations;
-
 using MahApps.Metro.Controls;
 
 using RAGDataIngestionWPF.Contracts.Services;
@@ -54,7 +52,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
 
-    [NotNull]
+  
     public RelayCommand GoBackCommand
     {
         get { return field ??= new RelayCommand(OnGoBack, CanGoBack); }
@@ -64,7 +62,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
 
-    [NotNull]
+  
     public ICommand LoadedCommand
     {
         get { return field ??= new RelayCommand(OnLoaded); }
@@ -74,7 +72,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
 
-    [NotNull]
+  
     public ICommand MenuItemInvokedCommand
     {
         get { return field ??= new RelayCommand(OnMenuItemInvoked); }
@@ -103,7 +101,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
 
-    [NotNull]
+  
     public ICommand OptionsMenuItemInvokedCommand
     {
         get { return field ??= new RelayCommand(OnOptionsMenuItemInvoked); }
@@ -113,19 +111,19 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
 
-    [ObservableProperty] public partial HamburgerMenuItem SelectedMenuItem { get; set; }
+    [ObservableProperty] private HamburgerMenuItem selectedMenuItem;
 
 
 
 
 
-    [ObservableProperty] public partial HamburgerMenuItem SelectedOptionsMenuItem { get; set; }
+    [ObservableProperty] private HamburgerMenuItem selectedOptionsMenuItem;
 
 
 
 
 
-    [NotNull]
+  
     public ICommand UnloadedCommand
     {
         get { return field ??= new RelayCommand(OnUnloaded); }
@@ -150,7 +148,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
 
-    private void NavigateTo([CanBeNull] Type targetViewModel)
+    private void NavigateTo( Type targetViewModel)
     {
         if (targetViewModel != null)
         {

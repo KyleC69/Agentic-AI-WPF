@@ -14,7 +14,7 @@ internal static class MarkdownFlowDocumentFormatter
     private static readonly Thickness BlockMargin = new(0, 0, 0, 8);
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
 
-    internal static FlowDocument Format(string? markdown)
+    internal static FlowDocument Format(string markdown)
     {
         FlowDocument document = CreateDocument();
         if (string.IsNullOrWhiteSpace(markdown))
@@ -124,14 +124,14 @@ internal static class MarkdownFlowDocumentFormatter
         }
     }
 
-    private static void AddInlines(InlineCollection inlines, ContainerInline? containerInline)
+    private static void AddInlines(InlineCollection inlines, ContainerInline containerInline)
     {
         if (containerInline is null)
         {
             return;
         }
 
-        for (Markdig.Syntax.Inlines.Inline? currentInline = containerInline.FirstChild; currentInline is not null; currentInline = currentInline.NextSibling)
+        for (Markdig.Syntax.Inlines.Inline currentInline = containerInline.FirstChild; currentInline is not null; currentInline = currentInline.NextSibling)
         {
             AddInline(inlines, currentInline);
         }
@@ -216,7 +216,7 @@ internal static class MarkdownFlowDocumentFormatter
             ToolTip = linkInline.Url
         };
 
-        if (!string.IsNullOrWhiteSpace(linkInline.Url) && Uri.TryCreate(linkInline.Url, UriKind.RelativeOrAbsolute, out Uri? navigateUri))
+        if (!string.IsNullOrWhiteSpace(linkInline.Url) && Uri.TryCreate(linkInline.Url, UriKind.RelativeOrAbsolute, out Uri navigateUri))
         {
             hyperlink.NavigateUri = navigateUri;
         }
@@ -257,7 +257,7 @@ internal static class MarkdownFlowDocumentFormatter
         return list;
     }
 
-    private static Paragraph CreateParagraph(ContainerInline? inline)
+    private static Paragraph CreateParagraph(ContainerInline inline)
     {
         Paragraph paragraph = new()
         {

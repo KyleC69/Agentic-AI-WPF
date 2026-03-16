@@ -9,6 +9,9 @@
 
 using DataIngestionLib.Models;
 
+using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.ChatCompletion;
+
 
 
 
@@ -24,7 +27,7 @@ public interface IChatConversationService
     /// <summary>
     ///     Gets the active Semantic Kernel chat history for the current conversation.
     /// </summary>
-    AIChatHistory ChatHistory { get; }
+    List<ChatMessage> ChatHistory { get; }
 
 
 
@@ -37,7 +40,7 @@ public interface IChatConversationService
 
 
 
-    ValueTask<AIChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
+    ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
 
 
     //   ChatMessage AddAssistantMessage(string responseCanceled);

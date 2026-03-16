@@ -26,7 +26,7 @@ namespace RAGDataIngestionWPF.Services;
 public sealed class ApplicationInfoService : IApplicationInfoService
 {
 
-    [NotNull]
+  
     public Version GetVersion()
     {
         // Set the app version in RAGDataIngestionWPF > Properties > Package > PackageVersion

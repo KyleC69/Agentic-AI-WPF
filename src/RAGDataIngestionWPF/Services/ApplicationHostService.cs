@@ -170,7 +170,7 @@ public sealed class ApplicationHostService : IHostedService
 
 
 
-    private static AppTheme ParseTheme([CanBeNull] string themeName)
+    private static AppTheme ParseTheme( string themeName)
     {
         return Enum.TryParse(themeName, out AppTheme theme) ? theme : AppTheme.Dark;
     }

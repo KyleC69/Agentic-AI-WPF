@@ -9,6 +9,9 @@
 
 using DataIngestionLib.Models;
 
+using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.ChatCompletion;
+
 
 
 
@@ -40,12 +43,12 @@ public interface IChatHistoryMemoryProvider
     /// </param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
-    ///     An ordered collection of <see cref="AIChatMessage" /> values representing the relevant
+    ///     An ordered collection of <see cref="ChatMessage" /> values representing the relevant
     ///     historical context, or an empty collection when no history is available.
     /// </returns>
-    ValueTask<IEnumerable<AIChatMessage>> BuildContextMessagesAsync(
+    ValueTask<IEnumerable<ChatMessage>> BuildContextMessagesAsync(
             string conversationId,
-            AIChatHistory currentRequestMessages,
+            ChatHistory currentRequestMessages,
             CancellationToken cancellationToken = default);
 
 
@@ -73,7 +76,7 @@ public interface IChatHistoryMemoryProvider
             string agentId,
             string userId,
             string applicationId,
-            AIChatHistory requestMessages,
-            AIChatHistory responseMessages,
+            ChatHistory requestMessages,
+            ChatHistory responseMessages,
             CancellationToken cancellationToken = default);
 }

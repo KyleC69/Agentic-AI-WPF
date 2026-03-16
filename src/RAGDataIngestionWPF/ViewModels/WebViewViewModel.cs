@@ -13,8 +13,6 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using JetBrains.Annotations;
-
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 
@@ -58,7 +56,7 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
 
-    [NotNull]
+  
     public RelayCommand BrowserBackCommand
     {
         get { return field ??= new RelayCommand(() => _webView?.GoBack(), () => _webView?.CanGoBack ?? false); }
@@ -68,7 +66,7 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
 
-    [NotNull]
+  
     public RelayCommand BrowserForwardCommand
     {
         get { return field ??= new RelayCommand(() => _webView?.GoForward(), () => _webView?.CanGoForward ?? false); }
@@ -78,7 +76,7 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
 
-    [ObservableProperty] public partial Visibility FailedMesageVisibility { get; set; } = Visibility.Collapsed;
+    [ObservableProperty] private Visibility failedMesageVisibility = Visibility.Collapsed;
 
 
 
@@ -98,7 +96,7 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
 
-    [ObservableProperty] public partial Visibility IsLoadingVisibility { get; set; } = Visibility.Visible;
+    [ObservableProperty] private Visibility isLoadingVisibility = Visibility.Visible;
 
 
 
@@ -118,7 +116,7 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
 
-    [NotNull]
+  
     public ICommand OpenInBrowserCommand
     {
         get { return field ??= new RelayCommand(this.OnOpenInBrowser); }
@@ -128,7 +126,7 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
 
-    [NotNull]
+  
     public ICommand RefreshCommand
     {
         get { return field ??= new RelayCommand(this.OnRefresh); }
@@ -138,7 +136,7 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
 
-    [ObservableProperty] public partial string Source { get; set; }
+    [ObservableProperty] private string source = DefaultUrl;
 
 
 
@@ -159,7 +157,7 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
 
-    public void OnNavigationCompleted(object sender, [CanBeNull] CoreWebView2NavigationCompletedEventArgs e)
+    public void OnNavigationCompleted(object sender,  CoreWebView2NavigationCompletedEventArgs e)
     {
         IsLoading = false;
         if (e != null && !e.IsSuccess)

@@ -13,7 +13,8 @@ using CommunityToolkit.Mvvm.Input;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
-using JetBrains.Annotations;
+using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 
 
@@ -51,7 +52,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
 
-    public MainViewModel([NotNull] IChatConversationService chatConversationService)
+    public MainViewModel(IChatConversationService chatConversationService)
     {
         ArgumentNullException.ThrowIfNull(chatConversationService);
 
@@ -76,7 +77,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
 
-    [ObservableProperty] public partial int ContextTokenCount { get; set; }
+    [ObservableProperty] private int contextTokenCount;
 
 
 
@@ -115,7 +116,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
 
-    public AIChatHistory Messages { get; }
+    public List<ChatMessage> Messages { get; }
 
 
 
@@ -188,7 +189,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
 
         //Add Users message to UI collection
-        Messages.AddUserMessage(content);
+        Messages.Add(new ChatMessage(ChatRole.User, content));
 
         // AppendMessage(_chatConversationService.AddUserMessage(content)); 
         //Message is being sent to service already we don't need to add it to the collection again here. The service will add the message to the conversation and then return the assistant response which we will add to the collection in the next step.
@@ -203,7 +204,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         try
         {
-            AIChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _responseCancellationTokenSource.Token);
+            ChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _responseCancellationTokenSource.Token);
             Messages.Add(assistantMessage);
         }
         catch (OperationCanceledException)
