@@ -1,14 +1,16 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/16
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AssemblyInfo.cs
 // Author: Kyle L. Crowder
-// Build Num: 182449
+// Build Num: 051933
 
 
 
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 
 
@@ -27,4 +29,6 @@ using System.Runtime.InteropServices;
 
 [assembly: Guid("30513d8d-7e9a-4517-8e6b-c7a1249abe07")]
 [assembly: InternalsVisibleTo("RAGDataIngestionWPF.Tests.MSTest")]
-// For more information on enabling a Production build, see https://go.microsoft.com/fwlink/?LinkID=235171
+[assembly: SupportedOSPlatform("windows")]
+[assembly: AssemblyCompany("Kyle Crowder")]
+[assembly: AssemblyDescription("Agentic AI application in wpf")]

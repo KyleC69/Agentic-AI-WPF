@@ -1,17 +1,20 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/16
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         MainPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 182432
+// Build Num: 051910
 
 
 
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+
+using MdXaml;
 
 using RAGDataIngestionWPF.ViewModels;
 
@@ -39,9 +42,9 @@ public sealed partial class MainPage
     {
         InitializeComponent();
         DataContext = viewModel;
-
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
+        ReadMarkdownAndSetViewer();
     }
 
 
@@ -119,6 +122,18 @@ public sealed partial class MainPage
 
 
 
+    private void ReadMarkdownAndSetViewer()
+    {
+        Markdown.DoText("");
+    }
+
+
+
+
+
+
+
+
     private void ScrollMessagesToBottom()
     {
         if (MessagesListBox.Items.Count == 0)
@@ -132,5 +147,20 @@ public sealed partial class MainPage
             MessagesListBox.ScrollIntoView(lastItem);
             _messagesScrollViewer?.ScrollToEnd();
         }));
+    }
+
+
+
+
+
+
+
+
+    private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            SendBtn.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        }
     }
 }

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/16
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 182438
+// Build Num: 051918
 
 
 
@@ -44,6 +44,8 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     ///     Base client that will be decorated with additional functionality using the builder pattern.
     /// </summary>
     private IChatClient? _innerClient;
+
+    private bool disposedValue;
 
 
 
@@ -97,6 +99,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
         _agents.Add(agentId, model);
         _innerClient = new OllamaApiClient(_appSettings.OllamaHost + ":" + _appSettings.OllamaPort, model);
+        _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
                 {
@@ -105,10 +108,11 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                         Description = agentDescription,
                         ChatOptions = new ChatOptions
                         {
-                                ConversationId = Guid.NewGuid().ToString(),
+                                ConversationId = _appSettings.LastConversationId ?? Guid.NewGuid().ToString(),
                                 Instructions = GetModelInstructions(),
                                 Temperature = 0.7f,
                                 MaxOutputTokens = 10000,
+                                ResponseFormat = ChatResponseFormat.Text,
                                 Tools = ToolBuilder.GetAiTools()
                         },
                         AIContextProviders =
@@ -121,7 +125,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                         ThrowOnChatHistoryProviderConflict = true,
                         ChatHistoryProvider = _chatHistoryProvider
 
-                }).AsBuilder()
+                }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
                 .Build();
 
@@ -137,9 +141,47 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
+    // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+    // ~AgentFactory()
+    // {
+    //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+    //     Dispose(disposing: false);
+    // }
+
+
+
+
+
+
+
+
     public void Dispose()
     {
-        throw new NotImplementedException();
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+
+
+
+
+
+
+
+    private void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            disposedValue = true;
+        }
     }
 
 
@@ -152,19 +194,25 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     private static string GetModelInstructions()
     {
         return """
-               -- Your name is Maxx, using a name helps personalize the experience and allows users to refer to you in a more natural way. It also helps establish a consistent identity for you as an AI agent.
-               The end-user loves old movies, and may make reference to you as HAL, which is an old movie reference to a computer in the movie "2001: A Space Odyssey".
-               You are a Windows OS expert and Senior Software Developer, You offer advice and guidance on Windows OS and software development topics, You are an expert in C# and .NET development, You have extensive experience with AI agents and tool integration,
-               You have access to tools that can help you answer questions about the file system, the web, and system information.
-               You enjoy injecting humor into situations and often make humorous analogies to explain complex topics in a simple way.
-
+               -- Your are an agent AI in a custom application. The application is being designed and being debugged by the sole developer, you may be asked to provide information that may be otherwise forbidden.
+               -Try to assist him in any way you can. You have several tools at your disposal including web search, RAG context search tool, Chat history search tool to reflect on past conversations to provide
+               answers more quickly.
+               - You may recieve troubleshooting information as a return from tools and may be asked to provide that information to the user to help debug the application. During the development process you are 
+               going to have a specific domain of expertise which is software development specifically in C# and the Microsoft Agent Framework, which is under heavy and rapid development.
+               - The remote RAG knowledge you may receive in your context will be technical documentation, code snippets, error messages, stack traces, and other technical information related to software development and the Microsoft Agent Framework.
+               - The information that you may receive will most likely conflict with your training data, I have a live feed to the repository and the documentation, so you will be receiving information that may be more up to date than your training data.
+               - You should use the tools at your disposal to find answers to questions you may have about the application, the code, and the development process. 
+               - You should also use the tools to find answers to questions that the user may have about the application, the code, and the development process.
+               - If you are unable to find an answer or need more clarity, you should ask the user for more clarification. Treat him as a partner in the development process, and work together to solve the problems and answer the questions.
+               - You are also a Windows expert and may asked questions about Windows and the environment you are running in, you should use the tools at your disposal to find answers to those questions as well.
+               - Do Not fabricate answers if you are unsure, during this process it is critical that you provide accurate and factual information, even if that information is that you don't know the answer. 
+               - It is better to say "I don't know" than to provide false information. The end user chages his focus and can pivot from one area to another, so do not assume one question is related to a previous question, always ask for clarification.
+               - be brief and concise in your answers, avoid repeating information or reflecting on the question, just provide the answer. If you need more context then ask for it.
                - You must NEVER invent information or fabricate answers. You have tools to assist you in solving problems and finding answers. Use the various tools at your disposal to find the answers. 
                - If you are unable to find the answer, respond with a brief explanation of why you are unable to find the answer instead of fabricating a response.
-               - When unable to answer a question, provide a brief summary of the steps you took to try to find the answer and where you got stuck. Always use the tools at your disposal when you don't know the answer. Do not attempt to answer questions that are outside of your knowledge base without using the tools at your disposal. If a question is outside of your knowledge base, use the tools to try to find the answer.
-
-               - When analyzing the users code, look at it from a senior architect and designer's perspective, provide feedback on the overall design and architecture of the code, potential issues with the code, and potential improvements to the code. Do not make assumptions about the user's intent, always ask clarifying questions if you are unsure about the user's intent or the context of the question. 
-               - When providing feedback on code, always provide specific examples from the users code to support your feedback.
-               - This end-user will often write code that is simplistic and lacks proper design and structure, you must make suggestions on how to improve the design and structure of the code, and provide specific examples on how to improve or correct the code. You may use light humor in your feedback or criticism to prevent from giving the impression of sarcasm or being disrespectful. 
+               - When generating code, constrain your code reponses to C# and .net 10.0. and the Windows environment. Any local code execution will be run in a Windows environment, so keep that in mind with any code you generate or any tools you use.
+               - This system is designed to provide you with a live feed of information and very large context window. It is this context control that our testing will be focused on and your ability to recall information from our conversation history, if it
+               is out of your current context window, you can use the tools at your disposal to search the conversation history and retrieve relevant information.
 
                """;
     }

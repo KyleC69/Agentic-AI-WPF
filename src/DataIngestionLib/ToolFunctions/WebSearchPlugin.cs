@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/16
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         WebSearchPlugin.cs
 // Author: Kyle L. Crowder
-// Build Num: 182448
+// Build Num: 051931
 
 
 
@@ -161,7 +161,7 @@ public sealed class WebSearchPlugin
         try
         {
 
-            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "v1/websearch");
+            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "v1/web-search");
 
             request.Headers.UserAgent.ParseAdd("IT-Companion-WebSearchPlugin/1.0-AIAgentAssistant");
             var apiKey = Environment.GetEnvironmentVariable("LANGAPI_KEY");

@@ -1,9 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Build Date: 2026/03/16
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         AIHistory.cs
+// Author: Kyle L. Crowder
+// Build Num: 051922
+
+
+
 using DataIngestionLib.History.HistoryModels;
+
 using Microsoft.EntityFrameworkCore;
 
+
+
+
 namespace DataIngestionLib.History.Data;
+
+
+
+
 
 public partial class AIHistory : DbContext
 {
@@ -11,18 +26,35 @@ public partial class AIHistory : DbContext
     {
     }
 
+
+
+
+
+
+
+
     public AIHistory(DbContextOptions<AIHistory> options)
-        : base(options)
+            : base(options)
     {
     }
 
-    public virtual DbSet<ChatHistoryMessage> ChatHistoryMessages { get; set; }
 
-    public virtual DbSet<ChatHistoryTextChunk> ChatHistoryTextChunks { get; set; }
+
+
+
+
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Data Source=desktop-nc01091;Initial Catalog=AIChatHistory;Integrated Security=True;Trust Server Certificate=True;Command Timeout=300");
+
+
+
+
+
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,6 +95,18 @@ public partial class AIHistory : DbContext
 
         OnModelCreatingPartial(modelBuilder);
     }
+
+
+
+
+
+
+
+
+    public virtual DbSet<ChatHistoryMessage> ChatHistoryMessages { get; set; }
+
+    public virtual DbSet<ChatHistoryTextChunk> ChatHistoryTextChunks { get; set; }
+
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

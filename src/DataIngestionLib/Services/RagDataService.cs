@@ -1,15 +1,16 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/16
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         RagDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: 182445
+// Build Num: 051928
 
 
 
 using System.Collections.ObjectModel;
 
 using DataIngestionLib.Data;
+using DataIngestionLib.Logging;
 using DataIngestionLib.RAGModels;
 
 using Microsoft.Data.SqlClient;
@@ -87,7 +88,7 @@ public class RagDataService(ILogger<RagDataService> logger)
         catch (Exception ex)
         {
 
-            _logger.LogError(ex, "Error fetching RAG data entries: {Message}", ex.Message);
+            _logger.LogErrorFetchingRAGDataEntriesMessage(ex.Message);
         }
 
         return rags;

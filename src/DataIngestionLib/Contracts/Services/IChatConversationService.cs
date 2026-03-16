@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/16
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 182438
+// Build Num: 051919
 
 
 
@@ -24,7 +24,7 @@ public interface IChatConversationService
     /// <summary>
     ///     Gets the active Semantic Kernel chat history for the current conversation.
     /// </summary>
-    List<ChatMessage> ChatHistory { get; }
+    List<ChatMessage> AIHistory { get; }
 
     /// <summary>
     ///     Gets the current context token count for the active chat history.

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/16
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         MarkdownFlowDocumentFormatter.cs
 // Author: Kyle L. Crowder
-// Build Num: 182422
+// Build Num: 051858
 
 
 
@@ -251,12 +251,12 @@ internal static class MarkdownFlowDocumentFormatter
         heading.FontWeight = FontWeights.SemiBold;
         heading.FontSize = headingBlock.Level switch
         {
-                1 => 22,
-                2 => 20,
-                3 => 18,
-                4 => 16,
-                5 => 14,
-                _ => 13
+                1 => 18,
+                2 => 16,
+                3 => 14,
+                4 => 12,
+                5 => 10,
+                _ => 8
         };
 
         return heading;

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/16
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 182433
+// Build Num: 051913
 
 
 
@@ -50,7 +50,7 @@ namespace RAGDataIngestionWPF;
 
 
 
-public sealed partial class App
+public sealed partial class App : Application
 {
     private IHost? _host;
     private bool _isHostStarted;
@@ -72,6 +72,7 @@ public sealed partial class App
         return Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c =>
                 {
+
                     IConfigurationBuilder unused4 = c.SetBasePath(Environment.CurrentDirectory);
                 })
                 .ConfigureServices(ConfigureServices)
@@ -83,6 +84,14 @@ public sealed partial class App
                     // the dynamic filter below. The LoggingLevelSwitch controls the
                     // effective minimum at runtime and is user-configurable from the
                     // Settings page.
+                    logging.AddJsonConsole(options =>
+                    {
+                        options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions
+                        {
+                                Indented = true,
+                                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                        };
+                    });
                     ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
                     ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
                 })

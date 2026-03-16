@@ -15,7 +15,6 @@
 	</PropertyGroup>
 
 
-
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<WarningLevel>7</WarningLevel>
 	</PropertyGroup>
@@ -27,9 +26,12 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="MahApps.Metro" Version="3.0.0-rc0529" />
+		<PackageReference Include="MdXaml" Version="2.0.0-pre202603081301" />
+		<PackageReference Include="MdXaml.Full" Version="2.0.0-pre202603081301" />
+		<PackageReference Include="MdXaml.Plugins" Version="2.0.0-pre202603081301" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />
-		<PackageReference Include="Markdig" Version="0.30.0" />
+		<PackageReference Include="Markdig" Version="1.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\DataIngestionLib\DataIngestionLib.csproj" />
@@ -46,9 +48,9 @@
 			<DependentUpon>Resources.resx</DependentUpon>
 		</Compile>
 		<Compile Update="Properties\Settings.Designer.cs">
-		  <DesignTimeSharedInput>True</DesignTimeSharedInput>
-		  <AutoGen>True</AutoGen>
-		  <DependentUpon>Settings.settings</DependentUpon>
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings.settings</DependentUpon>
 		</Compile>
 	</ItemGroup>
 
@@ -61,8 +63,8 @@
 
 	<ItemGroup>
 		<None Update="Properties\Settings.settings">
-		  <Generator>PublicSettingsSingleFileGenerator</Generator>
-		  <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+			<Generator>PublicSettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
 		</None>
 	</ItemGroup>
 

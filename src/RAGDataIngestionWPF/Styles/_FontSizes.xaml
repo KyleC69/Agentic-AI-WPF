@@ -3,12 +3,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
-    <sys:Double x:Key="SmallFontSize">12</sys:Double>
+    <sys:Double x:Key="SmallFontSize">10</sys:Double>
 
-    <sys:Double x:Key="MediumFontSize">14</sys:Double>
+    <sys:Double x:Key="MediumFontSize">13</sys:Double>
 
-    <sys:Double x:Key="LargeFontSize">18</sys:Double>
+    <sys:Double x:Key="LargeFontSize">14</sys:Double>
 
-    <sys:Double x:Key="XLargeFontSize">22</sys:Double>
+    <sys:Double x:Key="XLargeFontSize">16</sys:Double>
 
 </ResourceDictionary>

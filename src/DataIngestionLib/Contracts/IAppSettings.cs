@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/16
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IAppSettings.cs
 // Author: Kyle L. Crowder
-// Build Num: 182439
+// Build Num: 051920
 
 
 
@@ -22,27 +22,30 @@ public interface IAppSettings
 {
     string ApplicationId { get; set; }
 
-    string ChatHistoryConnectionString { get; }
+    string ChatHistoryConnectionString { get; set; }
 
-    string ChatModel { get; }
+    string ChatModel { get; set; }
 
-    string EmbeddingModel { get; }
+    string EmbeddingModel { get; set; }
+    string LastConversationId { get; set; }
 
-    string LearnBaseUrl { get; }
+    string LearnBaseUrl { get; set; }
 
-    string LogDirectory { get; }
-    int MaximumContext { get; }
-    int MetaBudget { get; }
+    string LogDirectory { get; set; }
+    string LogName { get; set; }
+    int MaximumContext { get; set; }
+    int MetaBudget { get; set; }
 
-    string OllamaHost { get; }
+    string OllamaHost { get; set; }
 
-    int OllamaPort { get; }
-    int RAGBudget { get; }
+    int OllamaPort { get; set; }
+    int RAGBudget { get; set; }
 
-    string RemoteRAGConnectionString { get; }
-    int SessionBudget { get; }
-    int SystemBudget { get; }
-    int ToolBudget { get; }
+    string RemoteRAGConnectionString { get; set; }
+    int SessionBudget { get; set; }
+    int SystemBudget { get; set; }
+    int ToolBudget { get; set; }
+    string UserId { get; set; }
 
 
     TokenBudget GetTokenBudget();

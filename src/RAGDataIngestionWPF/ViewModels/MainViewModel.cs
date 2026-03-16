@@ -1,11 +1,13 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/16
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         MainViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 182428
+// Build Num: 051905
 
 
+
+using System.Collections.ObjectModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,6 +15,8 @@ using CommunityToolkit.Mvvm.Input;
 using DataIngestionLib.Contracts.Services;
 
 using Microsoft.Extensions.AI;
+
+using RAGDataIngestionWPF.Models;
 
 
 
@@ -42,7 +46,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(chatConversationService);
 
         _chatConversationService = chatConversationService;
-        Messages = [];
+        Messages = new ObservableCollection<ChatMessageDisplayItem>();
         ContextTokenCount = _chatConversationService.ContextTokenCount;
 
         SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
@@ -83,7 +87,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
     } = string.Empty;
 
-    public List<ChatMessage> Messages { get; }
+    public ObservableCollection<ChatMessageDisplayItem> Messages { get; }
 
     public IAsyncRelayCommand SendMessageCommand { get; }
 
@@ -143,8 +147,26 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
 
+    private static ChatMessageDisplayItem CreateUiMessage(ChatMessage message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        return ChatMessageDisplayItem.Create(message.Role, message.Text);
+    }
+
+
+
+
+
+
+
+
     private async Task SendMessageAsync()
     {
+        //TODO: Need to link to lifecycle of view model and application lifetime.
+        _responseCancellationTokenSource = new CancellationTokenSource();
+
+
         var content = MessageInput.Trim();
         if (string.IsNullOrWhiteSpace(content))
         {
@@ -152,35 +174,28 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
 
         //Add Users message to UI collection
-        Messages.Add(new ChatMessage(ChatRole.User, content));
-
-        // AppendMessage(_chatConversationService.AddUserMessage(content)); 
-        //Message is being sent to service already we don't need to add it to the collection again here. The service will add the message to the conversation and then return the assistant response which we will add to the collection in the next step.
-
+        Messages.Add(ChatMessageDisplayItem.Create(ChatRole.User, content));
 
         //Clear UI input
         MessageInput = string.Empty;
+
         //Set UI state to busy TODO: add bool IsBusy prop
         IsGenerating = true;
-        //TODO: need to refactor all cancellation token and ensure they are all linked to lifecycle of view model and application lifetime.
-        _responseCancellationTokenSource = new CancellationTokenSource();
 
         try
         {
             ChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _responseCancellationTokenSource.Token);
-            Messages.Add(assistantMessage);
+            Messages.Add(CreateUiMessage(assistantMessage));
         }
         catch (OperationCanceledException)
         {
-
-            //   AppendMessage(_chatConversationService.AddAssistantMessage("Response canceled."));
+            Messages.Add(ChatMessageDisplayItem.Create(ChatRole.Assistant, "Response cancelled."));
         }
         finally
         {
             IsGenerating = false;
             _responseCancellationTokenSource?.Dispose();
             _responseCancellationTokenSource = null;
-            //update token count last
             ContextTokenCount = _chatConversationService.ContextTokenCount;
         }
 
