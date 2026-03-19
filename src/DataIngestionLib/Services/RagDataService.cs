@@ -10,7 +10,6 @@
 using System.Collections.ObjectModel;
 
 using DataIngestionLib.Data;
-using DataIngestionLib.Logging;
 using DataIngestionLib.RAGModels;
 
 using Microsoft.Data.SqlClient;

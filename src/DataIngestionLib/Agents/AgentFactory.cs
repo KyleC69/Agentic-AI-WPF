@@ -9,6 +9,7 @@
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Providers;
+using DataIngestionLib.Providers.ChatHistory;
 using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Agents.AI;
@@ -37,7 +38,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     private readonly IAppSettings _appSettings;
 
     private readonly SqlChatHistoryProvider _chatHistoryProvider;
-    private readonly AIContextHistoryInjector _contextHistoryInjector;
+    private readonly ChatHistoryContextInjector _contextInjector;
     private readonly ILoggerFactory _factory;
 
     /// <summary>
@@ -58,17 +59,17 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
             ILoggerFactory factory,
             IAppSettings appSettings,
             SqlChatHistoryProvider chatHistoryProvider,
-            AIContextHistoryInjector contextHistoryInjector
+            ChatHistoryContextInjector contextInjector
     )
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(appSettings);
         ArgumentNullException.ThrowIfNull(chatHistoryProvider);
-        ArgumentNullException.ThrowIfNull(contextHistoryInjector);
+        ArgumentNullException.ThrowIfNull(contextInjector);
 
         _factory = factory;
-        _contextHistoryInjector = contextHistoryInjector;
-        _chatHistoryProvider = chatHistoryProvider;
+        _contextInjector = contextInjector;
+          _chatHistoryProvider = chatHistoryProvider;
         _appSettings = appSettings;
     }
 
@@ -117,7 +118,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                         },
                         AIContextProviders =
                         [
-                                _contextHistoryInjector
+                                _contextInjector
                         ],
                         UseProvidedChatClientAsIs = false,
                         ClearOnChatHistoryProviderConflict = false,

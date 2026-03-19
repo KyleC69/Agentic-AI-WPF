@@ -191,7 +191,7 @@ public class AppSettings : IAppSettings
 
     private static string GetString(string settingName)
     {
-        return (string?)Properties.Settings.Default[settingName] ?? string.Empty;
+        return (string)Properties.Settings.Default[settingName] ?? string.Empty;
     }
 
 
@@ -226,7 +226,7 @@ public class AppSettings : IAppSettings
 
 
 
-    private static void SetString(string settingName, string? value)
+    private static void SetString(string settingName, string value)
     {
         SaveSetting(settingName, value ?? string.Empty);
     }

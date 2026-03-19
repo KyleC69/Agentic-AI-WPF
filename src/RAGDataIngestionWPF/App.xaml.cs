@@ -20,6 +20,7 @@ using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.DocIngestion;
 using DataIngestionLib.Providers;
+using DataIngestionLib.Providers.ChatHistory;
 using DataIngestionLib.Services;
 
 using Microsoft.Extensions.Configuration;
@@ -317,7 +318,7 @@ public sealed partial class App : Application
         IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
         IServiceCollection unused2 = services.AddSingleton<IAgentFactory, AgentFactory>();
 
-        IServiceCollection unused1 = services.AddSingleton<AIContextHistoryInjector>();
+        IServiceCollection unused1 = services.AddSingleton<ChatHistoryContextInjector>();
     }
 
 

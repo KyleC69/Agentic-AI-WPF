@@ -23,18 +23,10 @@ namespace DataIngestionLib.Models;
 
 
 
-/// <summary>
-///     Represents a mutable list of <see cref="ChatMessage" /> values with role-focused helpers for agent conversations.
-/// </summary>
-/// <remarks>
-///     This type is intended to be directly consumed by Agent Framework and <see cref="IChatClient" /> APIs that operate
-///     on <see cref="ChatMessage" /> sequences. Keep chat manipulation helpers here to avoid duplicating message logic
-///     in
-///     service layers.
-/// </remarks>
-public sealed class AIChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>, INotifyCollectionChanged, INotifyPropertyChanged
+public  class AIChatHistory 
 {
-    private readonly List<ChatMessage> _messages;
+    
+    private readonly List<AIMessage> _messages;
 
 
 
@@ -64,7 +56,7 @@ public sealed class AIChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessag
         _messages = [];
         foreach ((ChatRole role, var text) in messages)
         {
-            Add(new ChatMessage(role, text));
+            Add(new AIMessage(role, text));
         }
     }
 
@@ -84,7 +76,7 @@ public sealed class AIChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessag
     {
         EnsureNotNullOrWhiteSpace(message, nameof(message));
 
-        _messages = [new ChatMessage(role, message)];
+        _messages = [new AIMessage(role, message)];
     }
 
 
@@ -122,7 +114,7 @@ public sealed class AIChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessag
     public AIChatHistory(IEnumerable<ChatMessage> contextRequestMessages)
     {
         ArgumentNullException.ThrowIfNull(contextRequestMessages);
-        _messages = [.. contextRequestMessages.Select(msg => new ChatMessage(msg.Role, msg.Text))];
+        _messages = [.. contextRequestMessages.Select(msg => new AIMessage(msg.Role, msg.Text))];
     }
 
 
@@ -217,10 +209,31 @@ public sealed class AIChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessag
 
 
 
+    
+
+    /// <inheritdoc />
+    public void AddChatMessage(ChatMessage item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        _messages.Add(new(item.Role, item.Text));
+        OnPropertyChanged(nameof(Count));
+        OnPropertyChanged("Item[]");
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, _messages.Count - 1));
+    }
+
+
+
+
+
+
+
+
+
 
 
     /// <inheritdoc />
-    public void Add(ChatMessage item)
+    public void Add(AIMessage item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
@@ -229,7 +242,6 @@ public sealed class AIChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessag
         OnPropertyChanged("Item[]");
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, _messages.Count - 1));
     }
-
 
 
 

@@ -10,7 +10,7 @@
 using System.Net.Http;
 
 using DataIngestionLib.Contracts;
-using DataIngestionLib.Logging;
+using DataIngestionLib.Services;
 
 using HtmlAgilityPack;
 
@@ -23,6 +23,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 using OllamaSharp;
+
+using LoggingMessages = DataIngestionLib.Services.LoggingMessages;
 
 
 
@@ -132,7 +134,7 @@ public sealed class LearningHtmlRunner
 
             SaveSqlRemoteKnowledgeSource(rag);
             // For now, just log the gathered metadata.
-            _logger.LogPageMetatitleTitleDescriptionDescriptionDocumentidDocumentid(rag.Title, rag.Description, rag.DocumentId, rag.UpdatedAt, rag.MSDate, rag.OgUrl, rag.Summary);
+            LoggingMessages.LogPageMetatitleTitleDescriptionDescriptionDocumentidDocumentid(_logger, rag.Title, rag.Description, rag.DocumentId, rag.UpdatedAt, rag.MSDate, rag.OgUrl, rag.Summary);
 
         }
 
@@ -199,7 +201,7 @@ public sealed class LearningHtmlRunner
         }
         catch (Exception ex)
         {
-            _logger.LogFailedToExtractKeywordsForRemoteKnowledgeSource(ex.Message);
+            LoggingMessages.LogFailedToExtractKeywordsForRemoteKnowledgeSource(_logger, ex.Message);
             return null; // Return null on failure
         }
     }
@@ -453,7 +455,7 @@ public sealed class LearningHtmlRunner
         }
         catch (Exception ex)
         {
-            _logger.LogFailedToSummarizeContentForRemoteKnowledgeSource(ex.Message);
+            LoggingMessages.LogFailedToSummarizeContentForRemoteKnowledgeSource(_logger, ex.Message);
         }
 
         return null;

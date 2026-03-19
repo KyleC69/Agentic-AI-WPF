@@ -7,9 +7,11 @@
 
 
 
-using DataIngestionLib.Logging;
+using DataIngestionLib.Services;
 
 using Microsoft.Extensions.Logging;
+
+using LoggingMessages = DataIngestionLib.Services.LoggingMessages;
 
 
 
@@ -57,14 +59,14 @@ public class RegistryReaderTool
         if (string.IsNullOrWhiteSpace(keyPath))
         {
             const string message = "Registry key path cannot be null or empty.";
-            _logger.LogRegistryKeyPathCannotBeNullOrEmpty();
+            LoggingMessages.LogRegistryKeyPathCannotBeNullOrEmpty(_logger);
             return ToolResult<string>.Fail(message);
         }
 
         if (!OperatingSystem.IsWindows())
         {
             const string message = "Registry access is only supported on Windows.";
-            _logger.LogRegistryAccessIsOnlySupportedOnWindows();
+            LoggingMessages.LogRegistryAccessIsOnlySupportedOnWindows(_logger);
             return ToolResult<string>.Fail(message);
         }
 
@@ -74,7 +76,7 @@ public class RegistryReaderTool
             if (separatorIndex <= 0)
             {
                 const string message = "Invalid registry key path format.";
-                _logger.LogMessagePathKeypath(message, keyPath);
+                LoggingMessages.LogMessagePathKeypath(_logger, message, keyPath);
                 return ToolResult<string>.Fail(message);
             }
 
@@ -83,7 +85,7 @@ public class RegistryReaderTool
             if (string.IsNullOrWhiteSpace(keyAndValuePath))
             {
                 const string message = "Registry subkey path cannot be empty.";
-                _logger.LogMessagePathKeypath(message, keyPath);
+                LoggingMessages.LogMessagePathKeypath(_logger, message, keyPath);
                 return ToolResult<string>.Fail(message);
             }
 
@@ -104,7 +106,7 @@ public class RegistryReaderTool
             if (string.IsNullOrWhiteSpace(subKeyPath))
             {
                 const string message = "Registry subkey path cannot be empty.";
-                _logger.LogMessagePathKeypath(message, keyPath);
+                LoggingMessages.LogMessagePathKeypath(_logger, message, keyPath);
                 return ToolResult<string>.Fail(message);
             }
 
@@ -140,12 +142,12 @@ public class RegistryReaderTool
         }
         catch (System.Security.SecurityException ex)
         {
-            _logger.LogSecurityExceptionReadingRegistryKeyKeypath(ex.Message, keyPath);
+            LoggingMessages.LogSecurityExceptionReadingRegistryKeyKeypath(_logger, ex.Message, keyPath);
             return ToolResult<string>.Fail("Security exception while reading the registry key.");
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogUnauthorizedAccessExceptionReadingRegistryKeyKeypath(ex.Message, keyPath);
+            LoggingMessages.LogUnauthorizedAccessExceptionReadingRegistryKeyKeypath(_logger, ex.Message, keyPath);
             return ToolResult<string>.Fail("Unauthorized access while reading the registry key.");
         }
     }

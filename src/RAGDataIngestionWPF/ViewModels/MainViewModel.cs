@@ -13,6 +13,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Providers;
 
 using Microsoft.Extensions.AI;
 
@@ -32,11 +33,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IChatConversationService _chatConversationService;
     private CancellationTokenSource _responseCancellationTokenSource;
 
-    [ObservableProperty] private int contextTokenCount;
-
-
-
-
+    [ObservableProperty] private int ragTokenCount;
+    [ObservableProperty] private int toolTokenCount;
+    [ObservableProperty] private int systemTokenCount;
+    [ObservableProperty] private int sessionTokenCount;
+    [ObservableProperty] private int totalcontextTokenCount;
 
 
 
@@ -47,10 +48,86 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         _chatConversationService = chatConversationService;
         Messages = new ObservableCollection<ChatMessageDisplayItem>();
-        ContextTokenCount = _chatConversationService.ContextTokenCount;
 
         SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
+        
+        
+        
+        /// Wire up events thrown by the LLM service to update
+        /// token countes and kepep UI accurate.
+        _chatConversationService.SessionTokenChange += OnSessionTokenChange;
+        _chatConversationService.SystemTokenChange += OnSystemTokenChange;
+        _chatConversationService.RagTokenChange += OnRagTokenChange;
+        _chatConversationService.ToolTokenChange += OnToolTokenChange;
+        _chatConversationService.MaximumContextWarning += OnMaximumContextWarning;
+        _chatConversationService.SessionBugetExceeded += OnSessionBudgetExceeded;
+        
+        
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    /// <summary>
+    /// Main conversational history containker is nearing token budget.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private void OnSessionBudgetExceeded(object sender, EventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+    ///<summary>Triggered when the maximum context warning is reached. Will trigger context reducer</summary>    
+    private void OnMaximumContextWarning(object sender, int e)
+    {
+        throw new NotImplementedException();
+    }
+     /// <summary>
+     /// Updates tool token UI
+     /// </summary>
+     /// <param name="sender"></param>
+     /// <param name="e"></param>
+     /// <exception cref="NotImplementedException"></exception>
+    private void OnToolTokenChange(object sender, int e)
+    {
+        throw new NotImplementedException();
+    }
+    /// <summary>
+    /// Updates RAG token UI
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private void OnRagTokenChange(object sender, int e)
+    {
+        throw new NotImplementedException();
+    }
+    /// <summary>
+    /// Updates system token UI
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private void OnSystemTokenChange(object sender, int e)
+    {
+        throw new NotImplementedException();
+    }
+    /// <summary>
+    /// Handles changes to the session token when triggered by an event.
+    /// </summary>
+    /// <param name="sender">The source of the event that triggered the session token change.</param>
+    /// <param name="e">An integer value associated with the session token change event.</param>
+    /// <exception cref="NotImplementedException">Always thrown as this method is not yet implemented.</exception>
+    private void OnSessionTokenChange(object sender, int e)
+    {
+        throw new NotImplementedException();
     }
 
 
@@ -60,7 +137,21 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
 
-    public IRelayCommand CancelMessageCommand { get; }
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+public IRelayCommand CancelMessageCommand { get; }
 
     public bool IsGenerating
     {
@@ -196,7 +287,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             IsGenerating = false;
             _responseCancellationTokenSource?.Dispose();
             _responseCancellationTokenSource = null;
-            ContextTokenCount = _chatConversationService.ContextTokenCount;
+            TotalcontextTokenCount = _chatConversationService.ContextTokenCount;
         }
 
 

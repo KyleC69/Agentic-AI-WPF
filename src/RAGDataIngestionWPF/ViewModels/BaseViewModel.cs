@@ -24,5 +24,9 @@ namespace RAGDataIngestionWPF.ViewModels;
 internal class BaseViewModel : ObservableObject, INotifyPropertyChanged, INotifyPropertyChanging, INotifyCollectionChanged
 {
     /// <inheritdoc />
-    public event NotifyCollectionChangedEventHandler CollectionChanged;
+    public event NotifyCollectionChangedEventHandler CollectionChanged
+    {
+        add { }
+        remove { }
+    }
 }

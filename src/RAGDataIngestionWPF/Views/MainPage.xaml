@@ -7,6 +7,7 @@
     xmlns:mdxam="clr-namespace:MdXaml;assembly=MdXaml"
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     xmlns:models="clr-namespace:RAGDataIngestionWPF.Models"
+ 
     x:Class="RAGDataIngestionWPF.Views.MainPage"
     Style="{DynamicResource MahApps.Styles.Page}"
     mc:Ignorable="d"
@@ -52,12 +53,11 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-
-                <TextBlock
-                    Grid.ColumnSpan="3"
-                    Margin="12,0,0,6"
-                    Style="{StaticResource BodyTextStyle}"
-                    Text="{Binding ContextTokenCount, StringFormat=Context tokens: \{0\} / 130000}" />
+                <TextBlock Grid.ColumnSpan="3" Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding SessionTokenCount, StringFormat=Context tokens: \{0\} / 130000}" />
+                <TextBlock Grid.ColumnSpan="3" Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding SessionTokenCount, StringFormat=Context tokens: \{0\} / 100000}" />
+                <TextBlock Grid.ColumnSpan="3" Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding SystemTokenCount, StringFormat=Context tokens: \{0\} / 5000}" />
+                <TextBlock Grid.ColumnSpan="3" Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding RagTokenCount, StringFormat=Context tokens: \{0\} / 10000}" />
+                <TextBlock Grid.ColumnSpan="3" Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding ToolTokenCount, StringFormat=Context tokens: \{0\} / 3000}" />
 
                 <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
                          x:Name="MessagesListBox"
@@ -70,7 +70,7 @@
                          ScrollViewer.VerticalScrollBarVisibility="Auto" IsManipulationEnabled="True"
                          SelectionMode="Multiple">
                     <ListBox.ItemTemplate>
-                        <DataTemplate DataType="{x:Type models:ChatMessageDisplayItem}">
+                        <DataTemplate DataType="{x:Type models:MessageDisplay}">
                             <Border
                                 Margin="0,4"
                                 Padding="10"

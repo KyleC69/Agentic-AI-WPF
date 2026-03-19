@@ -4,7 +4,7 @@
 // File:         AIChatRole.cs
 // Author: Kyle L. Crowder
 // Build Num: 090951
-
+// Extended chat role struct to allow for additional roles beyond the standard system/user/assistant, such as tool and injected context roles for RAG and other knowledge integration
 
 
 using System.ComponentModel;
@@ -44,6 +44,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
     /// <summary>Gets the role that provides additional information and references in response to tool use requests.</summary>
     public static AIChatRole Tool { get; } = new("tool");
+
+
+
 
     /// <summary>
     ///     Injected context from chat history or other knowledge source. This is a special role that can be used to

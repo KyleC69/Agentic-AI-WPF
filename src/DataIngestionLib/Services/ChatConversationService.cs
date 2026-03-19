@@ -1,15 +1,14 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/17
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 051926
+// Build Num: 015951
 
 
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.Logging;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services.Contracts;
 
@@ -28,16 +27,19 @@ namespace DataIngestionLib.Services;
 
 /// <summary>
 ///     Class is responsible for managing the chat conversation round with LLM, self-contained and keeps viewmodel clean.
+///     Encapsulates the management of the agent operations.
 /// </summary>
 public sealed class ChatConversationService : IChatConversationService
 {
+    private const string DefaultAgentId = "Agentic-Max";
+
 
     private readonly IAgentFactory _agentFactory;
     private readonly IAppSettings _appSettings;
     private readonly ILogger<ChatConversationService> _logger;
     private AIAgent? _agent;
     private AgentSession? _agentSession;
-
+    private readonly HistoryIdentity _identity;
 
 
 
@@ -53,6 +55,8 @@ public sealed class ChatConversationService : IChatConversationService
         ConversationTokenBudget = settings.GetTokenBudget();
         _agentFactory = agentFactory;
         _logger = factory.CreateLogger<ChatConversationService>();
+        _identity = new HistoryIdentity();
+
 
     }
 
@@ -84,6 +88,7 @@ public sealed class ChatConversationService : IChatConversationService
     ///     on that.
     /// </summary>
     public string SessionId { get; set; }
+        = string.Empty;
 
     /// <summary>
     ///     Onlly used for history persistence and retrieval filter.
@@ -100,7 +105,7 @@ public sealed class ChatConversationService : IChatConversationService
     ///     This allows for more efficient token usage while still maintaining enough context for coherent conversations.
     ///     This is actually managed by the sqlChatHistoryProvider and the Context Injectors.
     /// </summary>
-    public List<ChatMessage> AIHistory { get; } = new();
+    public List<ChatMessage> AIHistory { get; } = new List<ChatMessage>();
 
     /// <summary>
     ///     An estimate of the token count in the current conversation. TODO: will be moved to TokenBudget class for source of
@@ -128,31 +133,82 @@ public sealed class ChatConversationService : IChatConversationService
     public async ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
     {
         await InitializeAsync();
-        if (string.IsNullOrWhiteSpace(content))
+        BusyStateChanged?.Invoke(this, true);
+        try
         {
-            throw new ArgumentException("User message cannot be empty.", nameof(content));
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new ArgumentException("User message cannot be empty.", nameof(content));
+            }
+
+            if (_agent is null || _agentSession is null)
+            {
+                throw new InvalidOperationException("Agent session is not initialized.");
+            }
+
+            _identity.AgentId = _agentSession.StateBag.GetValue<string>("AgentId") ?? string.Empty;
+
+
+            //Add user message to ChatHistory
+            AIHistory.Add(new ChatMessage(ChatRole.User, content));
+
+
+            AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
+
+            UsageDetails? deets = response.Usage;
+            if (deets is not null)
+            {
+                _logger.LogUsages(deets.InputTokenCount, deets.CachedInputTokenCount, deets.OutputTokenCount, deets.ReasoningTokenCount, deets.AdditionalCounts, deets.TotalTokenCount);
+            }
+
+
+
+
+            //TODO: Need to test that context additions are being removed before getting here.
+            var assistantText = response.Text?.Trim() ?? string.Empty;
+
+            ChatMessage msg = new ChatMessage(ChatRole.Assistant, assistantText);
+            AIHistory.Add(msg);
+
+            PublishTokenEvents();
+            return msg;
         }
-
-        //Add user message to ChatHistory
-        AIHistory.Add(new ChatMessage(ChatRole.User, content));
-
-
-        AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
-
-        UsageDetails deets = response.Usage;
-        _logger.LogUsages(deets.InputTokenCount, deets.CachedInputTokenCount, deets.OutputTokenCount, deets.ReasoningTokenCount, deets.AdditionalCounts, deets.TotalTokenCount);
-
-
-
-
-        //TODO: Need to test that context additions are being removed before getting here.
-        var assistantText = response.Text.Trim();
-
-        ChatMessage msg = new ChatMessage(ChatRole.Assistant, assistantText);
-        AIHistory.Add(msg);
-
-        return msg;
+        finally
+        {
+            BusyStateChanged?.Invoke(this, false);
+        }
     }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public event EventHandler<int>? SessionTokenChange;
+
+    /// <inheritdoc />
+    public event EventHandler<int>? SystemTokenChange;
+
+    /// <inheritdoc />
+    public event EventHandler<int>? RagTokenChange;
+
+    /// <inheritdoc />
+    public event EventHandler<int>? ToolTokenChange;
+
+    /// <inheritdoc />
+    public event EventHandler<int>? MaximumContextWarning;
+
+    /// <inheritdoc />
+    public event EventHandler? SessionBugetExceeded;
+
+    /// <inheritdoc />
+    public event EventHandler? TokenBudgetExceeded;
+
+    /// <inheritdoc />
+    public event EventHandler<bool>? BusyStateChanged;
 
 
 
@@ -214,12 +270,15 @@ public sealed class ChatConversationService : IChatConversationService
         // A different agent could be created with different instructions and tools if desired.
         // AgentId must be unique for each agent created, it is used in history persistence to associate messages with the agent that generated them.
         // This allows for long term behavior analysis on the performance of agent presets and tools.
-        _agent = _agentFactory.GetCodingAssistantAgent("Agentic-Max", AIModels.GPTOSS, "Agentic-Max Description");
+        _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GPTOSS, "Agentic-Max Description");
 
         _agentSession = await _agent.CreateSessionAsync();
         _agentSession.StateBag.SetValue("ApplicationId", ApplicationId);
         _agentSession.StateBag.SetValue("UserId", UserId);
-        _agentSession.StateBag.SetValue("SessionId", Guid.NewGuid().ToString());
+        _agentSession.StateBag.SetValue("AgentId", DefaultAgentId);
+        SessionId = Guid.NewGuid().ToString();
+        _agentSession.StateBag.SetValue("SessionId", SessionId);
+        _agentSession.StateBag.SetValue("ConversationId", SessionId);
 
 
 
@@ -230,17 +289,25 @@ public sealed class ChatConversationService : IChatConversationService
 
     }
 
+    private void PublishTokenEvents()
+    {
+        int sessionTokens = ContextTokenCount;
 
+        SessionTokenChange?.Invoke(this, sessionTokens);
+        SystemTokenChange?.Invoke(this, 0);
+        RagTokenChange?.Invoke(this, 0);
+        ToolTokenChange?.Invoke(this, 0);
 
+        if (sessionTokens >= ConversationTokenBudget.SessionBudget)
+        {
+            SessionBugetExceeded?.Invoke(this, EventArgs.Empty);
+            TokenBudgetExceeded?.Invoke(this, EventArgs.Empty);
+            return;
+        }
 
-
-
-
-
-    //Thrown when the session token budget is near exhausted, allowing for immediate window trimming.
-    //This is intended to be a proactive measure to prevent hitting hard limits on the model and allow
-    // for some trimming on the backend before throwning. Ideal scenario is if a tool or context injector
-    //suddenly bloats the session history.
-    public static event EventHandler? SessionBugetExceeded;
-    public static event EventHandler? TokenBudgetExceeded;
+        if (sessionTokens >= ConversationTokenBudget.MaximumContext)
+        {
+            MaximumContextWarning?.Invoke(this, sessionTokens);
+        }
+    }
 }

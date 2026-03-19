@@ -8,7 +8,6 @@
 
 
 using DataIngestionLib.DocIngestion;
-using DataIngestionLib.Services;
 using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Extensions.AI;
@@ -17,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 
 
-namespace DataIngestionLib.Logging;
+namespace DataIngestionLib.Services;
 
 
 
