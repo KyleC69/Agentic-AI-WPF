@@ -1,17 +1,15 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         RegistryReaderTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 051930
+// Build Num: 044303
 
 
 
 using DataIngestionLib.Services;
 
 using Microsoft.Extensions.Logging;
-
-using LoggingMessages = DataIngestionLib.Services.LoggingMessages;
 
 
 
@@ -59,14 +57,14 @@ public class RegistryReaderTool
         if (string.IsNullOrWhiteSpace(keyPath))
         {
             const string message = "Registry key path cannot be null or empty.";
-            LoggingMessages.LogRegistryKeyPathCannotBeNullOrEmpty(_logger);
+            _logger.LogRegistryKeyPathCannotBeNullOrEmpty();
             return ToolResult<string>.Fail(message);
         }
 
         if (!OperatingSystem.IsWindows())
         {
             const string message = "Registry access is only supported on Windows.";
-            LoggingMessages.LogRegistryAccessIsOnlySupportedOnWindows(_logger);
+            _logger.LogRegistryAccessIsOnlySupportedOnWindows();
             return ToolResult<string>.Fail(message);
         }
 
@@ -76,7 +74,7 @@ public class RegistryReaderTool
             if (separatorIndex <= 0)
             {
                 const string message = "Invalid registry key path format.";
-                LoggingMessages.LogMessagePathKeypath(_logger, message, keyPath);
+                _logger.LogMessagePathKeypath(message, keyPath);
                 return ToolResult<string>.Fail(message);
             }
 
@@ -85,7 +83,7 @@ public class RegistryReaderTool
             if (string.IsNullOrWhiteSpace(keyAndValuePath))
             {
                 const string message = "Registry subkey path cannot be empty.";
-                LoggingMessages.LogMessagePathKeypath(_logger, message, keyPath);
+                _logger.LogMessagePathKeypath(message, keyPath);
                 return ToolResult<string>.Fail(message);
             }
 
@@ -106,7 +104,7 @@ public class RegistryReaderTool
             if (string.IsNullOrWhiteSpace(subKeyPath))
             {
                 const string message = "Registry subkey path cannot be empty.";
-                LoggingMessages.LogMessagePathKeypath(_logger, message, keyPath);
+                _logger.LogMessagePathKeypath(message, keyPath);
                 return ToolResult<string>.Fail(message);
             }
 
@@ -142,12 +140,12 @@ public class RegistryReaderTool
         }
         catch (System.Security.SecurityException ex)
         {
-            LoggingMessages.LogSecurityExceptionReadingRegistryKeyKeypath(_logger, ex.Message, keyPath);
+            _logger.LogSecurityExceptionReadingRegistryKeyKeypath(ex.Message, keyPath);
             return ToolResult<string>.Fail("Security exception while reading the registry key.");
         }
         catch (UnauthorizedAccessException ex)
         {
-            LoggingMessages.LogUnauthorizedAccessExceptionReadingRegistryKeyKeypath(_logger, ex.Message, keyPath);
+            _logger.LogUnauthorizedAccessExceptionReadingRegistryKeyKeypath(ex.Message, keyPath);
             return ToolResult<string>.Fail("Unauthorized access while reading the registry key.");
         }
     }

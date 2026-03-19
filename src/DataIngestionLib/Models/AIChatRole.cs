@@ -1,10 +1,10 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIChatRole.cs
 // Author: Kyle L. Crowder
-// Build Num: 090951
-// Extended chat role struct to allow for additional roles beyond the standard system/user/assistant, such as tool and injected context roles for RAG and other knowledge integration
+// Build Num: 044241
+
 
 
 using System.ComponentModel;
@@ -44,9 +44,6 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
     /// <summary>Gets the role that provides additional information and references in response to tool use requests.</summary>
     public static AIChatRole Tool { get; } = new("tool");
-
-
-
 
     /// <summary>
     ///     Injected context from chat history or other knowledge source. This is a special role that can be used to
@@ -309,10 +306,6 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class Converter : JsonConverter<AIChatRole>
 {
-
-
-
-
 
     /// <inheritdoc />
     public override AIChatRole ReadJson(JsonReader reader, Type objectType, AIChatRole existingValue, bool hasExistingValue, JsonSerializer serializer)

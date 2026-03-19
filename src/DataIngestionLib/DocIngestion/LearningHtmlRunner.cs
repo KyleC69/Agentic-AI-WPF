@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         LearningHtmlRunner.cs
 // Author: Kyle L. Crowder
-// Build Num: 051923
+// Build Num: 044238
 
 
 
@@ -23,8 +23,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 using OllamaSharp;
-
-using LoggingMessages = DataIngestionLib.Services.LoggingMessages;
 
 
 
@@ -134,7 +132,7 @@ public sealed class LearningHtmlRunner
 
             SaveSqlRemoteKnowledgeSource(rag);
             // For now, just log the gathered metadata.
-            LoggingMessages.LogPageMetatitleTitleDescriptionDescriptionDocumentidDocumentid(_logger, rag.Title, rag.Description, rag.DocumentId, rag.UpdatedAt, rag.MSDate, rag.OgUrl, rag.Summary);
+            _logger.LogPageMetatitleTitleDescriptionDescriptionDocumentidDocumentid(rag.Title, rag.Description, rag.DocumentId, rag.UpdatedAt, rag.MSDate, rag.OgUrl, rag.Summary);
 
         }
 
@@ -201,7 +199,7 @@ public sealed class LearningHtmlRunner
         }
         catch (Exception ex)
         {
-            LoggingMessages.LogFailedToExtractKeywordsForRemoteKnowledgeSource(_logger, ex.Message);
+            _logger.LogFailedToExtractKeywordsForRemoteKnowledgeSource(ex.Message);
             return null; // Return null on failure
         }
     }
@@ -455,7 +453,7 @@ public sealed class LearningHtmlRunner
         }
         catch (Exception ex)
         {
-            LoggingMessages.LogFailedToSummarizeContentForRemoteKnowledgeSource(_logger, ex.Message);
+            _logger.LogFailedToSummarizeContentForRemoteKnowledgeSource(ex.Message);
         }
 
         return null;

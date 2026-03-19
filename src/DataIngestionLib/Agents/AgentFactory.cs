@@ -1,15 +1,14 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 051918
+// Build Num: 044228
 
 
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Providers;
-using DataIngestionLib.Providers.ChatHistory;
 using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Agents.AI;
@@ -69,7 +68,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
         _factory = factory;
         _contextInjector = contextInjector;
-          _chatHistoryProvider = chatHistoryProvider;
+        _chatHistoryProvider = chatHistoryProvider;
         _appSettings = appSettings;
     }
 

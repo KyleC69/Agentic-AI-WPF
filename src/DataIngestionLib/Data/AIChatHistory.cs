@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
-// File:         AIHistory.cs
+// File:         AIChatHistory.cs
 // Author: Kyle L. Crowder
-// Build Num: 051922
+// Build Num: 044232
 
 
 
@@ -20,9 +20,9 @@ namespace DataIngestionLib.History.Data;
 
 
 
-public partial class AIHistory : DbContext
+public partial class AIChatHistory : DbContext
 {
-    public AIHistory()
+    public AIChatHistory()
     {
     }
 
@@ -33,7 +33,7 @@ public partial class AIHistory : DbContext
 
 
 
-    public AIHistory(DbContextOptions<AIHistory> options)
+    public AIChatHistory(DbContextOptions<AIChatHistory> options)
             : base(options)
     {
     }
@@ -46,7 +46,7 @@ public partial class AIHistory : DbContext
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Data Source=desktop-nc01091;Initial Catalog=AIChatHistory;Integrated Security=True;Trust Server Certificate=True;Command Timeout=300");
+        => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CHAT_HISTORY"));
 
 
 

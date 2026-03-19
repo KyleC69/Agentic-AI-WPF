@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AssemblyInfo.cs
 // Author: Kyle L. Crowder
-// Build Num: 051933
+// Build Num: 044306
 
 
 

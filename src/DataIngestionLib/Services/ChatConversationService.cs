@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/17
+﻿// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 015951
+// Build Num: 044255
 
 
 
@@ -31,15 +31,15 @@ namespace DataIngestionLib.Services;
 /// </summary>
 public sealed class ChatConversationService : IChatConversationService
 {
-    private const string DefaultAgentId = "Agentic-Max";
-
 
     private readonly IAgentFactory _agentFactory;
     private readonly IAppSettings _appSettings;
+    private readonly HistoryIdentity _identity;
     private readonly ILogger<ChatConversationService> _logger;
     private AIAgent? _agent;
     private AgentSession? _agentSession;
-    private readonly HistoryIdentity _identity;
+    private const string DefaultAgentId = "Agentic-Max";
+
 
 
 
@@ -116,6 +116,18 @@ public sealed class ChatConversationService : IChatConversationService
         get { return CalculateContextTokenCount(); }
     }
 
+    /// <inheritdoc />
+    public int SessionTokenCount { get; }
+
+    /// <inheritdoc />
+    public int ToolTokenCount { get; }
+
+    /// <inheritdoc />
+    public int RagTokenCount { get; }
+
+    /// <inheritdoc />
+    public int SystemTokenCount { get; }
+
 
 
 
@@ -170,7 +182,7 @@ public sealed class ChatConversationService : IChatConversationService
             ChatMessage msg = new ChatMessage(ChatRole.Assistant, assistantText);
             AIHistory.Add(msg);
 
-            PublishTokenEvents();
+
             return msg;
         }
         finally
@@ -185,27 +197,6 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-    /// <inheritdoc />
-    public event EventHandler<int>? SessionTokenChange;
-
-    /// <inheritdoc />
-    public event EventHandler<int>? SystemTokenChange;
-
-    /// <inheritdoc />
-    public event EventHandler<int>? RagTokenChange;
-
-    /// <inheritdoc />
-    public event EventHandler<int>? ToolTokenChange;
-
-    /// <inheritdoc />
-    public event EventHandler<int>? MaximumContextWarning;
-
-    /// <inheritdoc />
-    public event EventHandler? SessionBugetExceeded;
-
-    /// <inheritdoc />
-    public event EventHandler? TokenBudgetExceeded;
 
     /// <inheritdoc />
     public event EventHandler<bool>? BusyStateChanged;
@@ -289,14 +280,27 @@ public sealed class ChatConversationService : IChatConversationService
 
     }
 
-    private void PublishTokenEvents()
-    {
-        int sessionTokens = ContextTokenCount;
 
-        SessionTokenChange?.Invoke(this, sessionTokens);
-        SystemTokenChange?.Invoke(this, 0);
-        RagTokenChange?.Invoke(this, 0);
-        ToolTokenChange?.Invoke(this, 0);
+
+
+
+
+
+
+    /// <inheritdoc />
+    public event EventHandler<int>? MaximumContextWarning;
+
+
+
+
+
+
+
+
+    private void PublishTokenCounts()
+    {
+        var sessionTokens = ContextTokenCount;
+
 
         if (sessionTokens >= ConversationTokenBudget.SessionBudget)
         {
@@ -310,4 +314,17 @@ public sealed class ChatConversationService : IChatConversationService
             MaximumContextWarning?.Invoke(this, sessionTokens);
         }
     }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public event EventHandler? SessionBugetExceeded;
+
+    /// <inheritdoc />
+    public event EventHandler? TokenBudgetExceeded;
 }

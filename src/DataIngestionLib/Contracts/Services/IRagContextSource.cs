@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IRagContextSource.cs
 // Author: Kyle L. Crowder
-// Build Num: 051919
+// Build Num: 044230
 
 
 
