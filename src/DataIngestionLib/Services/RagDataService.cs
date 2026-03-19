@@ -78,11 +78,9 @@ public class RagDataService(ILogger<RagDataService> logger)
 
         try
         {
-
-            RAGContext context = new();
+            using RAGContext context = new();
             context.RemoteRags.Load();
             rags = context.RemoteRags.Local.ToObservableCollection();
-
         }
         catch (Exception ex)
         {

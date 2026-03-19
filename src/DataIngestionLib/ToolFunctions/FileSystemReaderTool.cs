@@ -22,11 +22,23 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 [OllamaTool]
-[Description("Reads files from the file system. The input is a path to a file, and the output is the contents of the file.")]
+[Description("Reads files from the file system. Paths are resolved relative to the configured sandbox root.")]
 public sealed class FileSystemReaderTool
 {
+    private readonly string _sandboxRoot;
 
-    public static ToolResult<string> ReadFile(string relativePath)
+    public FileSystemReaderTool(string sandboxRoot)
+    {
+        if (string.IsNullOrWhiteSpace(sandboxRoot))
+        {
+            throw new ArgumentException("Sandbox root cannot be empty.", nameof(sandboxRoot));
+        }
+
+        _sandboxRoot = Path.GetFullPath(sandboxRoot);
+    }
+
+    [Description("Read a file's text content. The path is relative to the sandbox root.")]
+    public ToolResult<string> ReadFile(string relativePath)
     {
         try
         {
@@ -35,9 +47,11 @@ public sealed class FileSystemReaderTool
                 return ToolResult<string>.Fail("Path cannot be empty.");
             }
 
-            var fullPath = Path.GetFullPath(relativePath);
-
-
+            var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
+            if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                return ToolResult<string>.Fail("Access denied: path is outside the sandbox.");
+            }
 
             if (!File.Exists(fullPath))
             {

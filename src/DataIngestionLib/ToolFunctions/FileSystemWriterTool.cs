@@ -22,8 +22,21 @@ namespace DataIngestionLib.ToolFunctions;
 public sealed class FileSystemWriterTool
 {
 
-    [Description("Write text content to a file at the specified path. Creates the file if it does not exist, or overwrites it if it does.")]
-    public static ToolResult<string> WriteText([Description("File path")] string path, [Description("Text content to write")] string content)
+    private readonly string _sandboxRoot;
+
+    public FileSystemWriterTool(string sandboxRoot)
+    {
+        if (string.IsNullOrWhiteSpace(sandboxRoot))
+        {
+            throw new ArgumentException("Sandbox root cannot be empty.", nameof(sandboxRoot));
+        }
+
+        _sandboxRoot = Path.GetFullPath(sandboxRoot);
+    }
+
+    [Description("Write text content to a file. Path is relative to the sandbox root. Creates or overwrites the file.")]
+    public ToolResult<string> WriteText([Description("File path relative to sandbox root")] string path,
+        [Description("Text content to write")] string content)
     {
 
 
@@ -34,8 +47,14 @@ public sealed class FileSystemWriterTool
 
         try
         {
-            File.WriteAllText(path, content);
-            return ToolResult<string>.Ok($"Wrote file {path}");
+            var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, path));
+            if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                return ToolResult<string>.Fail("Access denied: path is outside the sandbox.");
+            }
+
+            File.WriteAllText(fullPath, content);
+            return ToolResult<string>.Ok($"Wrote {fullPath}");
         }
         catch (UnauthorizedAccessException ex)
         {

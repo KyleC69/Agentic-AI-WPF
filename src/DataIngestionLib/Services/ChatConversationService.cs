@@ -31,14 +31,21 @@ namespace DataIngestionLib.Services;
 /// </summary>
 public sealed class ChatConversationService : IChatConversationService
 {
+    private const string DefaultAgentId = "Agentic-Max";
+
 
     private readonly IAgentFactory _agentFactory;
     private readonly IAppSettings _appSettings;
     private readonly HistoryIdentity _identity;
+    private readonly SemaphoreSlim _initializeGate = new(1, 1);
     private readonly ILogger<ChatConversationService> _logger;
     private AIAgent? _agent;
     private AgentSession? _agentSession;
-    private const string DefaultAgentId = "Agentic-Max";
+    private int _contextTokenCount;
+    private int _ragTokenCount;
+    private int _sessionTokenCount;
+    private int _systemTokenCount;
+    private int _toolTokenCount;
 
 
 
@@ -113,20 +120,32 @@ public sealed class ChatConversationService : IChatConversationService
     /// </summary>
     public int ContextTokenCount
     {
-        get { return CalculateContextTokenCount(); }
+        get { return _contextTokenCount; }
     }
 
     /// <inheritdoc />
-    public int SessionTokenCount { get; }
+    public int SessionTokenCount
+    {
+        get { return _sessionTokenCount; }
+    }
 
     /// <inheritdoc />
-    public int ToolTokenCount { get; }
+    public int ToolTokenCount
+    {
+        get { return _toolTokenCount; }
+    }
 
     /// <inheritdoc />
-    public int RagTokenCount { get; }
+    public int RagTokenCount
+    {
+        get { return _ragTokenCount; }
+    }
 
     /// <inheritdoc />
-    public int SystemTokenCount { get; }
+    public int SystemTokenCount
+    {
+        get { return _systemTokenCount; }
+    }
 
 
 
@@ -146,6 +165,7 @@ public sealed class ChatConversationService : IChatConversationService
     {
         await InitializeAsync();
         BusyStateChanged?.Invoke(this, true);
+        UsageDetails? usageDetails = null;
         try
         {
             if (string.IsNullOrWhiteSpace(content))
@@ -167,10 +187,10 @@ public sealed class ChatConversationService : IChatConversationService
 
             AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
 
-            UsageDetails? deets = response.Usage;
-            if (deets is not null)
+            usageDetails = response.Usage;
+            if (usageDetails is not null)
             {
-                _logger.LogUsages(deets.InputTokenCount, deets.CachedInputTokenCount, deets.OutputTokenCount, deets.ReasoningTokenCount, deets.AdditionalCounts, deets.TotalTokenCount);
+                _logger.LogUsages(usageDetails.InputTokenCount, usageDetails.CachedInputTokenCount, usageDetails.OutputTokenCount, usageDetails.ReasoningTokenCount, usageDetails.AdditionalCounts, usageDetails.TotalTokenCount);
             }
 
 
@@ -187,6 +207,8 @@ public sealed class ChatConversationService : IChatConversationService
         }
         finally
         {
+            UpdateTokenCounts(usageDetails);
+            PublishTokenCounts();
             BusyStateChanged?.Invoke(this, false);
         }
     }
@@ -208,26 +230,47 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private int CalculateContextTokenCount()
+    private TokenBuckets CalculateContextTokenBuckets()
     {
-        //TODO: this needs to be adapted to include all budgets
-
-
-        var tokenCount = 0;
+        var sessionTokens = 0;
+        var ragTokens = 0;
+        var toolTokens = 0;
+        var systemTokens = 0;
+        var totalTokens = 0;
 
         for (var index = AIHistory.Count - 1; index >= 0; index--)
         {
             var content = AIHistory[index].Text;
             var messageTokenCount = EstimateTokenCount(content);
-            if (tokenCount + messageTokenCount > ConversationTokenBudget.SessionBudget)
+            if (totalTokens + messageTokenCount > ConversationTokenBudget.SessionBudget)
             {
                 break;
             }
 
-            tokenCount += messageTokenCount;
+            var role = AIHistory[index].Role.Value;
+            if (string.Equals(role, AIChatRole.System.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                systemTokens += messageTokenCount;
+            }
+            else if (string.Equals(role, AIChatRole.Tool.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                toolTokens += messageTokenCount;
+            }
+            else if (string.Equals(role, AIChatRole.RAGContext.Value, StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(role, AIChatRole.AIContext.Value, StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(role, "rag", StringComparison.OrdinalIgnoreCase))
+            {
+                ragTokens += messageTokenCount;
+            }
+            else
+            {
+                sessionTokens += messageTokenCount;
+            }
+
+            totalTokens += messageTokenCount;
         }
 
-        return tokenCount;
+        return new TokenBuckets(totalTokens, sessionTokens, ragTokens, toolTokens, systemTokens);
     }
 
 
@@ -247,6 +290,100 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
+    private void UpdateTokenCounts(UsageDetails? usageDetails)
+    {
+        TokenBuckets buckets = CalculateContextTokenBuckets();
+
+        _contextTokenCount = buckets.Total;
+        _sessionTokenCount = buckets.Session;
+        _ragTokenCount = buckets.Rag;
+        _toolTokenCount = buckets.Tool;
+        _systemTokenCount = buckets.System;
+
+        if (usageDetails?.AdditionalCounts is null)
+        {
+            return;
+        }
+
+        long ragUsageTokens = GetAdditionalCount(
+                usageDetails,
+                "rag",
+                "rag_tokens",
+                "rag_token_count",
+                "rag_context",
+                "retrieval",
+                "retrieval_tokens",
+                "context",
+                "context_tokens");
+        long toolUsageTokens = GetAdditionalCount(
+                usageDetails,
+                "tool",
+                "tool_tokens",
+                "tool_token_count",
+                "function",
+                "function_tokens");
+        long systemUsageTokens = GetAdditionalCount(
+                usageDetails,
+                "system",
+                "system_tokens",
+                "system_token_count",
+                "instruction",
+                "instruction_tokens");
+
+        _ragTokenCount = ClampToInt(ragUsageTokens, _ragTokenCount);
+        _toolTokenCount = ClampToInt(toolUsageTokens, _toolTokenCount);
+        _systemTokenCount = ClampToInt(systemUsageTokens, _systemTokenCount);
+
+        int reserved = _ragTokenCount + _toolTokenCount + _systemTokenCount;
+        _sessionTokenCount = Math.Max(0, _contextTokenCount - reserved);
+    }
+
+
+
+
+
+
+    private static int ClampToInt(long value, int fallback)
+    {
+        if (value <= 0)
+        {
+            return fallback;
+        }
+
+        return value >= int.MaxValue ? int.MaxValue : (int)value;
+    }
+
+
+
+
+
+
+    private static long GetAdditionalCount(UsageDetails usageDetails, params string[] keys)
+    {
+        if (usageDetails.AdditionalCounts is null || usageDetails.AdditionalCounts.Count == 0)
+        {
+            return 0;
+        }
+
+        foreach (string key in keys)
+        {
+            foreach ((string countKey, long countValue) in usageDetails.AdditionalCounts)
+            {
+                if (string.Equals(countKey, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return countValue;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+
+
+
+
+
 
 
     private async Task InitializeAsync()
@@ -255,6 +392,14 @@ public sealed class ChatConversationService : IChatConversationService
         {
             return;
         }
+
+        await _initializeGate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            if (Initialized)
+            {
+                return;
+            }
 
 
         // Create the system default agent with the specified Model.
@@ -278,6 +423,12 @@ public sealed class ChatConversationService : IChatConversationService
 
         Initialized = true;
 
+        }
+        finally
+        {
+            _initializeGate.Release();
+        }
+
     }
 
 
@@ -299,7 +450,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     private void PublishTokenCounts()
     {
-        var sessionTokens = ContextTokenCount;
+        int sessionTokens = ContextTokenCount;
 
 
         if (sessionTokens >= ConversationTokenBudget.SessionBudget)
@@ -327,4 +478,11 @@ public sealed class ChatConversationService : IChatConversationService
 
     /// <inheritdoc />
     public event EventHandler? TokenBudgetExceeded;
+
+
+
+
+
+
+    private readonly record struct TokenBuckets(int Total, int Session, int Rag, int Tool, int System);
 }

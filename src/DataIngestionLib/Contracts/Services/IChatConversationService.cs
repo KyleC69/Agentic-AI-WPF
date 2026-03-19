@@ -43,6 +43,6 @@ public interface IChatConversationService
     //Tokens used for tool calls, including prompt and response tokens affecting overall context size.
     int ToolTokenCount { get; }
 
-
+    event EventHandler<bool> BusyStateChanged;
     ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
 }

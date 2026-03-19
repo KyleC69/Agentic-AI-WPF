@@ -51,19 +51,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
-        
-        
-        
-     
-        
+
+        _chatConversationService.BusyStateChanged += OnBusyStateChange;
+
+
+
     }
 
-    
-    
-    
-    
-    
-   
 
 
 
@@ -71,12 +65,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
 
-    
-
-
-
-
-
+    private void OnBusyStateChange(object sender, bool e)
+    {
+        IsBusy = e;
+    }
 
 
 
@@ -85,9 +77,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
 
-public IRelayCommand CancelMessageCommand { get; }
+    public IRelayCommand CancelMessageCommand { get; }
 
-    public bool IsGenerating
+    public bool IsBusy
     {
         get;
         set
@@ -138,7 +130,7 @@ public IRelayCommand CancelMessageCommand { get; }
 
     private bool CanCancelMessage()
     {
-        return IsGenerating;
+        return IsBusy;
     }
 
 
@@ -162,7 +154,7 @@ public IRelayCommand CancelMessageCommand { get; }
 
     private bool CanSendMessage()
     {
-        return !IsGenerating && !string.IsNullOrWhiteSpace(MessageInput);
+        return !IsBusy && !string.IsNullOrWhiteSpace(MessageInput);
     }
 
 
@@ -204,8 +196,7 @@ public IRelayCommand CancelMessageCommand { get; }
         //Clear UI input
         MessageInput = string.Empty;
 
-        //Set UI state to busy TODO: add bool IsBusy prop
-        IsGenerating = true;
+  
 
         try
         {
@@ -218,10 +209,13 @@ public IRelayCommand CancelMessageCommand { get; }
         }
         finally
         {
-            IsGenerating = false;
             _responseCancellationTokenSource?.Dispose();
             _responseCancellationTokenSource = null;
             TotalTokenCount = _chatConversationService.ContextTokenCount;
+            SessionTokenCount= _chatConversationService.SessionTokenCount;
+            RagTokenCount = _chatConversationService.RagTokenCount;
+            ToolTokenCount = _chatConversationService.ToolTokenCount;
+            SystemTokenCount = _chatConversationService.SystemTokenCount;
         }
 
 

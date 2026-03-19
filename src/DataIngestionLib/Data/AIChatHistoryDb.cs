@@ -14,15 +14,15 @@ using Microsoft.EntityFrameworkCore;
 
 
 
-namespace DataIngestionLib.History.Data;
+namespace DataIngestionLib.Data;
 
 
 
 
 
-public partial class AIChatHistory : DbContext
+public class AIChatHistoryDb : DbContext
 {
-    public AIChatHistory()
+    public AIChatHistoryDb()
     {
     }
 
@@ -33,7 +33,7 @@ public partial class AIChatHistory : DbContext
 
 
 
-    public AIChatHistory(DbContextOptions<AIChatHistory> options)
+    public AIChatHistoryDb(DbContextOptions<AIChatHistoryDb> options)
             : base(options)
     {
     }
@@ -92,7 +92,7 @@ public partial class AIChatHistory : DbContext
             entity.Property(e => e.MessageId).HasColumnName("MessageID");
         });
 
-        OnModelCreatingPartial(modelBuilder);
+        
     }
 
 
@@ -107,5 +107,9 @@ public partial class AIChatHistory : DbContext
     public virtual DbSet<ChatHistoryTextChunk> ChatHistoryTextChunks { get; set; }
 
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+
+
+
+
 }

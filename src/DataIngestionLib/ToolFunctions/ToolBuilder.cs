@@ -38,8 +38,8 @@ internal sealed class ToolBuilder
         [
 
                 AIFunctionFactory.Create(logger.LogMessage),
-                AIFunctionFactory.Create(FileSystemWriterTool.WriteText),
-                AIFunctionFactory.Create(FileSystemReaderTool.ReadFile),
+                AIFunctionFactory.Create(new FileSystemWriterTool(Environment.CurrentDirectory).WriteText),
+                AIFunctionFactory.Create(new FileSystemReaderTool(Environment.CurrentDirectory).ReadFile),
                 //AIFunctionFactory.Create(FullTextRagSearchTool.Search),
                 AIFunctionFactory.Create(webSearchPlugin.WebSearch),
                 AIFunctionFactory.Create(SystemInfoTool.GetInfo),

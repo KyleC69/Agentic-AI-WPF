@@ -82,23 +82,16 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     public AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null)
     {
 
-        if (agentId == null)
-        {
-            throw new ArgumentNullException(nameof(agentId));
-        }
-
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
+        ArgumentNullException.ThrowIfNull(agentId);
+        ArgumentNullException.ThrowIfNull(model);
         if (_agents.ContainsKey(agentId))
         {
             throw new InvalidOperationException($"An agent with the ID '{agentId}' already exists.");
         }
 
         _agents.Add(agentId, model);
-        _innerClient = new OllamaApiClient(_appSettings.OllamaHost + ":" + _appSettings.OllamaPort, model);
+        var ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
+        _innerClient = new OllamaApiClient(ollamaUri, model);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions

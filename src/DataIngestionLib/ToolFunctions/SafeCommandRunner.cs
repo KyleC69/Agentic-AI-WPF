@@ -22,7 +22,8 @@ public sealed class SafeCommandRunner(string sandboxRoot)
 {
     private readonly string _sandboxRoot = Path.GetFullPath(sandboxRoot);
 
-    private static readonly string[] AllowedCommands = new[] { "dir", "type", "echo" };
+    private static readonly HashSet<string> AllowedCommands =
+        new(StringComparer.OrdinalIgnoreCase) { "dir", "ls", "type", "cat", "echo" };
 
 
 

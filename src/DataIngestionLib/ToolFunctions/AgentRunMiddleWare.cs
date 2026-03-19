@@ -49,9 +49,9 @@ public sealed class AgentRunMiddleWare
 
 
 
-    internal void Run()
+    internal IChatClient Run()
     {
-        _ = new ChatClientBuilder(_baseAgent)
+        return new ChatClientBuilder(_baseAgent)
                 .UseLogging(_factory)
                 .UseFunctionInvocation()
                 .Build();

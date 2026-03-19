@@ -25,6 +25,12 @@ public sealed class WebSearchPlugin
 {
     private readonly HttpClient _httpClient;
 
+    private static readonly JsonSerializerOptions WriteOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = true
+    };
+
 
 
 
@@ -73,13 +79,7 @@ public sealed class WebSearchPlugin
             };
 
 
-            JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                    PropertyNameCaseInsensitive = true,
-                    WriteIndented = true
-            };
-
-            var jsonBody = JsonSerializer.Serialize(body, options);
+                var jsonBody = JsonSerializer.Serialize(body, WriteOptions);
             request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -111,10 +111,7 @@ public sealed class WebSearchPlugin
             }
 
             // 3. Pretty-print
-            var pretty = JsonSerializer.Serialize(doc, new JsonSerializerOptions
-            {
-                    WriteIndented = true
-            });
+                var pretty = JsonSerializer.Serialize(doc, WriteOptions);
 
             return ToolResult<string>.Ok(pretty);
 
@@ -182,13 +179,7 @@ public sealed class WebSearchPlugin
             };
 
 
-            JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                    PropertyNameCaseInsensitive = true,
-                    WriteIndented = true
-            };
-
-            var jsonBody = JsonSerializer.Serialize(body, options);
+                var jsonBody = JsonSerializer.Serialize(body, WriteOptions);
             request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
