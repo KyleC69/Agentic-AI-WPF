@@ -35,11 +35,10 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 // TODO: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
-public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService) : ObservableObject, INavigationAware
+public sealed partial class SettingsViewModel(ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService) : ObservableObject, INavigationAware
 {
     private readonly IApplicationInfoService _applicationInfoService = applicationInfoService;
 
-    private readonly LoggingLevelSwitch _loggingLevelSwitch = loggingLevelSwitch;
     private readonly ISystemService _systemService = systemService;
     private readonly IUserDataService _userDataService = userDataService;
 
@@ -83,13 +82,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
     private const string SettingsPageRagKnowledgeEnabledLabelKey = "SettingsPageRagKnowledgeEnabledLabel";
     private const string SettingsPageSaveChatHistoryButtonTextKey = "SettingsPageSaveChatHistoryButtonText";
 
-    /// <summary>
-    ///     The available <see cref="LogLevel" /> values displayed in the log-level picker.
-    ///     <see cref="LogLevel.None" /> is excluded because selecting it silences all logging,
-    ///     which makes runtime diagnostics impossible.
-    /// </summary>
-    public IReadOnlyList<LogLevel> AvailableLogLevels { get; } =
-        Enum.GetValues<LogLevel>().Where(l => l != LogLevel.None).ToList();
+
 
     public static string ChatHistoryContextEnabledLabelText
     {
@@ -198,7 +191,6 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
         ChatHistorySettingsStatus = string.Empty;
 
         MinimumLogLevel = Enum.TryParse(GetAppSetting("MinimumLogLevel", LogLevel.Trace.ToString()), true, out LogLevel level) ? level : LogLevel.Trace;
-        _loggingLevelSwitch.MinimumLevel = MinimumLogLevel;
     }
 
 
@@ -334,7 +326,6 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
     private void OnSetLogLevel()
     {
-        _loggingLevelSwitch.MinimumLevel = MinimumLogLevel;
         SetAppSetting("MinimumLogLevel", MinimumLogLevel.ToString());
     }
 

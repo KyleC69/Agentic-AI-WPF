@@ -393,12 +393,15 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             ordered = ordered.Take(take.Value);
         }
 
-        List<PersistedChatMessage> messages = await ordered
-                .OrderBy(message => message.TimestampUtc)
-                .ThenBy(message => message.CreatedAt)
-                .Select(message => ToPersisted(message))
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
+        List<ChatHistoryMessage> entities = await ordered
+            .OrderBy(message => message.TimestampUtc)
+            .ThenBy(message => message.CreatedAt)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        List<PersistedChatMessage> messages = entities
+            .Select(ToPersisted)
+            .ToList();
 
         return messages;
     }
