@@ -21,6 +21,8 @@ namespace DataIngestionLib.Contracts.Services;
 public interface IChatConversationService
 {
 
+    string ConversationId { get; }
+
     /// <summary>
     ///     Gets the active Semantic Kernel chat history for the current conversation.
     /// </summary>
@@ -44,5 +46,6 @@ public interface IChatConversationService
     int ToolTokenCount { get; }
 
     event EventHandler<bool> BusyStateChanged;
+    ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default);
     ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
 }

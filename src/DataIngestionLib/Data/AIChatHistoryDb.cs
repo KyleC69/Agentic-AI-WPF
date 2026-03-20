@@ -65,8 +65,6 @@ public class AIChatHistoryDb : DbContext
 
             entity.HasIndex(e => new { e.ConversationId, e.TimestampUtc }, "IX_ChatHistoryMessages_Conversation_Timestamp");
 
-            entity.HasIndex(e => new { e.SessionId, e.TimestampUtc }, "IX_ChatHistoryMessages_Session_Timestamp");
-
             entity.Property(e => e.MessageId).ValueGeneratedNever();
             entity.Property(e => e.AgentId).HasMaxLength(128);
             entity.Property(e => e.ApplicationId).HasMaxLength(128);
@@ -74,7 +72,6 @@ public class AIChatHistoryDb : DbContext
             entity.Property(e => e.Embedding).HasMaxLength(1024);
             entity.Property(e => e.Enabled).HasDefaultValue(false, "DF_ChatHistoryMessages_Enabled");
             entity.Property(e => e.Role).HasMaxLength(32);
-            entity.Property(e => e.SessionId).HasMaxLength(128);
             entity.Property(e => e.Summary).HasMaxLength(2000);
             entity.Property(e => e.UserId).HasMaxLength(128);
         });

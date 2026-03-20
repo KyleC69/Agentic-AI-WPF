@@ -40,8 +40,6 @@ public class ChatHistoryMessage
 
     public string Role { get; set; } = null!;
 
-    public string SessionId { get; set; } = null!;
-
     public string? Summary { get; set; }
 
     public DateTimeOffset TimestampUtc { get; set; }

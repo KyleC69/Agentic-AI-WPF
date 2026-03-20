@@ -61,7 +61,6 @@ public interface IChatHistoryMemoryProvider
     ///     conversation history.
     /// </summary>
     /// <param name="conversationId">The conversation to which the messages belong.</param>
-    /// <param name="sessionId">The session in which the interaction took place.</param>
     /// <param name="agentId">The identifier of the agent that produced the response.</param>
     /// <param name="userId">The identifier of the user who initiated the request.</param>
     /// <param name="applicationId">The identifier of the hosting application.</param>
@@ -70,7 +69,6 @@ public interface IChatHistoryMemoryProvider
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     ValueTask StoreMessagesAsync(
             string conversationId,
-            string sessionId,
             string agentId,
             string userId,
             string applicationId,

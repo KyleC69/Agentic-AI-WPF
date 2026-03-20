@@ -31,7 +31,7 @@ namespace DataIngestionLib.Providers;
 
 
 
-public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistoryProvider
+public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistoryProvider, IDisposable
 {
     private readonly IAppSettings _appSettings;
 
@@ -89,7 +89,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
             var conversationId = ChatHistorySessionState.GetOrCreateConversationId(context.Session);
-            var sessionId = ChatHistorySessionState.GetOrCreateSessionId(context.Session);
 
             var fallbackAgentId = GetSessionStateValue(context.Session, "AgentId", FallbackAgentId);
             var fallbackApplicationId = GetSessionStateValue(context.Session, "ApplicationId", _appSettings.ApplicationId);
@@ -113,7 +112,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
             await PersistInteractionAsync(
                             conversationId,
-                            sessionId,
                             agentId,
                             userId,
                             applicationId,
@@ -295,7 +293,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             }
 
             await using AIChatHistoryDb dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            await ApplyMigrationsAsync(dbContext, cancellationToken).ConfigureAwait(false);
 
             Volatile.Write(ref _isInitialized, 1);
             _logger.LogDebug("SQL chat history provider initialized successfully.");
@@ -313,8 +310,15 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-    public async ValueTask<ChatHistorySessionSnapshot?> GetLatestSessionSnapshotAsync(CancellationToken cancellationToken = default)
+    public async ValueTask<string?> GetLatestConversationIdAsync(
+            string agentId,
+            string userId,
+            string applicationId,
+            CancellationToken cancellationToken = default)
     {
+        string normalizedAgentId = NormalizeIdentity(agentId, nameof(agentId));
+        string normalizedUserId = NormalizeIdentity(userId, nameof(userId));
+        string normalizedApplicationId = NormalizeIdentity(applicationId, nameof(applicationId));
         cancellationToken.ThrowIfCancellationRequested();
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
@@ -323,16 +327,17 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         var latest = await dbContext.ChatHistoryMessages
                 .AsNoTracking()
-                .Where(message => message.SessionId != string.Empty && message.ConversationId != string.Empty)
+            .Where(message => message.AgentId == normalizedAgentId)
+            .Where(message => message.UserId == normalizedUserId)
+            .Where(message => message.ApplicationId == normalizedApplicationId)
+            .Where(message => message.ConversationId != string.Empty)
                 .OrderByDescending(message => message.TimestampUtc)
                 .ThenByDescending(message => message.CreatedAt)
-                .Select(message => new { message.ConversationId, message.SessionId })
+            .Select(message => message.ConversationId)
                 .FirstOrDefaultAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-        return latest is null
-                ? null
-                : new ChatHistorySessionSnapshot(latest.ConversationId, latest.SessionId);
+        return string.IsNullOrWhiteSpace(latest) ? null : latest;
     }
 
 
@@ -446,25 +451,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-
-    private async ValueTask ApplyMigrationsAsync(AIChatHistoryDb dbContext, CancellationToken cancellationToken)
-    {
-        foreach (var (migrationId, sqlScript) in ChatHistoryMigrations.All)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            await dbContext.Database.ExecuteSqlRawAsync(sqlScript, cancellationToken).ConfigureAwait(false);
-
-            await dbContext.Database.ExecuteSqlInterpolatedAsync($"""
-                                                                  IF OBJECT_ID(N'dbo.__ChatHistoryMigrations', N'U') IS NOT NULL
-                                                                     AND NOT EXISTS (SELECT 1 FROM dbo.__ChatHistoryMigrations WHERE [Id] = {migrationId})
-                                                                  BEGIN
-                                                                  	INSERT INTO dbo.__ChatHistoryMigrations ([Id], [AppliedOnUtc])
-                                                                  	VALUES ({migrationId}, SYSUTCDATETIME());
-                                                                  END;
-                                                                  """, cancellationToken)
-                    .ConfigureAwait(false);
-        }
-    }
 
 
 
@@ -673,7 +659,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
     private async ValueTask PersistInteractionAsync(
             string conversationId,
-            string sessionId,
             string agentId,
             string userId,
             string applicationId,
@@ -684,8 +669,8 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await using AIChatHistoryDb dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         List<ChatHistoryMessage> entities = [];
-        entities.AddRange(ToEntities(requestMessages, conversationId, sessionId, agentId, userId, applicationId));
-        entities.AddRange(ToEntities(responseMessages, conversationId, sessionId, agentId, userId, applicationId));
+        entities.AddRange(ToEntities(requestMessages, conversationId, agentId, userId, applicationId));
+        entities.AddRange(ToEntities(responseMessages, conversationId, agentId, userId, applicationId));
 
         if (entities.Count == 0)
         {
@@ -762,7 +747,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     private List<ChatHistoryMessage> ToEntities(
             IEnumerable<ChatMessage> messages,
             string conversationId,
-            string sessionId,
             string agentId,
             string userId,
             string applicationId)
@@ -787,7 +771,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             {
                     MessageId = messageId,
                     ConversationId = NormalizeIdentity(conversationId, nameof(conversationId)),
-                    SessionId = NormalizeIdentity(sessionId, nameof(sessionId)),
                     AgentId = NormalizeIdentity(agentId, nameof(agentId)),
                     UserId = NormalizeIdentity(userId, nameof(userId)),
                     ApplicationId = NormalizeIdentity(applicationId, nameof(applicationId)),
@@ -816,7 +799,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         {
                 MessageId = message.MessageId == Guid.Empty ? Guid.NewGuid() : message.MessageId,
                 ConversationId = NormalizeIdentity(message.ConversationId, nameof(message.ConversationId)),
-                SessionId = NormalizeIdentity(message.SessionId, nameof(message.SessionId)),
                 AgentId = NormalizeIdentity(message.AgentId, nameof(message.AgentId)),
                 UserId = NormalizeIdentity(message.UserId, nameof(message.UserId)),
                 ApplicationId = NormalizeIdentity(message.ApplicationId, nameof(message.ApplicationId)),
@@ -842,7 +824,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         {
                 MessageId = message.MessageId,
                 ConversationId = message.ConversationId,
-                SessionId = message.SessionId,
                 AgentId = message.AgentId,
                 UserId = message.UserId,
                 ApplicationId = message.ApplicationId,
@@ -865,5 +846,10 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         return Guid.TryParse(messageId, out Guid parsedMessageId)
                 ? parsedMessageId
                 : Guid.NewGuid();
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
     }
 }

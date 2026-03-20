@@ -31,6 +31,8 @@ namespace RAGDataIngestionWPF.ViewModels;
 public sealed class DataGridViewModel : ObservableObject, INavigationAware
 {
     private AsyncRelayCommand _startIngestionCommand;
+    private readonly ILogger<DataGridViewModel> _logger;
+    private readonly LearningHtmlRunner _runner;
 
 
 
@@ -52,8 +54,8 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
     public DataGridViewModel(ILogger<DataGridViewModel> logger, LearningHtmlRunner runner)
     {
-        _ = logger;
-        _ = runner;
+        _logger = logger;
+        _runner = runner;
     }
 
 
@@ -101,8 +103,14 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    private Task StartIngestion()
+    private async Task StartIngestion()
     {
-        return Task.CompletedTask;
+
+        await _runner.IngestRemoteKnowledgeSource();
+        
+        
+        
+        
+        
     }
 }

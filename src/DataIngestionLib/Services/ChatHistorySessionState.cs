@@ -24,11 +24,9 @@ internal static class ChatHistorySessionState
     private const string AgentIdStateKey = "ChatHistoryAgentId";
     private const string ApplicationIdStateKey = "ChatHistoryApplicationId";
     private const string ConversationIdStateKey = "ChatHistoryConversationId";
-    private const string SessionIdStateKey = "ChatHistorySessionId";
     private const string UserIdStateKey = "ChatHistoryUserId";
 
     private static string? _startupConversationId;
-    private static string? _startupSessionId;
     private static readonly Lock SyncRoot = new();
 
 
@@ -38,15 +36,9 @@ internal static class ChatHistorySessionState
 
 
 
-    private static void ApplyStartupSessionIfAvailable(AgentSession? session)
+    private static void ApplyStartupConversationIfAvailable(AgentSession? session)
     {
         if (session is null)
-        {
-            return;
-        }
-
-        if (session.StateBag.TryGetValue(SessionIdStateKey, out string? existingSessionId)
-            && !string.IsNullOrWhiteSpace(existingSessionId))
         {
             return;
         }
@@ -57,14 +49,13 @@ internal static class ChatHistorySessionState
             return;
         }
 
-        var startupSession = TryTakeStartupSession();
-        if (startupSession is null)
+        var startupConversationId = TryTakeStartupConversationId();
+        if (string.IsNullOrWhiteSpace(startupConversationId))
         {
             return;
         }
 
-        session.StateBag.SetValue(SessionIdStateKey, startupSession.Value.SessionId);
-        session.StateBag.SetValue(ConversationIdStateKey, startupSession.Value.ConversationId);
+        session.StateBag.SetValue(ConversationIdStateKey, startupConversationId);
     }
 
 
@@ -100,22 +91,11 @@ internal static class ChatHistorySessionState
 
     public static string GetOrCreateConversationId(AgentSession? session)
     {
-        ApplyStartupSessionIfAvailable(session);
+        ApplyStartupConversationIfAvailable(session);
         return GetOrCreateValue(session, ConversationIdStateKey, static () => Guid.NewGuid().ToString("N"));
     }
 
 
-
-
-
-
-
-
-    public static string GetOrCreateSessionId(AgentSession? session)
-    {
-        ApplyStartupSessionIfAvailable(session);
-        return GetOrCreateValue(session, SessionIdStateKey, static () => Guid.NewGuid().ToString("N"));
-    }
 
 
 
@@ -178,16 +158,15 @@ internal static class ChatHistorySessionState
 
 
 
-    public static void SetStartupSession(string sessionId, string conversationId)
+    public static void SetStartupConversation(string conversationId)
     {
-        if (string.IsNullOrWhiteSpace(sessionId) || string.IsNullOrWhiteSpace(conversationId))
+        if (string.IsNullOrWhiteSpace(conversationId))
         {
             return;
         }
 
         lock (SyncRoot)
         {
-            _startupSessionId = sessionId.Trim();
             _startupConversationId = conversationId.Trim();
         }
     }
@@ -199,19 +178,18 @@ internal static class ChatHistorySessionState
 
 
 
-    private static (string SessionId, string ConversationId)? TryTakeStartupSession()
+    private static string? TryTakeStartupConversationId()
     {
         lock (SyncRoot)
         {
-            if (string.IsNullOrWhiteSpace(_startupSessionId) || string.IsNullOrWhiteSpace(_startupConversationId))
+            if (string.IsNullOrWhiteSpace(_startupConversationId))
             {
                 return null;
             }
 
-            (string SessionId, string ConversationId) startupSession = (_startupSessionId, _startupConversationId);
-            _startupSessionId = null;
+            string startupConversationId = _startupConversationId;
             _startupConversationId = null;
-            return startupSession;
+            return startupConversationId;
         }
     }
 }

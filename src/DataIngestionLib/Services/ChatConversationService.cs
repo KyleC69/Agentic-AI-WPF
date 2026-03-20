@@ -39,6 +39,7 @@ public sealed class ChatConversationService : IChatConversationService
     private readonly HistoryIdentity _identity;
     private readonly SemaphoreSlim _initializeGate = new(1, 1);
     private readonly ILogger<ChatConversationService> _logger;
+    private readonly ISQLChatHistoryProvider? _sqlChatHistoryProvider;
     private AIAgent? _agent;
     private AgentSession? _agentSession;
     private int _contextTokenCount;
@@ -54,13 +55,14 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings)
+    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings, ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(agentFactory);
         _appSettings = settings;
         ConversationTokenBudget = settings.GetTokenBudget();
         _agentFactory = agentFactory;
+        _sqlChatHistoryProvider = sqlChatHistoryProvider;
         _logger = factory.CreateLogger<ChatConversationService>();
         _identity = new HistoryIdentity();
 
@@ -89,13 +91,8 @@ public sealed class ChatConversationService : IChatConversationService
 
     public bool Initialized { get; set; }
 
-    /// <summary>
-    ///     Need to be exposed to UI and allow users to reset their
-    ///     their context session. We will use the SessionID as the context identifier and reload previous conversations based
-    ///     on that.
-    /// </summary>
-    public string SessionId { get; set; }
-        = string.Empty;
+    /// <inheritdoc />
+    public string ConversationId { get; private set; } = string.Empty;
 
     /// <summary>
     ///     Onlly used for history persistence and retrieval filter.
@@ -155,7 +152,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
     /// <summary>
-    ///     Sends request to LLM and waits for a responsel chat history.
+    ///     Sends request to LLM and waits for a response.
     /// </summary>
     /// <param name="content">The user message content to answer.</param>
     /// <param name="token">The cancellation token for interrupting generation.</param>
@@ -211,6 +208,63 @@ public sealed class ChatConversationService : IChatConversationService
             PublishTokenCounts();
             BusyStateChanged?.Invoke(this, false);
         }
+    }
+
+
+
+
+
+
+    /// <inheritdoc />
+    public async ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default)
+    {
+        token.ThrowIfCancellationRequested();
+        await InitializeAsync().ConfigureAwait(false);
+
+        if (_sqlChatHistoryProvider is null || _agentSession is null)
+        {
+            AIHistory.Clear();
+            UpdateTokenCounts(null);
+            return [];
+        }
+
+        string conversationId = _agentSession.StateBag.GetValue<string>("ConversationId") ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(conversationId))
+        {
+            AIHistory.Clear();
+            UpdateTokenCounts(null);
+            return [];
+        }
+
+        ConversationId = conversationId;
+
+        IReadOnlyList<PersistedChatMessage> persistedMessages = await _sqlChatHistoryProvider
+                .GetMessagesAsync(conversationId, null, token)
+                .ConfigureAwait(false);
+
+        List<ChatMessage> historyMessages = [];
+        foreach (PersistedChatMessage persistedMessage in persistedMessages)
+        {
+            if (string.IsNullOrWhiteSpace(persistedMessage.Content))
+            {
+                continue;
+            }
+
+            string roleValue = persistedMessage.Role?.Trim() ?? string.Empty;
+            ChatRole role = roleValue.Length == 0 ? ChatRole.User : new ChatRole(roleValue);
+
+            historyMessages.Add(new ChatMessage(role, persistedMessage.Content)
+            {
+                    CreatedAt = persistedMessage.TimestampUtc,
+                    MessageId = persistedMessage.MessageId.ToString("D")
+            });
+        }
+
+        AIHistory.Clear();
+        AIHistory.AddRange(historyMessages);
+        UpdateTokenCounts(null);
+
+        return historyMessages;
     }
 
 
@@ -384,6 +438,36 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
+    private async ValueTask<string> ResolveStartupConversationIdAsync(CancellationToken cancellationToken)
+    {
+        if (_sqlChatHistoryProvider is not null)
+        {
+            string applicationId = string.IsNullOrWhiteSpace(ApplicationId) ? "unknown-application" : ApplicationId;
+            string userId = string.IsNullOrWhiteSpace(UserId) ? "unknown-user" : UserId;
+            string? latestConversationId = await _sqlChatHistoryProvider
+                    .GetLatestConversationIdAsync(DefaultAgentId, userId, applicationId, cancellationToken)
+                    .ConfigureAwait(false);
+
+            if (!string.IsNullOrWhiteSpace(latestConversationId))
+            {
+                return latestConversationId.Trim();
+            }
+        }
+
+        string configuredConversationId = _appSettings.LastConversationId?.Trim() ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(configuredConversationId))
+        {
+            return configuredConversationId;
+        }
+
+        return Guid.NewGuid().ToString("N");
+    }
+
+
+
+
+
+
 
 
     private async Task InitializeAsync()
@@ -401,28 +485,17 @@ public sealed class ChatConversationService : IChatConversationService
                 return;
             }
 
+            _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GPTOSS, "Agentic-Max Description");
 
-        // Create the system default agent with the specified Model.
-        // A different agent could be created with different instructions and tools if desired.
-        // AgentId must be unique for each agent created, it is used in history persistence to associate messages with the agent that generated them.
-        // This allows for long term behavior analysis on the performance of agent presets and tools.
-        _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GPTOSS, "Agentic-Max Description");
+            _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
+            _agentSession.StateBag.SetValue("ApplicationId", ApplicationId);
+            _agentSession.StateBag.SetValue("UserId", UserId);
+            _agentSession.StateBag.SetValue("AgentId", DefaultAgentId);
 
-        _agentSession = await _agent.CreateSessionAsync();
-        _agentSession.StateBag.SetValue("ApplicationId", ApplicationId);
-        _agentSession.StateBag.SetValue("UserId", UserId);
-        _agentSession.StateBag.SetValue("AgentId", DefaultAgentId);
-        SessionId = Guid.NewGuid().ToString();
-        _agentSession.StateBag.SetValue("SessionId", SessionId);
-        _agentSession.StateBag.SetValue("ConversationId", SessionId);
+            ConversationId = await ResolveStartupConversationIdAsync(CancellationToken.None).ConfigureAwait(false);
+            _agentSession.StateBag.SetValue("ConversationId", ConversationId);
 
-
-
-
-
-
-        Initialized = true;
-
+            Initialized = true;
         }
         finally
         {

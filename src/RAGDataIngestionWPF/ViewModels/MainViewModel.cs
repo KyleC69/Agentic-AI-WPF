@@ -16,6 +16,7 @@ using DataIngestionLib.Contracts.Services;
 
 using Microsoft.Extensions.AI;
 
+using RAGDataIngestionWPF.Contracts.ViewModels;
 using RAGDataIngestionWPF.Models;
 
 
@@ -27,10 +28,11 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 
-public sealed partial class MainViewModel : ObservableObject, IDisposable
+public sealed partial class MainViewModel : ObservableObject, IDisposable, INavigationAware
 {
     private readonly IChatConversationService _chatConversationService;
     private CancellationTokenSource _responseCancellationTokenSource;
+    private bool _historyLoaded;
 
     //Running Token counts for different categories
     [ObservableProperty] private int ragTokenCount;
@@ -119,6 +121,54 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
 
+    }
+
+
+
+
+
+
+    /// <inheritdoc />
+    public void OnNavigatedFrom()
+    {
+    }
+
+
+
+
+
+
+    /// <inheritdoc />
+    public async void OnNavigatedTo(object parameter)
+    {
+        if (_historyLoaded)
+        {
+            return;
+        }
+
+        _historyLoaded = true;
+        try
+        {
+            IReadOnlyList<ChatMessage> historyMessages = await _chatConversationService
+                    .LoadConversationHistoryAsync()
+                    .ConfigureAwait(true);
+
+            Messages.Clear();
+            foreach (ChatMessage historyMessage in historyMessages)
+            {
+                Messages.Add(CreateUiMessage(historyMessage));
+            }
+
+            TotalTokenCount = _chatConversationService.ContextTokenCount;
+            SessionTokenCount = _chatConversationService.SessionTokenCount;
+            RagTokenCount = _chatConversationService.RagTokenCount;
+            ToolTokenCount = _chatConversationService.ToolTokenCount;
+            SystemTokenCount = _chatConversationService.SystemTokenCount;
+        }
+        catch
+        {
+            Messages.Clear();
+        }
     }
 
 

@@ -10,10 +10,11 @@
 using System.Net.Http;
 
 using DataIngestionLib.Contracts;
+using DataIngestionLib.Data;
 using DataIngestionLib.Services;
 
 using HtmlAgilityPack;
-
+using DataIngestionLib.RAGModels;
 using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlTypes;
@@ -39,7 +40,7 @@ public sealed class LearningHtmlRunner
     private readonly ILogger<LearningHtmlRunner> _logger;
 
     private readonly OllamaApiClient _ollamaApiClient;
-    //private readonly IngestionSettings _settings;
+    private readonly IAppSettings _settings;
 
 
 
@@ -54,12 +55,13 @@ public sealed class LearningHtmlRunner
     /// <param name="headlessBrowser">Headless browser used for remote page retrieval.</param>
     /// <param name="logger">Structured logger provided by the DI container.</param>
     /// <param name="ollamaApiClient">Ollama API client used for LLM-assisted extraction.</param>
-    public LearningHtmlRunner(IHeadlessBrowser headlessBrowser, ILogger<LearningHtmlRunner> logger, OllamaApiClient ollamaApiClient)
+    public LearningHtmlRunner(IHeadlessBrowser headlessBrowser, ILogger<LearningHtmlRunner> logger, OllamaApiClient ollamaApiClient,IAppSettings settings)
     {
         _headlessBrowser = headlessBrowser ?? throw new ArgumentNullException(nameof(headlessBrowser));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         //    _settings = (settings ?? throw new ArgumentNullException(nameof(settings))).Value ?? throw new ArgumentNullException(nameof(settings));
         _ollamaApiClient = ollamaApiClient ?? throw new ArgumentNullException(nameof(ollamaApiClient));
+        _settings = settings;
     }
 
 
@@ -69,10 +71,10 @@ public sealed class LearningHtmlRunner
 
 
 
-    public async Task EmbedRemoteKnowledgeSource(IAppSettings settings, CancellationToken cancellationToken = default)
+    public async Task IngestRemoteKnowledgeSource( CancellationToken cancellationToken = default)
     {
 
-        var startingUrl = settings.LearnBaseUrl;
+        var startingUrl = _settings.LearnBaseUrl;
         var crawlList = await TocHrefExtractor.GetTocList().ConfigureAwait(false);
 
         SqlConnection conn = new(Environment.GetEnvironmentVariable("CONN_STRING"));
@@ -90,52 +92,63 @@ public sealed class LearningHtmlRunner
 
         // Filter out URLs that already exist in the database
         crawlList = crawlList.Where(url => !existingUrls.Contains(startingUrl + url)).ToList();
-
+      using  RAGContext db = new();
 
         foreach (var pg in crawlList)
         {
-            var page = await _headlessBrowser.GetPageSourceAsync(startingUrl + pg, cancellationToken).ConfigureAwait(false);
-            var normalized = page.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ").Replace("\t", "");
-
-            HtmlDocument htmlDoc = new();
-            htmlDoc.LoadHtml(normalized);
-
-            HtmlNode mainContentNode = htmlDoc.DocumentNode.SelectSingleNode("//div[@data-main-column]")
-                                       ?? throw new InvalidOperationException("Main content node not found.");
-            var title = GetRequiredNodeText(htmlDoc.DocumentNode, "//title", "Title element not found.");
-            var description = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='description']", "Description meta tag not found.");
-            var documentId = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='document_id']", "Document ID meta tag not found.");
-            var updatedAt = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='updated_at']", "Updated At meta tag not found.");
-            var msDate = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='ms.date']", "MS Date meta tag not found.");
-            var ogUrl = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@property='og:url']", "OG URL meta tag not found.");
-
-
-            AgentResponse? summary = await SummarizeContent(mainContentNode.InnerText);
-            AgentResponse? keywords = await GenerateKeywords(mainContentNode.InnerText);
-
-            RemoteRAG rag = new()
+            try
             {
+                var page = await _headlessBrowser.GetPageSourceAsync(startingUrl + pg, cancellationToken).ConfigureAwait(false);
+                var normalized = page.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ").Replace("\t", "");
+
+                HtmlDocument htmlDoc = new();
+                htmlDoc.LoadHtml(normalized);
+
+                HtmlNode mainContentNode = htmlDoc.DocumentNode.SelectSingleNode("//div[@data-main-column]")
+                                           ?? throw new InvalidOperationException("Main content node not found.");
+                var title = GetRequiredNodeText(htmlDoc.DocumentNode, "//title", "Title element not found.");
+                var description = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='description']", "Description meta tag not found.");
+                var documentId = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='document_id']", "Document ID meta tag not found.");
+                var updatedAt = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='updated_at']", "Updated At meta tag not found.");
+                var msDate = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='ms.date']", "MS Date meta tag not found.");
+                var ogUrl = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@property='og:url']", "OG URL meta tag not found.");
+
+
+                AgentResponse? summary = await SummarizeContent(mainContentNode.InnerText);
+                AgentResponse? keywords = await GenerateKeywords(mainContentNode.InnerText);
+
+                RemoteRag rag = new()
+                {
                     // Identity is autogenerated
                     Title = title,
+                    TokenCount = null,
                     Description = description,
                     OgUrl = ogUrl,
-                    DocumentId = documentId,
+                    Score = null,
+                    DocumentId = Guid.Parse(documentId),
+                    Embedding = null,
                     UpdatedAt = DateTime.TryParse(updatedAt, out DateTime ut) ? ut : DateTime.MinValue,
-                    MSDate = DateTime.TryParse(msDate, out DateTime md) ? md : DateTime.MinValue,
+
                     Summary = summary?.Text ?? "ModelErr", // Assuming summary has a Content property
-                    Keywords = keywords?.Text ?? "ModelErr", // Assuming keywords has a Content property
+                    Keywords = keywords?.Text ?? "ModelErr",
+                    MsDate = DateTime.Parse(msDate),
                     //      embedding = embedding, // Placeholder, needs to be generated
                     //      token_count = vectory.Embeddings.Count, // Placeholder, needs to be calculated
                     Version = 1 // Placeholder, will be managed
-            };
+                };
+            db.Add(rag);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
 
 
-            SaveSqlRemoteKnowledgeSource(rag);
-            // For now, just log the gathered metadata.
-            _logger.LogPageMetatitleTitleDescriptionDescriptionDocumentidDocumentid(rag.Title, rag.Description, rag.DocumentId, rag.UpdatedAt, rag.MSDate, rag.OgUrl, rag.Summary);
+            
 
         }
 
+            await db.SaveChangesAsync();
     }
 
 
@@ -394,41 +407,6 @@ public sealed class LearningHtmlRunner
 
 
 
-    private static void SaveSqlRemoteKnowledgeSource(RemoteRAG rag)
-    {
-        SqlConnection conn = new(Environment.GetEnvironmentVariable("CONN_STRING"));
-        //add rag to database
-        const string insertQuery = @"INSERT INTO RemoteRAG (title, description, og_url, document_id, updated_at, ms_date, summary, keywords, embedding, token_count, version)
-                                VALUES (@title, @description, @og_url, @document_id, @updated_at, @ms_date, @summary, @keywords, @embedding, @token_count, @version)";
-        using (SqlCommand cmd = new(insertQuery, conn))
-        {
-            SqlParameter unused11 = cmd.Parameters.AddWithValue("@title", rag.Title);
-            SqlParameter unused10 = cmd.Parameters.AddWithValue("@description", rag.Description);
-            SqlParameter unused9 = cmd.Parameters.AddWithValue("@og_url", rag.OgUrl);
-            SqlParameter unused8 = cmd.Parameters.AddWithValue("@document_id", rag.DocumentId);
-            _ = cmd.Parameters.AddWithValue("@updated_at", rag.UpdatedAt == DateTime.MinValue ? DBNull.Value : rag.UpdatedAt);
-            _ = cmd.Parameters.AddWithValue("@ms_date", rag.MSDate == DateTime.MinValue ? DBNull.Value : rag.MSDate);
-            _ = cmd.Parameters.AddWithValue("@summary", rag.Summary);
-            _ = cmd.Parameters.AddWithValue("@keywords", rag.Keywords);
-
-            // SqlVector<float> is not directly supported by SqlClient, needs conversion or a custom type handler.
-            // For simplicity, assuming a method to convert SqlVector to byte array or similar.
-            // This part might need further implementation based on how SqlVector is stored.
-            // As a placeholder, we'll set it to DBNull if it's empty or invalid.
-            _ = cmd.Parameters.AddWithValue("@embedding", rag.Embedding);
-            _ = cmd.Parameters.AddWithValue("@token_count", rag.TokenCount);
-            _ = cmd.Parameters.AddWithValue("@version", rag.Version);
-            conn.Open();
-            _ = cmd.ExecuteNonQuery();
-        }
-
-
-
-
-
-    }
-
-
 
 
 
@@ -466,21 +444,7 @@ public sealed class LearningHtmlRunner
 
 
 
-    public sealed class RemoteRAG
-    {
-        public required string Description { get; init; }
-        public required string DocumentId { get; init; }
-        public SqlVector<float> Embedding { get; init; }
-        public int Id { get; init; }
-        public required string Keywords { get; init; }
-        public DateTime MSDate { get; init; }
-        public required string OgUrl { get; init; }
-        public required string Summary { get; init; }
-        public required string? Title { get; init; }
-        public int TokenCount { get; init; }
-        public DateTime UpdatedAt { get; init; }
-        public int Version { get; init; }
-    }
+  
 }
 
 

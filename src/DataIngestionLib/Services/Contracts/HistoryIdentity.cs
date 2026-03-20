@@ -20,6 +20,5 @@ public record HistoryIdentity
     public string ApplicationId { get; init; } = string.Empty;
     public string ConversationId { get; init; } = string.Empty;
     public string MessageId { get; set; } = string.Empty;
-    public string SessionId { get; init; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
 }
