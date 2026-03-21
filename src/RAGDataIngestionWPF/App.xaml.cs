@@ -338,6 +338,7 @@ public sealed partial class App : Application
         _ = services.AddSingleton<ISystemService, SystemService>();
         _ = services.AddSingleton<LearningHtmlRunner>();
         _ = services.AddSingleton<IAppSettings, AppSettings>();
+        _ = services.AddSingleton<IAgentIdentityProvider, AgentIdentityProvider>();
         _ = services.AddSingleton<IChatConversationService, ChatConversationService>();
         _ = services.AddSingleton<IPageService, PageService>();
         _ = services.AddSingleton<INavigationService, NavigationService>();

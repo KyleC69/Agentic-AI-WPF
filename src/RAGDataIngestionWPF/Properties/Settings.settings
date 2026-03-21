@@ -43,6 +43,9 @@
 		<Setting Name="MaximumContext" Type="System.Int32" Scope="Application">
 			<Value Profile="(Default)">130000</Value>
 		</Setting>
+		<Setting Name="AgentId" Type="System.String" Scope="Application">
+			<Value Profile="(Default)">Agentic-Max</Value>
+		</Setting>
 		<Setting Name="ApplicationId" Type="System.String" Scope="Application">
 			<Value Profile="(Default)">[Guid("15A53D0F-041D-44DD-A150-DFB8D0F133FF")]</Value>
 		</Setting>

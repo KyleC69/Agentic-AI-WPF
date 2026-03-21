@@ -31,10 +31,8 @@ namespace DataIngestionLib.Services;
 /// </summary>
 public sealed class ChatConversationService : IChatConversationService
 {
-    private const string DefaultAgentId = "Agentic-Max";
-
-
     private readonly IAgentFactory _agentFactory;
+    private readonly IAgentIdentityProvider _agentIdentityProvider;
     private readonly IAppSettings _appSettings;
     private readonly HistoryIdentity _identity;
     private readonly SemaphoreSlim _initializeGate = new(1, 1);
@@ -55,13 +53,17 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings, ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
+    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings, IAgentIdentityProvider agentIdentityProvider, ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(agentFactory);
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(agentIdentityProvider);
+
         _appSettings = settings;
         ConversationTokenBudget = settings.GetTokenBudget();
         _agentFactory = agentFactory;
+        _agentIdentityProvider = agentIdentityProvider;
         _sqlChatHistoryProvider = sqlChatHistoryProvider;
         _logger = factory.CreateLogger<ChatConversationService>();
         _identity = new HistoryIdentity();
@@ -82,6 +84,11 @@ public sealed class ChatConversationService : IChatConversationService
     public string ApplicationId
     {
         get { return _appSettings.ApplicationId; }
+    }
+
+    private string AgentId
+    {
+        get { return _agentIdentityProvider.GetAgentId(); }
     }
 
     /// <summary>
@@ -445,7 +452,7 @@ public sealed class ChatConversationService : IChatConversationService
             string applicationId = string.IsNullOrWhiteSpace(ApplicationId) ? "unknown-application" : ApplicationId;
             string userId = string.IsNullOrWhiteSpace(UserId) ? "unknown-user" : UserId;
             string? latestConversationId = await _sqlChatHistoryProvider
-                    .GetLatestConversationIdAsync(DefaultAgentId, userId, applicationId, cancellationToken)
+                    .GetLatestConversationIdAsync(AgentId, userId, applicationId, cancellationToken)
                     .ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(latestConversationId))
@@ -485,12 +492,12 @@ public sealed class ChatConversationService : IChatConversationService
                 return;
             }
 
-            _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GPTOSS, "Agentic-Max Description");
+            _agent = _agentFactory.GetCodingAssistantAgent(AgentId, AIModels.GPTOSS, "Agentic-Max Description");
 
             _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
             _agentSession.StateBag.SetValue("ApplicationId", ApplicationId);
             _agentSession.StateBag.SetValue("UserId", UserId);
-            _agentSession.StateBag.SetValue("AgentId", DefaultAgentId);
+            _agentSession.StateBag.SetValue("AgentId", AgentId);
 
             ConversationId = await ResolveStartupConversationIdAsync(CancellationToken.None).ConfigureAwait(false);
             _agentSession.StateBag.SetValue("ConversationId", ConversationId);

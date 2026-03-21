@@ -41,7 +41,9 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     private int _isInitialized;
     private const int ConversationWindowMessageLimit = 80;
     private const int DefaultSqlCommandTimeoutSeconds = 300;
+//From AgentFactory
     private const string FallbackAgentId = "unknown-agent";
+    //From AppSettings
     private const string FallbackApplicationId = "unknown-application";
     private const string FallbackConnectionString = "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;";
     private const int MaxIdentityLength = 128;
@@ -98,7 +100,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             var applicationId = ChatHistorySessionState.GetOrCreateApplicationId(context.Session, fallbackApplicationId);
             var userId = ChatHistorySessionState.GetOrCreateUserId(context.Session, fallbackUserId);
 
-            IReadOnlyList<ChatMessage> requestMessages = FilterRequestMessages(context.RequestMessages).ToArray();
+            IReadOnlyList<ChatMessage> requestMessages = FilterRequestMessages(context.RequestMessages);
             var responseMessages = GetContextMessages(context, "ResponseMessages");
             if (responseMessages.Count == 0)
             {
@@ -327,13 +329,13 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         var latest = await dbContext.ChatHistoryMessages
                 .AsNoTracking()
-            .Where(message => message.AgentId == normalizedAgentId)
-            .Where(message => message.UserId == normalizedUserId)
-            .Where(message => message.ApplicationId == normalizedApplicationId)
-            .Where(message => message.ConversationId != string.Empty)
+                .Where(message => message.AgentId == normalizedAgentId
+                                  && message.UserId == normalizedUserId
+                                  && message.ApplicationId == normalizedApplicationId
+                                  && message.ConversationId != string.Empty)
                 .OrderByDescending(message => message.TimestampUtc)
                 .ThenByDescending(message => message.CreatedAt)
-            .Select(message => message.ConversationId)
+                .Select(message => message.ConversationId)
                 .FirstOrDefaultAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -404,9 +406,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        List<PersistedChatMessage> messages = entities
-            .Select(ToPersisted)
-            .ToList();
+        List<PersistedChatMessage> messages = entities.ConvertAll(ToPersisted);
 
         return messages;
     }
@@ -488,10 +488,23 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             return [];
         }
 
-        return requestMessages
-                .Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType()))
-                .Where(message => !string.IsNullOrWhiteSpace(message.Text))
-                .ToArray();
+        List<ChatMessage> filteredMessages = [];
+        foreach (ChatMessage message in requestMessages)
+        {
+            if (IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType()))
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(message.Text))
+            {
+                continue;
+            }
+
+            filteredMessages.Add(message);
+        }
+
+        return filteredMessages;
     }
 
 
@@ -751,6 +764,11 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             string userId,
             string applicationId)
     {
+        string normalizedConversationId = NormalizeIdentity(conversationId, nameof(conversationId));
+        string normalizedAgentId = NormalizeIdentity(agentId, nameof(agentId));
+        string normalizedUserId = NormalizeIdentity(userId, nameof(userId));
+        string normalizedApplicationId = NormalizeIdentity(applicationId, nameof(applicationId));
+
         HashSet<Guid> seenMessageIds = [];
         List<ChatHistoryMessage> entities = [];
 
@@ -770,10 +788,10 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             entities.Add(new ChatHistoryMessage
             {
                     MessageId = messageId,
-                    ConversationId = NormalizeIdentity(conversationId, nameof(conversationId)),
-                    AgentId = NormalizeIdentity(agentId, nameof(agentId)),
-                    UserId = NormalizeIdentity(userId, nameof(userId)),
-                    ApplicationId = NormalizeIdentity(applicationId, nameof(applicationId)),
+                    ConversationId = normalizedConversationId,
+                    AgentId = normalizedAgentId,
+                    UserId = normalizedUserId,
+                    ApplicationId = normalizedApplicationId,
                     Role = RoleToString(message.Role),
                     Content = message.Text.Trim(),
                     TimestampUtc = message.CreatedAt ?? DateTimeOffset.UtcNow,
@@ -850,6 +868,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
     public void Dispose()
     {
-        throw new NotImplementedException();
+        _initializationGate?.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

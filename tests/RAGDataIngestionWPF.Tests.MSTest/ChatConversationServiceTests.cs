@@ -5,6 +5,7 @@
 // Author: GitHub Copilot
 
 using DataIngestionLib.Contracts;
+using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services;
 using DataIngestionLib.Services.Contracts;
@@ -46,6 +47,7 @@ public class ChatConversationServiceTests
         TokenBudget budget = null)
     {
         var mock = new Mock<IAppSettings>();
+        mock.SetupGet(s => s.AgentId).Returns("test-agent");
         mock.SetupGet(s => s.ApplicationId).Returns(applicationId);
         mock.Setup(s => s.GetTokenBudget()).Returns(budget ?? MakeBudget());
         return mock;
@@ -57,7 +59,7 @@ public class ChatConversationServiceTests
     {
         agentFactory = agentFactory ?? new Mock<IAgentFactory>().Object;
         settings = settings ?? MakeSettingsMock().Object;
-        return new ChatConversationService(NullLoggerFactory.Instance, agentFactory, settings);
+        return new ChatConversationService(NullLoggerFactory.Instance, agentFactory, settings, new AgentIdentityProvider(settings));
     }
 
     // -------------------------------------------------------------------------
@@ -71,7 +73,7 @@ public class ChatConversationServiceTests
         var settings = MakeSettingsMock().Object;
 
         Assert.ThrowsExactly<ArgumentNullException>(
-            () => _ = new ChatConversationService(null!, agentFactory, settings));
+            () => _ = new ChatConversationService(null!, agentFactory, settings, new AgentIdentityProvider(settings)));
     }
 
     [TestMethod]
@@ -80,7 +82,27 @@ public class ChatConversationServiceTests
         var settings = MakeSettingsMock().Object;
 
         Assert.ThrowsExactly<ArgumentNullException>(
-            () => _ = new ChatConversationService(NullLoggerFactory.Instance, null!, settings));
+            () => _ = new ChatConversationService(NullLoggerFactory.Instance, null!, settings, new AgentIdentityProvider(settings)));
+    }
+
+    [TestMethod]
+    public void ConstructorWithNullSettingsThrowsArgumentNullException()
+    {
+        var agentFactory = new Mock<IAgentFactory>().Object;
+        var identityProvider = new Mock<IAgentIdentityProvider>().Object;
+
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new ChatConversationService(NullLoggerFactory.Instance, agentFactory, null!, identityProvider));
+    }
+
+    [TestMethod]
+    public void ConstructorWithNullAgentIdentityProviderThrowsArgumentNullException()
+    {
+        var settings = MakeSettingsMock().Object;
+        var agentFactory = new Mock<IAgentFactory>().Object;
+
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new ChatConversationService(NullLoggerFactory.Instance, agentFactory, settings, null!));
     }
 
     // -------------------------------------------------------------------------

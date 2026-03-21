@@ -20,6 +20,8 @@ namespace DataIngestionLib.Contracts;
 
 public interface IAppSettings
 {
+    string AgentId { get; set; }
+
     string ApplicationId { get; set; }
 
     string ChatHistoryConnectionString { get; set; }

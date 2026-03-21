@@ -29,7 +29,7 @@ A **WPF desktop application** that demonstrates key capabilities of the [Microso
 - **Microsoft Agent Framework** (`Microsoft.Agents.AI` + `Microsoft.Agents.AI.Workflows`) for agent creation, session management, context providers, and middleware pipelines.
 - **Microsoft.Extensions.AI** abstractions for provider-agnostic chat client integration.
 - **Ollama** as the local LLM provider (swappable via DI).
-- **SQL Server / LocalDB** for durable, conversation-scoped chat history with EF Core 10.
+- **SQL Server 2025** for durable, conversation-scoped chat history with EF Core 10.
 - **RAG (Retrieval-Augmented Generation)** via a hybrid SQL Server search stack (vector, semantic, full-text).
 - **WPF + MahApps.Metro** for the desktop UI shell with Generic Host lifecycle management.
 

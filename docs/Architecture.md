@@ -24,12 +24,12 @@ See also: [/docs/DocumentationManifest.md](/docs/DocumentationManifest.md)
 
 The repository is organized around a WPF desktop host and a reusable library that contains the AI, RAG, and data-ingestion behavior.
 
-| Project | Path | Responsibility |
-| ------- | ---- | -------------- |
-| WPF application | `/src/RAGDataIngestionWPF` | Desktop shell, startup, dependency injection, navigation, and view orchestration |
-| Core UI infrastructure | `/src/RAGDataIngestionWPF.Core` | Shared app services and non-agent support models used by the WPF shell |
-| Data and agent library | `/src/DataIngestionLib` | Agent composition, tool functions, RAG context injection, chat history, and ingestion logic |
-| Tests | `/tests/RAGDataIngestionWPF.Tests.MSTest` | MSTest coverage for repository behavior and edge cases |
+| Project                | Path                                      | Responsibility                                                                              |
+| ---------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------- |
+| WPF application        | `/src/RAGDataIngestionWPF`                | Desktop shell, startup, dependency injection, navigation, and view orchestration            |
+| Core UI infrastructure | `/src/RAGDataIngestionWPF.Core`           | Shared app services and non-agent support models used by the WPF shell                      |
+| Data and agent library | `/src/DataIngestionLib`                   | Agent composition, tool functions, RAG context injection, chat history, and ingestion logic |
+| Tests                  | `/tests/RAGDataIngestionWPF.Tests.MSTest` | MSTest coverage for repository behavior and edge cases                                      |
 
 ## Layering
 
@@ -86,7 +86,7 @@ The WPF project is the composition root and presentation layer. The reusable log
 
 ### Persistent context
 
-The repository uses SQL-backed chat history and RAG context providers to preserve state and rehydrate relevant context across turns.
+See [/docs/ContextManagement.md](/docs/ContextManagement.md)
 
 ### Local-first developer workflow
 

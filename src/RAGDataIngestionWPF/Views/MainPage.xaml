@@ -163,7 +163,7 @@
                         Height="35"
                         HorizontalAlignment="Stretch"
                         IsIndeterminate="True"
-                        IsEnabled="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"
                         Orientation="Horizontal" />
                 </Grid>
             </Grid>

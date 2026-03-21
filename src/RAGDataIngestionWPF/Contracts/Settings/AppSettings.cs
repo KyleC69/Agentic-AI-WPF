@@ -24,6 +24,13 @@ public class AppSettings : IAppSettings
     private const string UserNameSettingName = "UserName";
 
     /// <inheritdoc />
+    public string AgentId
+    {
+        get { return GetString(nameof(AgentId)); }
+        set { SetString(nameof(AgentId), value); }
+    }
+
+    /// <inheritdoc />
     public string OllamaHost
     {
         get { return GetString(nameof(OllamaHost)); }

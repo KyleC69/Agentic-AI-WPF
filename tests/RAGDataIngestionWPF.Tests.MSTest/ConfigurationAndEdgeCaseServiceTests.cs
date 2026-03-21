@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging;
 
 using Moq;
 
+using DataIngestionLib.Contracts;
+using DataIngestionLib.Services;
+
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.Settings;
 using RAGDataIngestionWPF.Services;
@@ -62,16 +65,42 @@ public class ConfigurationAndEdgeCaseServiceTests
     {
         AppSettings settings = new();
         string oldChatModel = settings.ChatModel;
+        string oldAgentId = settings.AgentId;
 
         try
         {
             settings.ChatModel = null;
+            settings.AgentId = null;
             Assert.AreEqual(string.Empty, settings.ChatModel);
+            Assert.AreEqual(string.Empty, settings.AgentId);
         }
         finally
         {
             settings.ChatModel = oldChatModel;
+            settings.AgentId = oldAgentId;
         }
+    }
+
+    [TestMethod]
+    public void AgentIdentityProviderReturnsConfiguredAgentId()
+    {
+        Mock<IAppSettings> settings = new();
+        settings.SetupGet(s => s.AgentId).Returns("  configured-agent  ");
+
+        AgentIdentityProvider provider = new(settings.Object);
+
+        Assert.AreEqual("configured-agent", provider.GetAgentId());
+    }
+
+    [TestMethod]
+    public void AgentIdentityProviderFallsBackWhenConfiguredAgentIdIsBlank()
+    {
+        Mock<IAppSettings> settings = new();
+        settings.SetupGet(s => s.AgentId).Returns(string.Empty);
+
+        AgentIdentityProvider provider = new(settings.Object);
+
+        Assert.AreEqual("Agentic-Max", provider.GetAgentId());
     }
 
     [TestMethod]

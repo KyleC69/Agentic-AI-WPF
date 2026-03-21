@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using DataIngestionLib.Contracts.Services;
+
 using Moq;
 
 using RAGDataIngestionWPF.Activation;
@@ -32,6 +34,7 @@ public class DiAndHostServiceIntegrationTests
 
         AssertHasSingleton<IHostedService>(services);
         AssertHasSingleton<IActivationHandler>(services);
+        AssertHasSingleton<IAgentIdentityProvider>(services);
         AssertHasSingleton<IToastNotificationsService>(services);
         AssertHasSingleton<IPageService>(services);
         AssertHasSingleton<INavigationService>(services);
