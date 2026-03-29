@@ -6,14 +6,25 @@
     <ImplicitUsings>Disable</ImplicitUsings>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <Nullable>enable</Nullable>
+	  <AnalysisLevel>none</AnalysisLevel>
+	  <EnableNETAnalyzers>False</EnableNETAnalyzers>
+	  <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+	  <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
   </PropertyGroup>
-  <ItemGroup>
-<Folder Include="..\docs\" />
-    <Folder Include="..\.github\" />
-    <None Include="..\docs\**\*" />
-    <None Include="..\.github\**\*" />
 
 
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="..\docs\" />
+		<None Include="..\docs\**\*" Link="docs\%(RecursiveDir)%(Filename)%(Extension)" />
+
+		<Folder Include="..\github\" />
+		<None Include="..\.github\**\*" Link="github\%(RecursiveDir)%(Filename)%(Extension)" />
+
+		<Folder Include="..\sql\" />
+		<None Include="..\sql\**\*" Link="sql\%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+	  
+
+
 
 </Project>
