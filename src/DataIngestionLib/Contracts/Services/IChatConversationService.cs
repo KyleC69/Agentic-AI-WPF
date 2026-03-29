@@ -9,6 +9,8 @@
 
 using Microsoft.Extensions.AI;
 
+using DataIngestionLib.Models;
+
 
 
 
@@ -46,6 +48,8 @@ public interface IChatConversationService
     int ToolTokenCount { get; }
 
     event EventHandler<bool> BusyStateChanged;
+
+    event EventHandler<TokenUsageSnapshot> TokenUsageUpdated;
 
 
     ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default);

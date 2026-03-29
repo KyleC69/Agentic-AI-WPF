@@ -40,6 +40,7 @@ public sealed class ChatConversationService : IChatConversationService
     private readonly ISQLChatHistoryProvider? _sqlChatHistoryProvider;
     private AIAgent? _agent;
     private AgentSession? _agentSession;
+    private UsageDetails? _latestUsageDetails;
     private const string DefaultAgentId = "Agentic-Max";
 
 
@@ -159,6 +160,9 @@ public sealed class ChatConversationService : IChatConversationService
 
             //Add user message to ChatHistory
             AIHistory.Add(new ChatMessage(ChatRole.User, content));
+            UpdateTokenCounts(null);
+            PublishTokenCounts();
+            RaiseTokenUsageUpdated("request.user");
 
 
             AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
@@ -186,6 +190,7 @@ public sealed class ChatConversationService : IChatConversationService
         {
             UpdateTokenCounts(usageDetails);
             PublishTokenCounts();
+            RaiseTokenUsageUpdated("request.completed", usageDetails);
             BusyStateChanged?.Invoke(this, false);
         }
     }
@@ -207,6 +212,7 @@ public sealed class ChatConversationService : IChatConversationService
         {
             AIHistory.Clear();
             UpdateTokenCounts(null);
+            RaiseTokenUsageUpdated("history.loaded.empty");
             return [];
         }
 
@@ -215,6 +221,7 @@ public sealed class ChatConversationService : IChatConversationService
         {
             AIHistory.Clear();
             UpdateTokenCounts(null);
+            RaiseTokenUsageUpdated("history.loaded.empty");
             return [];
         }
 
@@ -239,6 +246,7 @@ public sealed class ChatConversationService : IChatConversationService
         AIHistory.Clear();
         AIHistory.AddRange(historyMessages);
         UpdateTokenCounts(null);
+        RaiseTokenUsageUpdated("history.loaded");
 
         return historyMessages;
     }
@@ -252,6 +260,9 @@ public sealed class ChatConversationService : IChatConversationService
 
     /// <inheritdoc />
     public event EventHandler<bool>? BusyStateChanged;
+
+    /// <inheritdoc />
+    public event EventHandler<TokenUsageSnapshot>? TokenUsageUpdated;
 
 
 
@@ -373,7 +384,7 @@ public sealed class ChatConversationService : IChatConversationService
                 return;
             }
 
-            _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GPTOSS, "Agentic-Max Description");
+            _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GPTOSS, "Agentic-Max Description", usageMiddlewareSink: OnMiddlewareUsageObserved);
 
             _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
             _agentSession.StateBag.SetValue("ApplicationId", ApplicationId);
@@ -474,6 +485,8 @@ public sealed class ChatConversationService : IChatConversationService
 
     private void UpdateTokenCounts(UsageDetails? usageDetails)
     {
+        _latestUsageDetails = usageDetails ?? _latestUsageDetails;
+
         TokenBuckets buckets = CalculateContextTokenBuckets();
 
         ContextTokenCount = buckets.Total;
@@ -497,6 +510,49 @@ public sealed class ChatConversationService : IChatConversationService
 
         var reserved = RagTokenCount + ToolTokenCount + SystemTokenCount;
         SessionTokenCount = Math.Max(0, ContextTokenCount - reserved);
+    }
+
+
+
+
+
+
+    private void OnMiddlewareUsageObserved(UsageDetails usageDetails)
+    {
+        ArgumentNullException.ThrowIfNull(usageDetails);
+
+        UpdateTokenCounts(usageDetails);
+        PublishTokenCounts();
+        RaiseTokenUsageUpdated("request.middleware", usageDetails);
+    }
+
+
+
+
+
+
+    private void RaiseTokenUsageUpdated(string source, UsageDetails? usageDetails = null)
+    {
+        var effectiveUsageDetails = usageDetails ?? _latestUsageDetails;
+        var additionalCounts = effectiveUsageDetails?.AdditionalCounts is { Count: > 0 }
+                ? new Dictionary<string, long>(effectiveUsageDetails.AdditionalCounts, StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+
+        var snapshot = new TokenUsageSnapshot(
+                ContextTokenCount,
+                SessionTokenCount,
+                RagTokenCount,
+                ToolTokenCount,
+                SystemTokenCount,
+                ClampToInt(effectiveUsageDetails?.InputTokenCount ?? 0, 0),
+                ClampToInt(effectiveUsageDetails?.OutputTokenCount ?? 0, 0),
+                ClampToInt(effectiveUsageDetails?.CachedInputTokenCount ?? 0, 0),
+                ClampToInt(effectiveUsageDetails?.ReasoningTokenCount ?? 0, 0),
+                source,
+                DateTimeOffset.UtcNow,
+                additionalCounts);
+
+        TokenUsageUpdated?.Invoke(this, snapshot);
     }
 
 

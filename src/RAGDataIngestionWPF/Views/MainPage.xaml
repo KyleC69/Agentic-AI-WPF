@@ -61,8 +61,11 @@
                                Text="{Binding SystemTokenCount, StringFormat=System tokens: \{0\} / 5000}" />
                     <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
                                Text="{Binding RagTokenCount, StringFormat=Rag tokens: \{0\} / 10000}" />
-                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
-                               Text="{Binding ToolTokenCount, StringFormat=Tool tokens: \{0\} / 3000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding ToolTokenCount, StringFormat=Tool tokens: \{0\} / 3000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding InputToolTokenCount, StringFormat=Input tool tokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding OutputToolTokenCount, StringFormat=Output tool tokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding CachedToolTokenCount, StringFormat=Cached tool tokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding ReasoningTokenCount, StringFormat=Reasoning tokens: \{0\}}" />
                 </StackPanel>
                 <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
                          x:Name="MessagesListBox"
@@ -167,8 +170,21 @@
                         Height="35"
                         HorizontalAlignment="Stretch"
                         IsIndeterminate="True"
-                        IsEnabled="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        Orientation="Horizontal" />
+                        Orientation="Horizontal">
+                        <ProgressBar.Style>
+                            <Style TargetType="ProgressBar" BasedOn="{StaticResource {x:Type ProgressBar}}">
+                                <!-- Default state -->
+                                <Setter Property="Visibility" Value="Visible" />
+
+                                <Style.Triggers>
+                                    <!-- Hide when IsBusy is false -->
+                                    <DataTrigger Binding="{Binding IsBusy}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ProgressBar.Style>
+                    </ProgressBar>
                 </Grid>
             </Grid>
         </Grid>

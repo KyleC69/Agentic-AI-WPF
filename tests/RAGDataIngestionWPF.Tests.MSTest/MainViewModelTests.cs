@@ -7,6 +7,7 @@
 using System.Collections.Specialized;
 
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 
@@ -122,6 +123,39 @@ public class MainViewModelTests
         Assert.IsFalse(viewModel.IsBusy);
         Assert.IsTrue(viewModel.SendMessageCommand.CanExecute(null));
         Assert.IsFalse(viewModel.CancelMessageCommand.CanExecute(null));
+    }
+
+    [TestMethod]
+    public void TokenUsageUpdatedEventUpdatesTokenPropertiesInRealtime()
+    {
+        var chatConversationServiceMock = new Mock<IChatConversationService>();
+        MainViewModel viewModel = new(chatConversationServiceMock.Object);
+
+        var usageSnapshot = new TokenUsageSnapshot(
+                TotalTokens: 32,
+                SessionTokens: 13,
+                RagTokens: 8,
+                ToolTokens: 7,
+                SystemTokens: 4,
+                InputTokens: 10,
+                OutputTokens: 12,
+                CachedInputTokens: 3,
+                ReasoningTokens: 2,
+                Source: "test",
+                UpdatedAtUtc: DateTimeOffset.UtcNow,
+                AdditionalCounts: new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase));
+
+        chatConversationServiceMock.Raise(service => service.TokenUsageUpdated += null, chatConversationServiceMock.Object, usageSnapshot);
+
+        Assert.AreEqual(32, viewModel.TotalTokenCount);
+        Assert.AreEqual(13, viewModel.SessionTokenCount);
+        Assert.AreEqual(8, viewModel.RagTokenCount);
+        Assert.AreEqual(7, viewModel.ToolTokenCount);
+        Assert.AreEqual(4, viewModel.SystemTokenCount);
+        Assert.AreEqual(10, viewModel.InputTokenCount);
+        Assert.AreEqual(12, viewModel.OutputTokenCount);
+        Assert.AreEqual(3, viewModel.CachedInputTokenCount);
+        Assert.AreEqual(2, viewModel.ReasoningTokenCount);
     }
 
     [TestMethod]

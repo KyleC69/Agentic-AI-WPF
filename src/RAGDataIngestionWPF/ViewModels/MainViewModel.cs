@@ -8,10 +8,13 @@
 
 
 using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Threading;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using DataIngestionLib.Models;
 using DataIngestionLib.Contracts.Services;
 
 using Microsoft.Extensions.AI;
@@ -40,6 +43,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     [ObservableProperty] private int systemTokenCount;
     [ObservableProperty] private int toolTokenCount;
     [ObservableProperty] private int totalTokenCount;
+    [ObservableProperty] private int inputTokenCount;
+    [ObservableProperty] private int outputTokenCount;
+    [ObservableProperty] private int cachedInputTokenCount;
+    [ObservableProperty] private int reasoningTokenCount;
 
 
 
@@ -59,6 +66,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
 
         _chatConversationService.BusyStateChanged += OnBusyStateChange;
+        _chatConversationService.TokenUsageUpdated += OnTokenUsageUpdated;
 
 
 
@@ -71,8 +79,30 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
     public IRelayCommand CancelMessageCommand { get; }
 
+
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the application is currently in a busy state.
+    /// </summary>
+    /// <remarks>
+    /// This property is used to manage the application's busy state, which affects the availability of commands
+    /// such as <see cref="SendMessageCommand"/> and <see cref="CancelMessageCommand"/>. It also triggers the 
+    /// <see cref="OnBusyStateChange"/> method to handle state changes.
+    /// </remarks>
     public bool IsBusy
     {
         get;
@@ -80,8 +110,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         {
             if (this.SetProperty(ref field, value))
             {
-                SendMessageCommand.NotifyCanExecuteChanged();
-                CancelMessageCommand.NotifyCanExecuteChanged();
+                this.OnPropertyChanged(nameof(CanSendMessage));
+                this.OnPropertyChanged(nameof(CanCancelMessage));
+                OnBusyStateChange(this, value);
             }
         }
     }
@@ -109,9 +140,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    /// <inheritdoc />
+
     public void Dispose()
     {
+        _responseCancellationTokenSource?.Dispose();
+        _chatConversationService.BusyStateChanged -= OnBusyStateChange;
+        _chatConversationService.TokenUsageUpdated -= OnTokenUsageUpdated;
 
     }
 
@@ -122,7 +156,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Called when the view model is navigated away from.
+    /// </summary>
+    /// <remarks>
+    /// This method is part of the <see cref="INavigationAware"/> interface and is invoked
+    /// to handle any cleanup or state-saving logic when the associated view is no longer active.
+    /// </remarks>
     public void OnNavigatedFrom()
     {
     }
@@ -134,7 +174,18 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Called when the view model is navigated to.
+    /// </summary>
+    /// <param name="parameter">
+    /// An optional parameter passed during navigation. This can be used to provide
+    /// context or data required by the view model.
+    /// </param>
+    /// <remarks>
+    /// This method is part of the <see cref="INavigationAware"/> interface and is invoked
+    /// to handle initialization logic, such as loading data or setting up state, when the
+    /// associated view becomes active.
+    /// </remarks>
     public async void OnNavigatedTo(object parameter)
     {
         if (_historyLoaded)
@@ -150,11 +201,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             Messages.Clear();
             foreach (ChatMessage historyMessage in historyMessages) Messages.Add(CreateUiMessage(historyMessage));
 
-            TotalTokenCount = _chatConversationService.ContextTokenCount;
-            SessionTokenCount = _chatConversationService.SessionTokenCount;
-            RagTokenCount = _chatConversationService.RagTokenCount;
-            ToolTokenCount = _chatConversationService.ToolTokenCount;
-            SystemTokenCount = _chatConversationService.SystemTokenCount;
+            RefreshTokenCountsFromService();
         }
         catch
         {
@@ -264,14 +311,69 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         {
             _responseCancellationTokenSource?.Dispose();
             _responseCancellationTokenSource = null;
-            TotalTokenCount = _chatConversationService.ContextTokenCount;
-            SessionTokenCount = _chatConversationService.SessionTokenCount;
-            RagTokenCount = _chatConversationService.RagTokenCount;
-            ToolTokenCount = _chatConversationService.ToolTokenCount;
-            SystemTokenCount = _chatConversationService.SystemTokenCount;
+            RefreshTokenCountsFromService();
         }
 
 
 
+    }
+
+
+
+
+
+
+    private void ApplyTokenUsageSnapshot(TokenUsageSnapshot snapshot)
+    {
+        TotalTokenCount = snapshot.TotalTokens;
+        SessionTokenCount = snapshot.SessionTokens;
+        RagTokenCount = snapshot.RagTokens;
+        ToolTokenCount = snapshot.ToolTokens;
+        SystemTokenCount = snapshot.SystemTokens;
+        InputTokenCount = snapshot.InputTokens;
+        OutputTokenCount = snapshot.OutputTokens;
+        CachedInputTokenCount = snapshot.CachedInputTokens;
+        ReasoningTokenCount = snapshot.ReasoningTokens;
+    }
+
+
+
+
+
+
+    private void OnTokenUsageUpdated(object sender, TokenUsageSnapshot e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            ApplyTokenUsageSnapshot(e);
+            return;
+        }
+
+        dispatcher.Invoke(() => ApplyTokenUsageSnapshot(e));
+    }
+
+
+
+
+
+
+    private void RefreshTokenCountsFromService()
+    {
+        ApplyTokenUsageSnapshot(new TokenUsageSnapshot(
+                _chatConversationService.ContextTokenCount,
+                _chatConversationService.SessionTokenCount,
+                _chatConversationService.RagTokenCount,
+                _chatConversationService.ToolTokenCount,
+                _chatConversationService.SystemTokenCount,
+                0,
+                0,
+                0,
+                0,
+                "viewmodel.refresh",
+                DateTimeOffset.UtcNow,
+                new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase)));
     }
 }
