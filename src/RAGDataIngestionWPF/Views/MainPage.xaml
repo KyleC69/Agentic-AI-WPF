@@ -3,11 +3,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:converters="clr-namespace:RAGDataIngestionWPF.Converters"
     xmlns:mdxam="clr-namespace:MdXaml;assembly=MdXaml"
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     xmlns:models="clr-namespace:RAGDataIngestionWPF.Models"
- 
+
     x:Class="RAGDataIngestionWPF.Views.MainPage"
     Style="{DynamicResource MahApps.Styles.Page}"
     mc:Ignorable="d"
@@ -53,12 +52,17 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" >
-                <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding TotalTokenCount, StringFormat=Total tokens: \{0\} / 130000}" />
-                <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding SessionTokenCount, StringFormat=Chat tokens: \{0\} / 100000}" />
-                <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding SystemTokenCount, StringFormat=System tokens: \{0\} / 5000}" />
-                <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding RagTokenCount, StringFormat=Rag tokens: \{0\} / 10000}" />
-                <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding ToolTokenCount, StringFormat=Tool tokens: \{0\} / 3000}" />
+                <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding TotalTokenCount, StringFormat=Total tokens: \{0\} / 130000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding SessionTokenCount, StringFormat=Chat tokens: \{0\} / 100000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding SystemTokenCount, StringFormat=System tokens: \{0\} / 5000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding RagTokenCount, StringFormat=Rag tokens: \{0\} / 10000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding ToolTokenCount, StringFormat=Tool tokens: \{0\} / 3000}" />
                 </StackPanel>
                 <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
                          x:Name="MessagesListBox"

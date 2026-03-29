@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF.Core
 // File:         IdentityService.cs
 // Author: Kyle L. Crowder
-// Build Num: 051917
+// Build Num: 051947
 
 
 

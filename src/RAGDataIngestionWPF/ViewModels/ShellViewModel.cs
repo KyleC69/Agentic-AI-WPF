@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         ShellViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 051907
+// Build Num: 052001
 
 
 
@@ -147,12 +147,7 @@ public sealed partial class ShellViewModel : ObservableObject
         _navigationService.Navigated += OnNavigated;
         _userDataService.UserDataUpdated += OnUserDataUpdated;
         UserViewModel user = _userDataService.GetUser();
-        HamburgerMenuImageItem userMenuItem = new()
-        {
-                Thumbnail = user.Photo,
-                Label = user.Name,
-                Command = new RelayCommand(OnUserItemSelected)
-        };
+        HamburgerMenuImageItem userMenuItem = new() { Thumbnail = user.Photo, Label = user.Name, Command = new RelayCommand(OnUserItemSelected) };
 
         OptionMenuItems.Insert(0, userMenuItem);
     }
@@ -178,16 +173,14 @@ public sealed partial class ShellViewModel : ObservableObject
 
     private void OnNavigated(object sender, string viewModelName)
     {
-        HamburgerMenuItem item = MenuItems
-                .FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
+        HamburgerMenuItem item = MenuItems.FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
         if (item != null)
         {
             SelectedMenuItem = item;
         }
         else
         {
-            SelectedOptionsMenuItem = OptionMenuItems
-                    .FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
+            SelectedOptionsMenuItem = OptionMenuItems.FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
         }
 
         GoBackCommand.NotifyCanExecuteChanged();

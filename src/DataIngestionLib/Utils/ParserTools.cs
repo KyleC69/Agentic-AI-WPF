@@ -1,20 +1,25 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/29
+// Solution: File
+// Project:   DataIngestionLib
+// File:         ParserTools.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
+// Build Num: 051945
+
+
 
 using System.Text;
 
+
+
+
 namespace DataIngestionLib.Utils;
+
+
+
+
 
 public class ParserTools
 {
-
-
-
 
     public static string CleanRawText(string input)
     {
@@ -44,13 +49,12 @@ public class ParserTools
         // Normalize newline styles
         s = s.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\\r\\n", "");
         // Remove invisible Unicode
-        s = s
-                .Replace("\u00A0", " ")  // non-breaking space
-                .Replace("\u200B", "")   // zero-width space
-                .Replace("\u200C", "")   // zero-width non-joiner
-                .Replace("\u200D", "")   // zero-width joiner
+        s = s.Replace("\u00A0", " ") // non-breaking space
+                .Replace("\u200B", "") // zero-width space
+                .Replace("\u200C", "") // zero-width non-joiner
+                .Replace("\u200D", "") // zero-width joiner
                 .Replace("\u2028", "\n") // line separator
-                .Replace("\u2029", "\n");// paragraph separator
+                .Replace("\u2029", "\n"); // paragraph separator
 
         // Collapse excessive blank lines
         while (s.Contains("\n\n\n"))
@@ -60,7 +64,4 @@ public class ParserTools
 
         return s;
     }
-
-
-
 }

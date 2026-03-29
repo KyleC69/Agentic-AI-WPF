@@ -1,29 +1,35 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/29
+// Solution: File
+// Project:   RAGDataIngestionWPF
+// File:         MessageDisplay.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
+// Build Num: 051953
+
+
 
 using Microsoft.Extensions.AI;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
+
+
 
 namespace RAGDataIngestionWPF.Models;
 
+
+
+
+
 public class MessageDisplay
 {
-    
-    public ChatMessage  Message{ get; set; }
-    
+
+    public bool IsUser
+    {
+        get { return Role == ChatRole.User; }
+    }
+
+    public ChatMessage Message { get; set; }
+
     public ChatRole Role { get; set; }
-    
-    public DateTime Timestamp { get; set; }
     public string Text { get; set; }
-    
-    public bool IsUser => Role == ChatRole.User;
 
-
+    public DateTime Timestamp { get; set; }
 }

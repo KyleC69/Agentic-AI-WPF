@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
 // File:         ChatHistorySessionState.cs
 // Author: Kyle L. Crowder
-// Build Num: 044257
+// Build Num: 051938
 
 
 
@@ -43,8 +43,7 @@ internal static class ChatHistorySessionState
             return;
         }
 
-        if (session.StateBag.TryGetValue(ConversationIdStateKey, out string? existingConversationId)
-            && !string.IsNullOrWhiteSpace(existingConversationId))
+        if (session.StateBag.TryGetValue(ConversationIdStateKey, out string? existingConversationId) && !string.IsNullOrWhiteSpace(existingConversationId))
         {
             return;
         }
@@ -94,8 +93,6 @@ internal static class ChatHistorySessionState
         ApplyStartupConversationIfAvailable(session);
         return GetOrCreateValue(session, ConversationIdStateKey, static () => Guid.NewGuid().ToString("N"));
     }
-
-
 
 
 
@@ -187,7 +184,7 @@ internal static class ChatHistorySessionState
                 return null;
             }
 
-            string startupConversationId = _startupConversationId;
+            var startupConversationId = _startupConversationId;
             _startupConversationId = null;
             return startupConversationId;
         }

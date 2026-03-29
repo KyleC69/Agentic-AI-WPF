@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         SystemService.cs
 // Author: Kyle L. Crowder
-// Build Num: 051902
+// Build Num: 051956
 
 
 
@@ -26,11 +26,7 @@ public sealed class SystemService : ISystemService
     public void OpenInWebBrowser(string url)
     {
         // For more info see https://github.com/dotnet/corefx/issues/10361
-        ProcessStartInfo psi = new()
-        {
-                FileName = url,
-                UseShellExecute = true
-        };
+        ProcessStartInfo psi = new() { FileName = url, UseShellExecute = true };
         _ = Process.Start(psi);
     }
 }

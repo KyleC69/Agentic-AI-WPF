@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
-// File:         AIChatHistory.cs
+// File:         AIChatHistoryDb.cs
 // Author: Kyle L. Crowder
-// Build Num: 044232
+// Build Num: 051919
 
 
 
@@ -33,8 +33,7 @@ public class AIChatHistoryDb : DbContext
 
 
 
-    public AIChatHistoryDb(DbContextOptions<AIChatHistoryDb> options)
-            : base(options)
+    public AIChatHistoryDb(DbContextOptions<AIChatHistoryDb> options) : base(options)
     {
     }
 
@@ -45,8 +44,7 @@ public class AIChatHistoryDb : DbContext
 
 
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CHAT_HISTORY"));
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CHAT_HISTORY"));
 
 
 
@@ -89,7 +87,7 @@ public class AIChatHistoryDb : DbContext
             entity.Property(e => e.MessageId).HasColumnName("MessageID");
         });
 
-        
+
     }
 
 
@@ -102,11 +100,4 @@ public class AIChatHistoryDb : DbContext
     public virtual DbSet<ChatHistoryMessage> ChatHistoryMessages { get; set; }
 
     public virtual DbSet<ChatHistoryTextChunk> ChatHistoryTextChunks { get; set; }
-
-
-
-
-
-
-
 }

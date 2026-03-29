@@ -1,10 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/29
+// Solution: File
+// Project:   DataIngestionLib
+// File:         LoggingMessages.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
+// Build Num: 051935
 
 
 
@@ -75,19 +74,4 @@ public static partial class LoggingMessages
 
     [LoggerMessage(LogLevel.Error, "Unauthorized access exception reading registry key '{KeyPath}' Exception: {Message}")]
     public static partial void LogUnauthorizedAccessExceptionReadingRegistryKeyKeypath(this ILogger<RegistryReaderTool> logger, string Message, string KeyPath);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

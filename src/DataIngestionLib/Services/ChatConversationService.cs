@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/29
+// Solution: File
+// Project:   DataIngestionLib
+// File:         ChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 051937
 
 
 
@@ -35,8 +31,6 @@ namespace DataIngestionLib.Services;
 /// </summary>
 public sealed class ChatConversationService : IChatConversationService
 {
-    private const string DefaultAgentId = "Agentic-Max";
-
 
     private readonly IAgentFactory _agentFactory;
     private readonly IAppSettings _appSettings;
@@ -46,6 +40,14 @@ public sealed class ChatConversationService : IChatConversationService
     private readonly ISQLChatHistoryProvider? _sqlChatHistoryProvider;
     private AIAgent? _agent;
     private AgentSession? _agentSession;
+    private const string DefaultAgentId = "Agentic-Max";
+
+
+
+
+
+
+
 
     public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings, ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
     {
@@ -71,7 +73,10 @@ public sealed class ChatConversationService : IChatConversationService
     /// <summary>
     ///     This is to provide an identifier in enterprise scenarios running multiple applications.
     /// </summary>
-    public string ApplicationId => _appSettings.ApplicationId;
+    public string ApplicationId
+    {
+        get { return _appSettings.ApplicationId; }
+    }
 
     /// <summary>
     ///     A collection of settings to provide the token budget allocated for the model
@@ -80,13 +85,16 @@ public sealed class ChatConversationService : IChatConversationService
 
     public bool Initialized { get; set; }
 
-    /// <inheritdoc />
-    public string ConversationId { get; private set; } = string.Empty;
-
     /// <summary>
     ///     Onlly used for history persistence and retrieval filter.
     /// </summary>
-    public static string UserId => Environment.UserName;
+    public static string UserId
+    {
+        get { return Environment.UserName; }
+    }
+
+    /// <inheritdoc />
+    public string ConversationId { get; private set; } = string.Empty;
 
     /// <summary>
     ///     Internal tracking history of the conversation with the LLM, used for calculating token usage and providing context
@@ -131,7 +139,7 @@ public sealed class ChatConversationService : IChatConversationService
     /// <exception cref="ArgumentException"></exception>
     public async ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
     {
-        await this.InitializeAsync();
+        await InitializeAsync();
         BusyStateChanged?.Invoke(this, true);
         UsageDetails? usageDetails = null;
         try
@@ -176,11 +184,13 @@ public sealed class ChatConversationService : IChatConversationService
         }
         finally
         {
-            this.UpdateTokenCounts(usageDetails);
-            this.PublishTokenCounts();
+            UpdateTokenCounts(usageDetails);
+            PublishTokenCounts();
             BusyStateChanged?.Invoke(this, false);
         }
     }
+
+
 
 
 
@@ -191,12 +201,12 @@ public sealed class ChatConversationService : IChatConversationService
     public async ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
-        await this.InitializeAsync().ConfigureAwait(false);
+        await InitializeAsync().ConfigureAwait(false);
 
         if (_sqlChatHistoryProvider is null || _agentSession is null)
         {
             AIHistory.Clear();
-            this.UpdateTokenCounts(null);
+            UpdateTokenCounts(null);
             return [];
         }
 
@@ -204,15 +214,13 @@ public sealed class ChatConversationService : IChatConversationService
         if (string.IsNullOrWhiteSpace(conversationId))
         {
             AIHistory.Clear();
-            this.UpdateTokenCounts(null);
+            UpdateTokenCounts(null);
             return [];
         }
 
         ConversationId = conversationId;
 
-        IReadOnlyList<PersistedChatMessage> persistedMessages = await _sqlChatHistoryProvider
-                .GetMessagesAsync(conversationId, null, token)
-                .ConfigureAwait(false);
+        var persistedMessages = await _sqlChatHistoryProvider.GetMessagesAsync(conversationId, null, token).ConfigureAwait(false);
 
         List<ChatMessage> historyMessages = [];
         foreach (PersistedChatMessage persistedMessage in persistedMessages)
@@ -225,16 +233,12 @@ public sealed class ChatConversationService : IChatConversationService
             var roleValue = persistedMessage.Role?.Trim() ?? string.Empty;
             ChatRole role = roleValue.Length == 0 ? ChatRole.User : new ChatRole(roleValue);
 
-            historyMessages.Add(new ChatMessage(role, persistedMessage.Content)
-            {
-                CreatedAt = persistedMessage.TimestampUtc,
-                MessageId = persistedMessage.MessageId.ToString("D")
-            });
+            historyMessages.Add(new ChatMessage(role, persistedMessage.Content) { CreatedAt = persistedMessage.TimestampUtc, MessageId = persistedMessage.MessageId.ToString("D") });
         }
 
         AIHistory.Clear();
         AIHistory.AddRange(historyMessages);
-        this.UpdateTokenCounts(null);
+        UpdateTokenCounts(null);
 
         return historyMessages;
     }
@@ -282,9 +286,7 @@ public sealed class ChatConversationService : IChatConversationService
             {
                 toolTokens += messageTokenCount;
             }
-            else if (string.Equals(role, AIChatRole.RAGContext.Value, StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(role, AIChatRole.AIContext.Value, StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(role, "rag", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(role, AIChatRole.RAGContext.Value, StringComparison.OrdinalIgnoreCase) || string.Equals(role, AIChatRole.AIContext.Value, StringComparison.OrdinalIgnoreCase) || string.Equals(role, "rag", StringComparison.OrdinalIgnoreCase))
             {
                 ragTokens += messageTokenCount;
             }
@@ -306,73 +308,24 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
+    private static int ClampToInt(long value, int fallback)
+    {
+        return value <= 0 ? fallback : value >= int.MaxValue ? int.MaxValue : (int)value;
+    }
+
+
+
+
+
+
+
+
     private static int EstimateTokenCount(string content)
     {
         return string.IsNullOrWhiteSpace(content) ? 0 : Math.Max(1, content.Length / 4);
     }
 
 
-
-
-
-
-    private void UpdateTokenCounts(UsageDetails? usageDetails)
-    {
-        TokenBuckets buckets = this.CalculateContextTokenBuckets();
-
-        ContextTokenCount = buckets.Total;
-        SessionTokenCount = buckets.Session;
-        RagTokenCount = buckets.Rag;
-        ToolTokenCount = buckets.Tool;
-        SystemTokenCount = buckets.System;
-
-        if (usageDetails?.AdditionalCounts is null)
-        {
-            return;
-        }
-
-        var ragUsageTokens = GetAdditionalCount(
-                usageDetails,
-                "rag",
-                "rag_tokens",
-                "rag_token_count",
-                "rag_context",
-                "retrieval",
-                "retrieval_tokens",
-                "context",
-                "context_tokens");
-        var toolUsageTokens = GetAdditionalCount(
-                usageDetails,
-                "tool",
-                "tool_tokens",
-                "tool_token_count",
-                "function",
-                "function_tokens");
-        var systemUsageTokens = GetAdditionalCount(
-                usageDetails,
-                "system",
-                "system_tokens",
-                "system_token_count",
-                "instruction",
-                "instruction_tokens");
-
-        RagTokenCount = ClampToInt(ragUsageTokens, RagTokenCount);
-        ToolTokenCount = ClampToInt(toolUsageTokens, ToolTokenCount);
-        SystemTokenCount = ClampToInt(systemUsageTokens, SystemTokenCount);
-
-        var reserved = RagTokenCount + ToolTokenCount + SystemTokenCount;
-        SessionTokenCount = Math.Max(0, ContextTokenCount - reserved);
-    }
-
-
-
-
-
-
-    private static int ClampToInt(long value, int fallback)
-    {
-        return value <= 0 ? fallback : value >= int.MaxValue ? int.MaxValue : (int)value;
-    }
 
 
 
@@ -388,41 +341,14 @@ public sealed class ChatConversationService : IChatConversationService
 
         foreach (var key in keys)
         {
-            foreach ((var countKey, var countValue) in usageDetails.AdditionalCounts)
-            {
+            foreach (var (countKey, countValue) in usageDetails.AdditionalCounts)
                 if (string.Equals(countKey, key, StringComparison.OrdinalIgnoreCase))
                 {
                     return countValue;
                 }
-            }
         }
 
         return 0;
-    }
-
-
-
-
-
-
-    private async ValueTask<string> ResolveStartupConversationIdAsync(CancellationToken cancellationToken)
-    {
-        if (_sqlChatHistoryProvider is not null)
-        {
-            var applicationId = string.IsNullOrWhiteSpace(ApplicationId) ? "unknown-application" : ApplicationId;
-            var userId = string.IsNullOrWhiteSpace(UserId) ? "unknown-user" : UserId;
-            var latestConversationId = await _sqlChatHistoryProvider
-                    .GetLatestConversationIdAsync(DefaultAgentId, userId, applicationId, cancellationToken)
-                    .ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(latestConversationId))
-            {
-                return latestConversationId.Trim();
-            }
-        }
-
-        var configuredConversationId = _appSettings.LastConversationId?.Trim() ?? string.Empty;
-        return !string.IsNullOrWhiteSpace(configuredConversationId) ? configuredConversationId : Guid.NewGuid().ToString("N");
     }
 
 
@@ -454,7 +380,7 @@ public sealed class ChatConversationService : IChatConversationService
             _agentSession.StateBag.SetValue("UserId", UserId);
             _agentSession.StateBag.SetValue("AgentId", DefaultAgentId);
 
-            ConversationId = await this.ResolveStartupConversationIdAsync(CancellationToken.None).ConfigureAwait(false);
+            ConversationId = await ResolveStartupConversationIdAsync(CancellationToken.None).ConfigureAwait(false);
             _agentSession.StateBag.SetValue("ConversationId", ConversationId);
 
             Initialized = true;
@@ -508,11 +434,72 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
+    private async ValueTask<string> ResolveStartupConversationIdAsync(CancellationToken cancellationToken)
+    {
+        if (_sqlChatHistoryProvider is not null)
+        {
+            var applicationId = string.IsNullOrWhiteSpace(ApplicationId) ? "unknown-application" : ApplicationId;
+            var userId = string.IsNullOrWhiteSpace(UserId) ? "unknown-user" : UserId;
+            var latestConversationId = await _sqlChatHistoryProvider.GetLatestConversationIdAsync(DefaultAgentId, userId, applicationId, cancellationToken).ConfigureAwait(false);
+
+            if (!string.IsNullOrWhiteSpace(latestConversationId))
+            {
+                return latestConversationId.Trim();
+            }
+        }
+
+        var configuredConversationId = _appSettings.LastConversationId?.Trim() ?? string.Empty;
+        return !string.IsNullOrWhiteSpace(configuredConversationId) ? configuredConversationId : Guid.NewGuid().ToString("N");
+    }
+
+
+
+
+
+
+
+
     /// <inheritdoc />
     public event EventHandler? SessionBugetExceeded;
 
     /// <inheritdoc />
     public event EventHandler? TokenBudgetExceeded;
+
+
+
+
+
+
+
+
+    private void UpdateTokenCounts(UsageDetails? usageDetails)
+    {
+        TokenBuckets buckets = CalculateContextTokenBuckets();
+
+        ContextTokenCount = buckets.Total;
+        SessionTokenCount = buckets.Session;
+        RagTokenCount = buckets.Rag;
+        ToolTokenCount = buckets.Tool;
+        SystemTokenCount = buckets.System;
+
+        if (usageDetails?.AdditionalCounts is null)
+        {
+            return;
+        }
+
+        var ragUsageTokens = GetAdditionalCount(usageDetails, "rag", "rag_tokens", "rag_token_count", "rag_context", "retrieval", "retrieval_tokens", "context", "context_tokens");
+        var toolUsageTokens = GetAdditionalCount(usageDetails, "tool", "tool_tokens", "tool_token_count", "function", "function_tokens");
+        var systemUsageTokens = GetAdditionalCount(usageDetails, "system", "system_tokens", "system_token_count", "instruction", "instruction_tokens");
+
+        RagTokenCount = ClampToInt(ragUsageTokens, RagTokenCount);
+        ToolTokenCount = ClampToInt(toolUsageTokens, ToolTokenCount);
+        SystemTokenCount = ClampToInt(systemUsageTokens, SystemTokenCount);
+
+        var reserved = RagTokenCount + ToolTokenCount + SystemTokenCount;
+        SessionTokenCount = Math.Max(0, ContextTokenCount - reserved);
+    }
+
+
 
 
 

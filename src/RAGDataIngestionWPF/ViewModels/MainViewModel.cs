@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         MainViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 051905
+// Build Num: 051959
 
 
 
@@ -31,15 +31,19 @@ namespace RAGDataIngestionWPF.ViewModels;
 public sealed partial class MainViewModel : ObservableObject, IDisposable, INavigationAware
 {
     private readonly IChatConversationService _chatConversationService;
-    private CancellationTokenSource _responseCancellationTokenSource;
     private bool _historyLoaded;
+    private CancellationTokenSource _responseCancellationTokenSource;
 
     //Running Token counts for different categories
     [ObservableProperty] private int ragTokenCount;
-    [ObservableProperty] private int toolTokenCount;
-    [ObservableProperty] private int systemTokenCount;
     [ObservableProperty] private int sessionTokenCount;
+    [ObservableProperty] private int systemTokenCount;
+    [ObservableProperty] private int toolTokenCount;
     [ObservableProperty] private int totalTokenCount;
+
+
+
+
 
 
 
@@ -58,18 +62,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    }
-
-
-
-
-
-
-
-
-    private void OnBusyStateChange(object sender, bool e)
-    {
-        IsBusy = e;
     }
 
 
@@ -128,10 +120,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
+
+
     /// <inheritdoc />
     public void OnNavigatedFrom()
     {
     }
+
+
 
 
 
@@ -149,15 +145,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         _historyLoaded = true;
         try
         {
-            IReadOnlyList<ChatMessage> historyMessages = await _chatConversationService
-                    .LoadConversationHistoryAsync()
-                    .ConfigureAwait(true);
+            var historyMessages = await _chatConversationService.LoadConversationHistoryAsync().ConfigureAwait(true);
 
             Messages.Clear();
-            foreach (ChatMessage historyMessage in historyMessages)
-            {
-                Messages.Add(CreateUiMessage(historyMessage));
-            }
+            foreach (ChatMessage historyMessage in historyMessages) Messages.Add(CreateUiMessage(historyMessage));
 
             TotalTokenCount = _chatConversationService.ContextTokenCount;
             SessionTokenCount = _chatConversationService.SessionTokenCount;
@@ -228,6 +219,18 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
+    private void OnBusyStateChange(object sender, bool e)
+    {
+        IsBusy = e;
+    }
+
+
+
+
+
+
+
+
     private async Task SendMessageAsync()
     {
         //TODO: Need to link to lifecycle of view model and application lifetime.
@@ -246,7 +249,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         //Clear UI input
         MessageInput = string.Empty;
 
-  
+
 
         try
         {
@@ -262,7 +265,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             _responseCancellationTokenSource?.Dispose();
             _responseCancellationTokenSource = null;
             TotalTokenCount = _chatConversationService.ContextTokenCount;
-            SessionTokenCount= _chatConversationService.SessionTokenCount;
+            SessionTokenCount = _chatConversationService.SessionTokenCount;
             RagTokenCount = _chatConversationService.RagTokenCount;
             ToolTokenCount = _chatConversationService.ToolTokenCount;
             SystemTokenCount = _chatConversationService.SystemTokenCount;

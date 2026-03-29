@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
 // File:         RAGContext.cs
 // Author: Kyle L. Crowder
-// Build Num: 044233
+// Build Num: 051920
 
 
 
@@ -49,9 +49,7 @@ public class RAGContext : DbContext
                     var unused30 = entity.Property(e => e.Breadcrumb).HasMaxLength(350);
                     var unused29 = entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
                     var unused28 = entity.Property(e => e.DocHtml).HasColumnName("DocHTML");
-                    var unused27 = entity.Property(e => e.Hash)
-                            .HasMaxLength(450)
-                            .IsUnicode(false);
+                    var unused27 = entity.Property(e => e.Hash).HasMaxLength(450).IsUnicode(false);
                     var unused26 = entity.Property(e => e.Title).HasMaxLength(512);
                     var unused25 = entity.Property(e => e.Url).HasMaxLength(350);
                 })
@@ -77,9 +75,7 @@ public class RAGContext : DbContext
 
                     var unused16 = entity.HasIndex(e => e.Score, "IX_RemoteRAG_score").IsDescending();
 
-                    var unused15 = entity.HasIndex(e => e.UpdatedAt, "IX_RemoteRAG_updated_at_filtered")
-                            .IsDescending()
-                            .HasFilter("([embedding] IS NOT NULL)");
+                    var unused15 = entity.HasIndex(e => e.UpdatedAt, "IX_RemoteRAG_updated_at_filtered").IsDescending().HasFilter("([embedding] IS NOT NULL)");
 
                     var unused14 = entity.HasIndex(e => e.DocumentId, "UX_RemoteRAG_document_id").IsUnique();
 
@@ -88,24 +84,14 @@ public class RAGContext : DbContext
                     var unused12 = entity.HasIndex(e => e.Embedding, "VIX_RemoteRAG_embedding");
 
                     var unused11 = entity.Property(e => e.Description).HasColumnName("description");
-                    var unused10 = entity.Property(e => e.DocumentId)
-                            .HasDefaultValueSql("(newid())", "DF__RemoteRAG__DocId__4F47C5E3")
-                            .HasColumnName("document_id");
-                    var unused9 = entity.Property(e => e.Embedding)
-                            .HasMaxLength(1024)
-                            .HasColumnName("embedding");
-                    var unused8 = entity.Property(e => e.Keywords)
-                            .HasMaxLength(500)
-                            .HasColumnName("keywords");
+                    var unused10 = entity.Property(e => e.DocumentId).HasDefaultValueSql("(newid())", "DF__RemoteRAG__DocId__4F47C5E3").HasColumnName("document_id");
+                    var unused9 = entity.Property(e => e.Embedding).HasMaxLength(1024).HasColumnName("embedding");
+                    var unused8 = entity.Property(e => e.Keywords).HasMaxLength(500).HasColumnName("keywords");
                     var unused7 = entity.Property(e => e.MsDate).HasColumnName("ms_date");
-                    var unused6 = entity.Property(e => e.OgUrl)
-                            .HasMaxLength(500)
-                            .HasColumnName("og_url");
+                    var unused6 = entity.Property(e => e.OgUrl).HasMaxLength(500).HasColumnName("og_url");
                     var unused5 = entity.Property(e => e.Score).HasColumnName("score");
                     var unused4 = entity.Property(e => e.Summary).HasColumnName("summary");
-                    var unused3 = entity.Property(e => e.Title)
-                            .HasMaxLength(450)
-                            .HasColumnName("title");
+                    var unused3 = entity.Property(e => e.Title).HasMaxLength(450).HasColumnName("title");
                     var unused2 = entity.Property(e => e.TokenCount).HasColumnName("token_count");
                     var unused1 = entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
                     var unused = entity.Property(e => e.Version).HasColumnName("version");

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         MarkdownFlowDocumentFormatter.cs
 // Author: Kyle L. Crowder
-// Build Num: 051858
+// Build Num: 051952
 
 
 
@@ -103,11 +103,7 @@ internal static class MarkdownFlowDocumentFormatter
                 return;
 
             case CodeInline codeInline:
-                inlines.Add(new Span(new Run(codeInline.Content))
-                {
-                        FontFamily = new FontFamily("Consolas"),
-                        Background = CreateCodeBackgroundBrush()
-                });
+                inlines.Add(new Span(new Run(codeInline.Content)) { FontFamily = new FontFamily("Consolas"), Background = CreateCodeBackgroundBrush() });
                 return;
 
             case EmphasisInline emphasisInline:
@@ -203,22 +199,7 @@ internal static class MarkdownFlowDocumentFormatter
 
     private static BlockUIContainer CreateCodeBlock(LeafBlock codeBlock)
     {
-        return new BlockUIContainer(new Border
-        {
-                Padding = new Thickness(8),
-                Background = CreateCodeBackgroundBrush(),
-                CornerRadius = new CornerRadius(4),
-                Child = new TextBlock
-                {
-                        Text = codeBlock.Lines.ToString(),
-                        FontFamily = new FontFamily("Consolas"),
-                        TextWrapping = TextWrapping.Wrap,
-                        Margin = new Thickness(0)
-                }
-        })
-        {
-                Margin = BlockMargin
-        };
+        return new BlockUIContainer(new Border { Padding = new Thickness(8), Background = CreateCodeBackgroundBrush(), CornerRadius = new CornerRadius(4), Child = new TextBlock { Text = codeBlock.Lines.ToString(), FontFamily = new FontFamily("Consolas"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0) } }) { Margin = BlockMargin };
     }
 
 
@@ -230,12 +211,7 @@ internal static class MarkdownFlowDocumentFormatter
 
     private static FlowDocument CreateDocument()
     {
-        return new FlowDocument
-        {
-                PagePadding = new Thickness(0),
-                ColumnWidth = double.PositiveInfinity,
-                Background = Brushes.Transparent
-        };
+        return new FlowDocument { PagePadding = new Thickness(0), ColumnWidth = double.PositiveInfinity, Background = Brushes.Transparent };
     }
 
 
@@ -271,12 +247,7 @@ internal static class MarkdownFlowDocumentFormatter
 
     private static Hyperlink CreateLink(LinkInline linkInline)
     {
-        Hyperlink hyperlink = new()
-        {
-                Foreground = Brushes.DeepSkyBlue,
-                TextDecorations = TextDecorations.Underline,
-                ToolTip = linkInline.Url
-        };
+        Hyperlink hyperlink = new() { Foreground = Brushes.DeepSkyBlue, TextDecorations = TextDecorations.Underline, ToolTip = linkInline.Url };
 
         if (!string.IsNullOrWhiteSpace(linkInline.Url) && Uri.TryCreate(linkInline.Url, UriKind.RelativeOrAbsolute, out Uri navigateUri))
         {
@@ -301,11 +272,7 @@ internal static class MarkdownFlowDocumentFormatter
 
     private static List CreateList(ListBlock listBlock)
     {
-        List list = new()
-        {
-                Margin = BlockMargin,
-                MarkerStyle = listBlock.IsOrdered ? TextMarkerStyle.Decimal : TextMarkerStyle.Disc
-        };
+        List list = new() { Margin = BlockMargin, MarkerStyle = listBlock.IsOrdered ? TextMarkerStyle.Decimal : TextMarkerStyle.Disc };
 
         foreach (Markdig.Syntax.Block block in listBlock)
         {
@@ -335,10 +302,7 @@ internal static class MarkdownFlowDocumentFormatter
 
     private static Paragraph CreateParagraph(ContainerInline inline)
     {
-        Paragraph paragraph = new()
-        {
-                Margin = BlockMargin
-        };
+        Paragraph paragraph = new() { Margin = BlockMargin };
 
         AddInlines(paragraph.Inlines, inline);
         return paragraph;
@@ -353,13 +317,7 @@ internal static class MarkdownFlowDocumentFormatter
 
     private static Section CreateQuote(QuoteBlock quoteBlock)
     {
-        Section quoteSection = new()
-        {
-                Margin = BlockMargin,
-                Padding = new Thickness(10, 0, 0, 0),
-                BorderThickness = new Thickness(3, 0, 0, 0),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(96, 255, 255, 255))
-        };
+        Section quoteSection = new() { Margin = BlockMargin, Padding = new Thickness(10, 0, 0, 0), BorderThickness = new Thickness(3, 0, 0, 0), BorderBrush = new SolidColorBrush(Color.FromArgb(96, 255, 255, 255)) };
 
         foreach (Markdig.Syntax.Block childBlock in quoteBlock)
         {

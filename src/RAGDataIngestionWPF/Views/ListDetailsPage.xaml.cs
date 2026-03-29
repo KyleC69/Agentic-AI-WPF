@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         ListDetailsPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 051909
+// Build Num: 052006
 
 
 

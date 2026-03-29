@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
 // File:         IChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 044229
+// Build Num: 051918
 
 
 
@@ -21,8 +21,6 @@ namespace DataIngestionLib.Contracts.Services;
 public interface IChatConversationService
 {
 
-    string ConversationId { get; }
-
     /// <summary>
     ///     Gets the active Semantic Kernel chat history for the current conversation.
     /// </summary>
@@ -32,6 +30,8 @@ public interface IChatConversationService
     ///     Gets the total current context token count for the active chat history.
     /// </summary>
     int ContextTokenCount { get; }
+
+    string ConversationId { get; }
 
     //Tokens used for RAG context, including prompt and response tokens affecting overall context size.
     int RagTokenCount { get; }
@@ -46,6 +46,10 @@ public interface IChatConversationService
     int ToolTokenCount { get; }
 
     event EventHandler<bool> BusyStateChanged;
+
+
     ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default);
+
+
     ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
 }

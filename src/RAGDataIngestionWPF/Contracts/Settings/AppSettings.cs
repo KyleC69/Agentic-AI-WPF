@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         AppSettings.cs
 // Author: Kyle L. Crowder
-// Build Num: 051856
+// Build Num: 051950
 
 
 
@@ -156,10 +156,6 @@ public class AppSettings : IAppSettings
     }
 
 
-    private static void SetBool(string settingName, bool value)
-    {
-        SaveSetting(settingName, value);
-    }
 
 
 
@@ -170,13 +166,13 @@ public class AppSettings : IAppSettings
     {
         return new TokenBudget
         {
-            SessionBudget = SessionBudget,
-            SystemBudget = SystemBudget,
-            RAGBudget = RAGBudget,
-            ToolBudget = ToolBudget,
-            MetaBudget = MetaBudget,
-            BudgetTotal = SessionBudget + SystemBudget + RAGBudget + ToolBudget + MetaBudget,
-            MaximumContext = MaximumContext
+                SessionBudget = SessionBudget,
+                SystemBudget = SystemBudget,
+                RAGBudget = RAGBudget,
+                ToolBudget = ToolBudget,
+                MetaBudget = MetaBudget,
+                BudgetTotal = SessionBudget + SystemBudget + RAGBudget + ToolBudget + MetaBudget,
+                MaximumContext = MaximumContext
         };
     }
 
@@ -215,6 +211,18 @@ public class AppSettings : IAppSettings
     {
         Properties.Settings.Default[settingName] = value;
         Properties.Settings.Default.Save();
+    }
+
+
+
+
+
+
+
+
+    private static void SetBool(string settingName, bool value)
+    {
+        SaveSetting(settingName, value);
     }
 
 

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
 // File:         IChatHistoryMemoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 044229
+// Build Num: 051918
 
 
 
@@ -44,10 +44,7 @@ public interface IChatHistoryMemoryProvider
     ///     An ordered collection of <see cref="ChatMessage" /> values representing the relevant
     ///     historical context, or an empty collection when no history is available.
     /// </returns>
-    ValueTask<IEnumerable<ChatMessage>> BuildContextMessagesAsync(
-            string conversationId,
-            ChatHistory currentRequestMessages,
-            CancellationToken cancellationToken = default);
+    ValueTask<IEnumerable<ChatMessage>> BuildContextMessagesAsync(string conversationId, ChatHistory currentRequestMessages, CancellationToken cancellationToken = default);
 
 
 
@@ -67,12 +64,5 @@ public interface IChatHistoryMemoryProvider
     /// <param name="requestMessages">The messages sent by the user or context providers.</param>
     /// <param name="responseMessages">The messages produced by the agent.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    ValueTask StoreMessagesAsync(
-            string conversationId,
-            string agentId,
-            string userId,
-            string applicationId,
-            ChatHistory requestMessages,
-            ChatHistory responseMessages,
-            CancellationToken cancellationToken = default);
+    ValueTask StoreMessagesAsync(string conversationId, string agentId, string userId, string applicationId, ChatHistory requestMessages, ChatHistory responseMessages, CancellationToken cancellationToken = default);
 }

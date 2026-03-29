@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/29
+// Solution: File
+// Project:   DataIngestionLib
+// File:         ChatHistoryMessageExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 051928
 
 
 
@@ -36,6 +32,12 @@ public static class ChatHistoryMessageExtensions
     }
 
 
+
+
+
+
+
+
     public static ChatMessage ToChatMessage(this PersistedChatMessage message)
     {
         ArgumentNullException.ThrowIfNull(message);
@@ -46,11 +48,12 @@ public static class ChatHistoryMessageExtensions
 
 
 
+
+
+
     public static IReadOnlyList<ChatMessage> ToChatMessages(this IEnumerable<ChatHistoryMessage>? messages)
     {
-        return messages is null
-            ? []
-            : (IReadOnlyList<ChatMessage>)messages.Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Content)).OrderBy(m => m.TimestampUtc).ThenBy(m => m.CreatedAt).Select(m => m.ToChatMessage()).ToList();
+        return messages is null ? [] : (IReadOnlyList<ChatMessage>)messages.Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Content)).OrderBy(m => m.TimestampUtc).ThenBy(m => m.CreatedAt).Select(m => m.ToChatMessage()).ToList();
     }
 
 
@@ -64,11 +67,11 @@ public static class ChatHistoryMessageExtensions
     {
         return role?.Trim().ToLowerInvariant() switch
         {
-            "assistant" => ChatRole.Assistant,
-            "system" => ChatRole.System,
-            "tool" => ChatRole.Tool,
-            "user" => ChatRole.User,
-            _ => ChatRole.User
+                "assistant" => ChatRole.Assistant,
+                "system" => ChatRole.System,
+                "tool" => ChatRole.Tool,
+                "user" => ChatRole.User,
+                _ => ChatRole.User
         };
     }
 }

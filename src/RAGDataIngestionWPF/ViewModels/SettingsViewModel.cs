@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         SettingsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 051906
+// Build Num: 051959
 
 
 
@@ -81,8 +81,6 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
     private const string SettingsPageMaxContextTokensLabelKey = "SettingsPageMaxContextTokensLabel";
     private const string SettingsPageRagKnowledgeEnabledLabelKey = "SettingsPageRagKnowledgeEnabledLabel";
     private const string SettingsPageSaveChatHistoryButtonTextKey = "SettingsPageSaveChatHistoryButtonText";
-
-
 
     public static string ChatHistoryContextEnabledLabelText
     {

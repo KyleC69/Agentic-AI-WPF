@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
 // File:         IAgentIdentityProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 044229
+// Build Num: 051917
 
 
 

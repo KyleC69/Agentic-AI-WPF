@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
 // File:         ChatHistoryContextInjector.cs
 // Author: Kyle L. Crowder
-// Build Num: 044245
+// Build Num: 051930
 
 
 
@@ -34,8 +34,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
 
 
 
-    public ChatHistoryContextInjector(ILogger<ChatHistoryContextInjector> logger)
-            : base(providerInputFilter, storeInputRequestFilter, storeInputResponseFilter)
+    public ChatHistoryContextInjector(ILogger<ChatHistoryContextInjector> logger) : base(providerInputFilter, storeInputRequestFilter, storeInputResponseFilter)
     {
         _logger = logger;
     }
@@ -66,15 +65,10 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
     protected override ValueTask InvokedCoreAsync(InvokedContext context, CancellationToken cancellationToken = new CancellationToken())
     {
         ChatMessage? lastRequest = context.RequestMessages?.LastOrDefault();
-        var messageId = lastRequest is null
-                ? string.Empty
-                : lastRequest.GetAgentRequestMessageSourceId() ?? string.Empty;
+        var messageId = lastRequest is null ? string.Empty : lastRequest.GetAgentRequestMessageSourceId() ?? string.Empty;
         var conversationId = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? string.Empty;
 
-        _logger.LogTrace(
-                "Call from InvokedCore in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}",
-                messageId,
-                conversationId);
+        _logger.LogTrace("Call from InvokedCore in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}", messageId, conversationId);
 
         return base.InvokedCoreAsync(context, cancellationToken);
     }
@@ -107,10 +101,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
         var messageId = context.AIContext?.Messages?.LastOrDefault()?.MessageId ?? string.Empty;
         var conversationId = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? string.Empty;
 
-        _logger.LogTrace(
-                "Call from InvokingCoreAsync in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}",
-                messageId,
-                conversationId);
+        _logger.LogTrace("Call from InvokingCoreAsync in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}", messageId, conversationId);
 
         if (context.AIContext?.Messages != null)
         {
@@ -148,10 +139,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
         var messageId = context.Session?.StateBag?.GetValue<string>("MessageId") ?? string.Empty;
         var conversationId = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? string.Empty;
 
-        _logger.LogTrace(
-                "Call from ProvideAIContextAsync in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}",
-                messageId,
-                conversationId);
+        _logger.LogTrace("Call from ProvideAIContextAsync in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}", messageId, conversationId);
 
         return base.ProvideAIContextAsync(context, cancellationToken);
     }
@@ -183,10 +171,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
         var messageId = context.Session?.StateBag?.GetValue<string>("MessageId") ?? string.Empty;
         var conversationId = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? string.Empty;
 
-        _logger.LogTrace(
-                "Call from StoreAIContextAsync in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}",
-                messageId,
-                conversationId);
+        _logger.LogTrace("Call from StoreAIContextAsync in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}", messageId, conversationId);
 
         return base.StoreAIContextAsync(context, cancellationToken);
     }

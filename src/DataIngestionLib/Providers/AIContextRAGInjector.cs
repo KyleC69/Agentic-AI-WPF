@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
 // File:         AIContextRAGInjector.cs
 // Author: Kyle L. Crowder
-// Build Num: 044246
+// Build Num: 051930
 
 
 
@@ -52,8 +52,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
         List<ChatMessage> requestMessages =
         [
-                .. context.RequestMessages
-                        .Select(m => new ChatMessage(m.Role, m.Text))
+                .. context.RequestMessages.Select(m => new ChatMessage(m.Role, m.Text))
         ];
         if (_sources.Count == 0)
         {
@@ -64,9 +63,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
         foreach (IRagContextSource source in _sources)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var sourceMessages = await source
-                    .GetContextMessagesAsync(requestMessages, context.Session, cancellationToken)
-                    .ConfigureAwait(false);
+            var sourceMessages = await source.GetContextMessagesAsync(requestMessages, context.Session, cancellationToken).ConfigureAwait(false);
 
             if (sourceMessages.Count == 0)
             {
@@ -76,10 +73,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
             aggregatedContext.AddRange(sourceMessages.Where(static message => !string.IsNullOrWhiteSpace(message.Text)));
         }
 
-        return aggregatedContext
-                .Where(m => !string.IsNullOrWhiteSpace(m.Text))
-                .Select(m => new ChatMessage(m.Role, m.Text))
-                .ToArray();
+        return aggregatedContext.Where(m => !string.IsNullOrWhiteSpace(m.Text)).Select(m => new ChatMessage(m.Role, m.Text)).ToArray();
     }
 
 

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
 // File:         AIChatRole.cs
 // Author: Kyle L. Crowder
-// Build Num: 044241
+// Build Num: 051928
 
 
 
@@ -230,8 +230,7 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
     /// <inheritdoc />
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
-        return (obj is AIChatRole otherRole && Equals(otherRole))
-               || (obj is ChatRole chatRole && Equals(chatRole));
+        return (obj is AIChatRole otherRole && Equals(otherRole)) || (obj is ChatRole chatRole && Equals(chatRole));
     }
 
 

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         MainPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 051910
+// Build Num: 052003
 
 
 
@@ -54,8 +54,7 @@ public sealed partial class MainPage
 
 
 
-    private static T FindVisualChild<T>(DependencyObject parent)
-            where T : DependencyObject
+    private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
     {
         ArgumentNullException.ThrowIfNull(parent);
         var childrenCount = VisualTreeHelper.GetChildrenCount(parent);

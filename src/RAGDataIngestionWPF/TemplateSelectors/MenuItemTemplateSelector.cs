@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         MenuItemTemplateSelector.cs
 // Author: Kyle L. Crowder
-// Build Num: 051903
+// Build Num: 051957
 
 
 
@@ -26,11 +26,7 @@ public sealed class MenuItemTemplateSelector : DataTemplateSelector
 
     public override DataTemplate SelectTemplate(object item, DependencyObject container)
     {
-        return item is HamburgerMenuGlyphItem
-                ? GlyphDataTemplate
-                : item is HamburgerMenuImageItem
-                        ? ImageDataTemplate
-                        : base.SelectTemplate(item, container);
+        return item is HamburgerMenuGlyphItem ? GlyphDataTemplate : item is HamburgerMenuImageItem ? ImageDataTemplate : base.SelectTemplate(item, container);
     }
 
 

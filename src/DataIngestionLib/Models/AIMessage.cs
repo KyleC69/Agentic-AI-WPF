@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
 // File:         AIMessage.cs
 // Author: Kyle L. Crowder
-// Build Num: 044243
+// Build Num: 051929
 
 
 
@@ -58,8 +58,7 @@ public class AIMessage
     /// <summary>Initializes a new instance of the <see cref="AIMessage" /> class.</summary>
     /// <param name="role">The role of the author of the message.</param>
     /// <param name="content">The text content of the message.</param>
-    public AIMessage(ChatRole role, string? content)
-            : this(role, content is null ? [] : [new TextContent(content)])
+    public AIMessage(ChatRole role, string? content) : this(role, content is null ? [] : [new TextContent(content)])
     {
     }
 
@@ -113,10 +112,7 @@ public class AIMessage
         get
         {
             var text = Text;
-            return
-                    !string.IsNullOrWhiteSpace(text) ? new TextContent(text) :
-                    _contents is { Count: > 0 } ? _contents[0] :
-                    null;
+            return !string.IsNullOrWhiteSpace(text) ? new TextContent(text) : _contents is { Count: > 0 } ? _contents[0] : null;
         }
     }
 
