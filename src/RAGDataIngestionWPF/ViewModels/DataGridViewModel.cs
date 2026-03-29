@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         DataGridViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 051904
+// Build Num: 051958
 
 
 
@@ -29,8 +29,8 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 public sealed class DataGridViewModel : ObservableObject, INavigationAware
 {
-    private AsyncRelayCommand _startIngestionCommand;
     private readonly ILogger<DataGridViewModel> _logger;
+    private AsyncRelayCommand _startIngestionCommand;
 
 
 

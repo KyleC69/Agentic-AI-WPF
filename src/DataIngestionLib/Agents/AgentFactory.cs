@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/29
+// Solution: File
+// Project:   DataIngestionLib
+// File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 051916
 
 
 
@@ -48,14 +44,14 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     private readonly SqlChatHistoryProvider _chatHistoryProvider;
     private readonly ChatHistoryContextInjector _historyContextInjector;
 
+    private readonly AIContextRAGInjector _ragContextInjector;
+
     private bool _disposedValue;
 
     /// <summary>
     ///     Base client that will be decorated with additional functionality using the builder pattern.
     /// </summary>
     private IChatClient? _innerClient;
-
-    private readonly AIContextRAGInjector _ragContextInjector;
 
     private static ILoggerFactory _factory = NullLoggerFactory.Instance;
 
@@ -67,31 +63,27 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AgentFactory"/> class.
+    ///     Initializes a new instance of the <see cref="AgentFactory" /> class.
     /// </summary>
     /// <param name="factory">
-    /// The <see cref="ILoggerFactory"/> instance used for logging.
+    ///     The <see cref="ILoggerFactory" /> instance used for logging.
     /// </param>
     /// <param name="appSettings">
-    /// The application settings containing configuration values.
+    ///     The application settings containing configuration values.
     /// </param>
     /// <param name="chatHistoryProvider">
-    /// The provider responsible for managing chat history.
+    ///     The provider responsible for managing chat history.
     /// </param>
     /// <param name="contextInjector">
-    /// The injector responsible for providing chat history context.
+    ///     The injector responsible for providing chat history context.
     /// </param>
     /// <param name="ragContextInjector">
-    /// The injector responsible for managing RAG (Retrieval-Augmented Generation) context.
+    ///     The injector responsible for managing RAG (Retrieval-Augmented Generation) context.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when any of the provided parameters is <c>null</c>.
+    ///     Thrown when any of the provided parameters is <c>null</c>.
     /// </exception>
-    public AgentFactory(ILoggerFactory factory,
-            IAppSettings appSettings,
-            SqlChatHistoryProvider chatHistoryProvider,
-            ChatHistoryContextInjector contextInjector,
-            AIContextRAGInjector ragContextInjector)
+    public AgentFactory(ILoggerFactory factory, IAppSettings appSettings, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector, AIContextRAGInjector ragContextInjector)
     {
         Guard.IsNotNull(factory);
         Guard.IsNotNull(appSettings);
@@ -151,39 +143,38 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 #if !SQL
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-        {
-            Id = agentId,
-            Name = agentId,
-            Description = agentDescription,
-            ChatOptions = new ChatOptions { Instructions = instructions ?? GetModelInstructions(), Temperature = 0.7f, MaxOutputTokens = 10000, Tools = ToolBuilder.GetReadOnlyAiTools() },
-            ThrowOnChatHistoryProviderConflict = true
-        }, loggerFactory: _factory).AsBuilder()
+                {
+                        Id = agentId,
+                        Name = agentId,
+                        Description = agentDescription,
+                        ChatOptions = new ChatOptions { Instructions = instructions ?? GetModelInstructions(), Temperature = 0.7f, MaxOutputTokens = 10000, Tools = ToolBuilder.GetReadOnlyAiTools() },
+                        ThrowOnChatHistoryProviderConflict = true
+                }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
                 .Build();
 
 #else
-
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-        {
-            Id = agentId,
-            Name = agentId,
-            Description = agentDescription,
-            ChatOptions = new ChatOptions
-            {
-                Instructions = instructions ?? GetModelInstructions(),
-                Temperature = 0.7f,
-                MaxOutputTokens = 10000,
-                AllowMultipleToolCalls = true,
-                Tools = ToolBuilder.GetReadOnlyAiTools(),
-            },
-            AIContextProviders =
+                {
+                        Id = agentId,
+                        Name = agentId,
+                        Description = agentDescription,
+                        ChatOptions = new ChatOptions
+                        {
+                                Instructions = instructions ?? GetModelInstructions(),
+                                Temperature = 0.7f,
+                                MaxOutputTokens = 10000,
+                                AllowMultipleToolCalls = true,
+                                Tools = ToolBuilder.GetReadOnlyAiTools(),
+                        },
+                        AIContextProviders =
                         [
                                 _historyContextInjector,
                                 _ragContextInjector
                         ],
-            ThrowOnChatHistoryProviderConflict = true,
-            ChatHistoryProvider = _chatHistoryProvider
-        }, loggerFactory: _factory).AsBuilder()
+                        ThrowOnChatHistoryProviderConflict = true,
+                        ChatHistoryProvider = _chatHistoryProvider
+                }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
                 .Build();
 
@@ -199,29 +190,10 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
-    public AIAgent GetBasicAIAgent()
-    {
-        Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
-        _innerClient = new OllamaApiClient(ollamaUri, AIModels.LLAMA1_B);
-        _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
-
-        AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions { Id = "IngestAgent", Name = "IngestAgent", Description = "Basic AI Agent for ingestion tasks", ChatOptions = new ChatOptions { Temperature = 0.7f, MaxOutputTokens = 10000 } }, loggerFactory: _factory).AsBuilder().UseLogging(_factory).Build();
-
-
-        return outer;
-    }
-
-
-
-
-
-
-
-
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
+        Dispose(disposing: true);
     }
 
 
@@ -244,6 +216,25 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
             // TODO: set large fields to null
             _disposedValue = true;
         }
+    }
+
+
+
+
+
+
+
+
+    public AIAgent GetBasicAIAgent()
+    {
+        Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
+        _innerClient = new OllamaApiClient(ollamaUri, AIModels.LLAMA1_B);
+        _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
+
+        AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions { Id = "IngestAgent", Name = "IngestAgent", Description = "Basic AI Agent for ingestion tasks", ChatOptions = new ChatOptions { Temperature = 0.7f, MaxOutputTokens = 10000 } }, loggerFactory: _factory).AsBuilder().UseLogging(_factory).Build();
+
+
+        return outer;
     }
 
 

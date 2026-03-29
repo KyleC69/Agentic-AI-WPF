@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 051913
+// Build Num: 052006
 
 
 
@@ -65,9 +65,7 @@ public sealed partial class App : Application
 
     private IHost BuildHost()
     {
-        _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel)
-                ? configLevel
-                : LogLevel.Trace;
+        _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel) ? configLevel : LogLevel.Trace;
         return Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c =>
                 {
@@ -83,14 +81,7 @@ public sealed partial class App : Application
                     // the dynamic filter below. The LoggingLevelSwitch controls the
                     // effective minimum at runtime and is user-configurable from the
                     // Settings page.
-                    logging.AddJsonConsole(options =>
-                    {
-                        options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions
-                        {
-                            Indented = true,
-                            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                        };
-                    });
+                    logging.AddJsonConsole(options => { options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions { Indented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }; });
                     ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
                     ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
                 })
@@ -163,9 +154,7 @@ public sealed partial class App : Application
     private static string GetAppLocation()
     {
         var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
-        var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
-                ? AppContext.BaseDirectory
-                : Path.GetDirectoryName(entryAssemblyLocation);
+        var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation) ? AppContext.BaseDirectory : Path.GetDirectoryName(entryAssemblyLocation);
 
         return string.IsNullOrWhiteSpace(appLocation) ? AppContext.BaseDirectory : appLocation;
     }

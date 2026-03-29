@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
-// Solution: RAGDataIngestionWPF
+﻿// Build Date: 2026/03/29
+// Solution: File
 // Project:   DataIngestionLib
 // File:         SqlChatHistoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 044250
+// Build Num: 051932
 
 
 
@@ -59,10 +59,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-    public SqlChatHistoryProvider(
-            ILogger<SqlChatHistoryProvider> logger,
-            IAppSettings appSettings,
-            IDbContextFactory<AIChatHistoryDb>? dbContextFactory = null)
+    public SqlChatHistoryProvider(ILogger<SqlChatHistoryProvider> logger, IAppSettings appSettings, IDbContextFactory<AIChatHistoryDb>? dbContextFactory = null)
     {
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(appSettings);
@@ -110,15 +107,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 return;
             }
 
-            await PersistInteractionAsync(
-                            conversationId,
-                            agentId,
-                            userId,
-                            applicationId,
-                            requestMessages,
-                            responseMessages,
-                            cancellationToken)
-                    .ConfigureAwait(false);
+            await PersistInteractionAsync(conversationId, agentId, userId, applicationId, requestMessages, responseMessages, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -177,11 +166,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                     continue;
                 }
 
-                ChatMessage contextMessage = new(ParseRole(persistedMessage.Role), persistedMessage.Content)
-                {
-                        CreatedAt = persistedMessage.TimestampUtc,
-                        MessageId = sourceId
-                };
+                ChatMessage contextMessage = new(ParseRole(persistedMessage.Role), persistedMessage.Content) { CreatedAt = persistedMessage.TimestampUtc, MessageId = sourceId };
 
                 historyContextMessages.Add(contextMessage.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, sourceId));
             }
@@ -197,6 +182,18 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             _logger.LogWarning(exception, "Failed to provide SQL-backed chat history context. Continuing with an empty history window.");
             return [];
         }
+    }
+
+
+
+
+
+
+
+
+    public void Dispose()
+    {
+
     }
 
 
@@ -237,10 +234,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         await using AIChatHistoryDb dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        return await dbContext.ChatHistoryMessages
-                .Where(message => message.ConversationId == normalizedConversationId)
-                .ExecuteDeleteAsync(cancellationToken)
-                .ConfigureAwait(false);
+        return await dbContext.ChatHistoryMessages.Where(message => message.ConversationId == normalizedConversationId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -262,10 +256,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         await using AIChatHistoryDb dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var affectedRows = await dbContext.ChatHistoryMessages
-                .Where(message => message.MessageId == messageId)
-                .ExecuteDeleteAsync(cancellationToken)
-                .ConfigureAwait(false);
+        var affectedRows = await dbContext.ChatHistoryMessages.Where(message => message.MessageId == messageId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
         return affectedRows > 0;
     }
@@ -310,32 +301,18 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-    public async ValueTask<string?> GetLatestConversationIdAsync(
-            string agentId,
-            string userId,
-            string applicationId,
-            CancellationToken cancellationToken = default)
+    public async ValueTask<string?> GetLatestConversationIdAsync(string agentId, string userId, string applicationId, CancellationToken cancellationToken = default)
     {
-        string normalizedAgentId = NormalizeIdentity(agentId, nameof(agentId));
-        string normalizedUserId = NormalizeIdentity(userId, nameof(userId));
-        string normalizedApplicationId = NormalizeIdentity(applicationId, nameof(applicationId));
+        var normalizedAgentId = NormalizeIdentity(agentId, nameof(agentId));
+        var normalizedUserId = NormalizeIdentity(userId, nameof(userId));
+        var normalizedApplicationId = NormalizeIdentity(applicationId, nameof(applicationId));
         cancellationToken.ThrowIfCancellationRequested();
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         await using AIChatHistoryDb dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var latest = await dbContext.ChatHistoryMessages
-                .AsNoTracking()
-            .Where(message => message.AgentId == normalizedAgentId)
-            .Where(message => message.UserId == normalizedUserId)
-            .Where(message => message.ApplicationId == normalizedApplicationId)
-            .Where(message => message.ConversationId != string.Empty)
-                .OrderByDescending(message => message.TimestampUtc)
-                .ThenByDescending(message => message.CreatedAt)
-            .Select(message => message.ConversationId)
-                .FirstOrDefaultAsync(cancellationToken)
-                .ConfigureAwait(false);
+        var latest = await dbContext.ChatHistoryMessages.AsNoTracking().Where(message => message.AgentId == normalizedAgentId).Where(message => message.UserId == normalizedUserId).Where(message => message.ApplicationId == normalizedApplicationId).Where(message => message.ConversationId != string.Empty).OrderByDescending(message => message.TimestampUtc).ThenByDescending(message => message.CreatedAt).Select(message => message.ConversationId).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         return string.IsNullOrWhiteSpace(latest) ? null : latest;
     }
@@ -359,10 +336,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         await using AIChatHistoryDb dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        ChatHistoryMessage? entity = await dbContext.ChatHistoryMessages
-                .AsNoTracking()
-                .FirstOrDefaultAsync(message => message.MessageId == messageId, cancellationToken)
-                .ConfigureAwait(false);
+        ChatHistoryMessage? entity = await dbContext.ChatHistoryMessages.AsNoTracking().FirstOrDefaultAsync(message => message.MessageId == messageId, cancellationToken).ConfigureAwait(false);
 
         return entity is null ? null : ToPersisted(entity);
     }
@@ -387,26 +361,16 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         await using AIChatHistoryDb dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        IQueryable<ChatHistoryMessage> ordered = dbContext.ChatHistoryMessages
-                .AsNoTracking()
-                .Where(message => message.ConversationId == normalizedConversationId)
-                .OrderByDescending(message => message.TimestampUtc)
-                .ThenByDescending(message => message.CreatedAt);
+        IQueryable<ChatHistoryMessage> ordered = dbContext.ChatHistoryMessages.AsNoTracking().Where(message => message.ConversationId == normalizedConversationId).OrderByDescending(message => message.TimestampUtc).ThenByDescending(message => message.CreatedAt);
 
         if (take.HasValue)
         {
             ordered = ordered.Take(take.Value);
         }
 
-        List<ChatHistoryMessage> entities = await ordered
-            .OrderBy(message => message.TimestampUtc)
-            .ThenBy(message => message.CreatedAt)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var entities = await ordered.OrderBy(message => message.TimestampUtc).ThenBy(message => message.CreatedAt).ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        List<PersistedChatMessage> messages = entities
-            .Select(ToPersisted)
-            .ToList();
+        var messages = entities.Select(ToPersisted).ToList();
 
         return messages;
     }
@@ -430,9 +394,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         await using AIChatHistoryDb dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        ChatHistoryMessage? entity = await dbContext.ChatHistoryMessages
-                .FirstOrDefaultAsync(message => message.MessageId == messageId, cancellationToken)
-                .ConfigureAwait(false);
+        ChatHistoryMessage? entity = await dbContext.ChatHistoryMessages.FirstOrDefaultAsync(message => message.MessageId == messageId, cancellationToken).ConfigureAwait(false);
         if (entity is null)
         {
             return null;
@@ -452,13 +414,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-
-
-
-
-
-
-
     private async ValueTask<AIChatHistoryDb> CreateDbContextAsync(CancellationToken cancellationToken)
     {
         if (_dbContextFactory is not null)
@@ -467,9 +422,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         }
 
         DbContextOptionsBuilder<AIChatHistoryDb> optionsBuilder = new();
-        _ = optionsBuilder.UseSqlServer(
-                ResolveConnectionString(),
-                sqlOptions => sqlOptions.CommandTimeout(DefaultSqlCommandTimeoutSeconds));
+        _ = optionsBuilder.UseSqlServer(ResolveConnectionString(), sqlOptions => sqlOptions.CommandTimeout(DefaultSqlCommandTimeoutSeconds));
 
         return new AIChatHistoryDb(optionsBuilder.Options);
     }
@@ -488,10 +441,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             return [];
         }
 
-        return requestMessages
-                .Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType()))
-                .Where(message => !string.IsNullOrWhiteSpace(message.Text))
-                .ToArray();
+        return requestMessages.Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType())).Where(message => !string.IsNullOrWhiteSpace(message.Text)).ToArray();
     }
 
 
@@ -521,9 +471,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
     private static string GetSessionStateValue(AgentSession? session, string key, string fallback)
     {
-        if (session?.StateBag is not null
-            && session.StateBag.TryGetValue(key, out string? stateValue)
-            && !string.IsNullOrWhiteSpace(stateValue))
+        if (session?.StateBag is not null && session.StateBag.TryGetValue(key, out string? stateValue) && !string.IsNullOrWhiteSpace(stateValue))
         {
             return stateValue.Trim();
         }
@@ -533,9 +481,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             return fallback.Trim();
         }
 
-        return key.Equals("UserId", StringComparison.OrdinalIgnoreCase)
-                ? Environment.UserName
-                : "unknown";
+        return key.Equals("UserId", StringComparison.OrdinalIgnoreCase) ? Environment.UserName : "unknown";
     }
 
 
@@ -657,14 +603,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-    private async ValueTask PersistInteractionAsync(
-            string conversationId,
-            string agentId,
-            string userId,
-            string applicationId,
-            IReadOnlyList<ChatMessage> requestMessages,
-            IReadOnlyList<ChatMessage> responseMessages,
-            CancellationToken cancellationToken)
+    private async ValueTask PersistInteractionAsync(string conversationId, string agentId, string userId, string applicationId, IReadOnlyList<ChatMessage> requestMessages, IReadOnlyList<ChatMessage> responseMessages, CancellationToken cancellationToken)
     {
         await using AIChatHistoryDb dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
@@ -744,12 +683,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-    private List<ChatHistoryMessage> ToEntities(
-            IEnumerable<ChatMessage> messages,
-            string conversationId,
-            string agentId,
-            string userId,
-            string applicationId)
+    private List<ChatHistoryMessage> ToEntities(IEnumerable<ChatMessage> messages, string conversationId, string agentId, string userId, string applicationId)
     {
         HashSet<Guid> seenMessageIds = [];
         List<ChatHistoryMessage> entities = [];
@@ -843,20 +777,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
     private static Guid TryParseMessageId(string? messageId)
     {
-        return Guid.TryParse(messageId, out Guid parsedMessageId)
-                ? parsedMessageId
-                : Guid.NewGuid();
-    }
-
-
-
-
-
-
-
-
-    public void Dispose()
-    {
-        
+        return Guid.TryParse(messageId, out Guid parsedMessageId) ? parsedMessageId : Guid.NewGuid();
     }
 }
