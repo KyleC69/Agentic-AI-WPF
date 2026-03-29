@@ -1,4 +1,4 @@
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -6,6 +6,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 
 using DataIngestionLib.History.HistoryModels;
+using DataIngestionLib.HistoryModels;
 
 using MahApps.Metro.Controls;
 

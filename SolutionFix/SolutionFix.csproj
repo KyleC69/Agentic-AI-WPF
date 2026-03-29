@@ -23,6 +23,11 @@
 		<Folder Include="..\sql\" />
 		<None Include="..\sql\**\*" Link="sql\%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
+
+
+	<ItemGroup>
+	  <None Remove="..\.github\instructions\data-ingestion-lib.instructions.md" />
+	</ItemGroup>
 	  
 
 

@@ -9,10 +9,5 @@
 //
 //
 
-
-
-namespace DataIngestionLib.Contracts.Services;
-
-
-
+namespace DataIngestionLib.Models;
 

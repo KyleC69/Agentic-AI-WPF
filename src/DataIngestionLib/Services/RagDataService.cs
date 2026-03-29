@@ -1,22 +1,26 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         RagDataService.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051935
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
 using System.Collections.ObjectModel;
 
-using DataIngestionLib.Data;
-using DataIngestionLib.RAGModels;
+using DataIngestionLib.EFModels;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
+
 
 
 
@@ -54,11 +58,11 @@ public class RagDataService(ILogger<RagDataService> logger)
         {
             results.Add(new FullTextResults
             {
-                    Id = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Summary = reader.GetString(2),
-                    Keywords = reader.GetString(3).Split(','),
-                    Score = reader.GetDouble(4)
+                Id = reader.GetInt32(0),
+                Title = reader.GetString(1),
+                Summary = reader.GetString(2),
+                Keywords = reader.GetString(3).Split(','),
+                Score = reader.GetDouble(4)
             });
         }
 
@@ -78,7 +82,7 @@ public class RagDataService(ILogger<RagDataService> logger)
 
         try
         {
-            using RAGContext context = new();
+            using AIRemoteRagContext context = new(null);
             context.RemoteRags.Load();
             rags = context.RemoteRags.Local.ToObservableCollection();
         }
@@ -114,11 +118,11 @@ public class RagDataService(ILogger<RagDataService> logger)
         {
             results.Add(new FullTextResults
             {
-                    Id = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Summary = reader.GetString(2),
-                    Keywords = reader.GetString(3).Split(','),
-                    Score = reader.GetDouble(4)
+                Id = reader.GetInt32(0),
+                Title = reader.GetString(1),
+                Summary = reader.GetString(2),
+                Keywords = reader.GetString(3).Split(','),
+                Score = reader.GetDouble(4)
             });
         }
 

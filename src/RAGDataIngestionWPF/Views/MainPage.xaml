@@ -9,9 +9,7 @@
 
     x:Class="RAGDataIngestionWPF.Views.MainPage"
     Style="{DynamicResource MahApps.Styles.Page}"
-    mc:Ignorable="d"
-    d:DesignWidth="1000"
-    d:DesignHeight="700">
+    mc:Ignorable="d" Width="1200" Height="800">
 
     <Page.Resources>
     </Page.Resources>
@@ -62,9 +60,9 @@
                     <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
                                Text="{Binding RagTokenCount, StringFormat=Rag tokens: \{0\} / 10000}" />
                     <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding ToolTokenCount, StringFormat=Tool tokens: \{0\} / 3000}" />
-                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding InputToolTokenCount, StringFormat=Input tool tokens: \{0\}}" />
-                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding OutputToolTokenCount, StringFormat=Output tool tokens: \{0\}}" />
-                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding CachedToolTokenCount, StringFormat=Cached tool tokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding InputTokenCount, StringFormat=Input tokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding OutputTokenCount, StringFormat=Outputtokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding CachedInputTokenCount, StringFormat=Cached tokens: \{0\}}" />
                     <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding ReasoningTokenCount, StringFormat=Reasoning tokens: \{0\}}" />
                 </StackPanel>
                 <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
@@ -107,7 +105,21 @@
                                                                 HorizontalAlignment="Stretch"
                                                                 IsSelectionEnabled="True"
                                                                 BorderBrush="BlanchedAlmond" Markdown="{Binding Text}"
-                                                                MarkdownStyleName="DocumentStyleCompact" />
+                                                               >
+                                        <mdxam:MarkdownScrollViewer.Resources>
+                                            <!-- Override MdXaml alternating row color -->
+                                            <Style TargetType="TableCell" BasedOn="{StaticResource {x:Type TableCell}}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TableRow}}, Path=Tag}" Value="EvenTableRow">
+                                                        <Setter Property="Background" Value="#2A2A2A"/>
+                                                        <!-- dark alternate -->
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+
+
+                                        </mdxam:MarkdownScrollViewer.Resources>
+                                    </mdxam:MarkdownScrollViewer>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

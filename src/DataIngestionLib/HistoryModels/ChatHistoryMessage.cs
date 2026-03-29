@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         ChatHistoryMessage.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051927
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -12,7 +16,7 @@ using Microsoft.Data.SqlTypes;
 
 
 
-namespace DataIngestionLib.History.HistoryModels;
+namespace DataIngestionLib.HistoryModels;
 
 
 
@@ -29,7 +33,7 @@ public class ChatHistoryMessage
 
     public string ConversationId { get; set; } = null!;
 
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public SqlVector<float>? Embedding { get; set; }
 
@@ -42,7 +46,7 @@ public class ChatHistoryMessage
 
     public string? Summary { get; set; }
 
-    public DateTimeOffset TimestampUtc { get; set; }
+    public DateTime TimestampUtc { get; set; }
 
     public string UserId { get; set; } = null!;
 }

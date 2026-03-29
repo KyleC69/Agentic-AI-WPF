@@ -5,6 +5,7 @@
 // Author: GitHub Copilot
 
 using DataIngestionLib.Contracts;
+using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services;
 using DataIngestionLib.Services.Contracts;
@@ -57,7 +58,8 @@ public class ChatConversationServiceTests
     {
         agentFactory = agentFactory ?? new Mock<IAgentFactory>().Object;
         settings = settings ?? MakeSettingsMock().Object;
-        return new ChatConversationService(NullLoggerFactory.Instance, agentFactory, settings);
+        var identityService = new Mock<IHistoryIdentityService>().Object;
+        return new ChatConversationService(NullLoggerFactory.Instance, agentFactory, settings, identityService);
     }
 
     // -------------------------------------------------------------------------
@@ -69,18 +71,20 @@ public class ChatConversationServiceTests
     {
         var agentFactory = new Mock<IAgentFactory>().Object;
         var settings = MakeSettingsMock().Object;
+        var identityService = new Mock<IHistoryIdentityService>().Object;
 
         Assert.ThrowsExactly<ArgumentNullException>(
-            () => _ = new ChatConversationService(null!, agentFactory, settings));
+            () => _ = new ChatConversationService(null!, agentFactory, settings, identityService));
     }
 
     [TestMethod]
     public void ConstructorWithNullAgentFactoryThrowsArgumentNullException()
     {
         var settings = MakeSettingsMock().Object;
+        var identityService = new Mock<IHistoryIdentityService>().Object;
 
         Assert.ThrowsExactly<ArgumentNullException>(
-            () => _ = new ChatConversationService(NullLoggerFactory.Instance, null!, settings));
+            () => _ = new ChatConversationService(NullLoggerFactory.Instance, null!, settings, identityService));
     }
 
     // -------------------------------------------------------------------------
@@ -130,12 +134,6 @@ public class ChatConversationServiceTests
         var service = CreateService(settings: settings.Object);
 
         Assert.AreEqual("my-enterprise-app", service.ApplicationId);
-    }
-
-    [TestMethod]
-    public void UserIdReturnsEnvironmentUserName()
-    {
-        Assert.AreEqual(Environment.UserName, ChatConversationService.UserId);
     }
 
     // -------------------------------------------------------------------------

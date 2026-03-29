@@ -7,7 +7,6 @@
 
 
 
-using DataIngestionLib.History.HistoryModels;
 using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;

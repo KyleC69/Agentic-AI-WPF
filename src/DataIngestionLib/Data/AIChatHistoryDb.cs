@@ -1,13 +1,18 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         AIChatHistoryDb.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051919
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
 using DataIngestionLib.History.HistoryModels;
+using DataIngestionLib.HistoryModels;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +27,13 @@ namespace DataIngestionLib.Data;
 
 public class AIChatHistoryDb : DbContext
 {
-    public AIChatHistoryDb()
+
+
+
+
+
+
+    public AIChatHistoryDb() : base()
     {
     }
 
@@ -33,58 +44,43 @@ public class AIChatHistoryDb : DbContext
 
 
 
-    public AIChatHistoryDb(DbContextOptions<AIChatHistoryDb> options) : base(options)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        _ = optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CHAT_HISTORY"));
     }
-
-
-
-
-
-
-
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CHAT_HISTORY"));
-
-
-
-
-
-
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ChatHistoryMessage>(entity =>
+        var unused20 = modelBuilder.Entity<ChatHistoryMessage>(entity =>
         {
-            entity.HasKey(e => e.MessageId);
+            var unused19 = entity.HasKey(e => e.MessageId);
 
-            entity.ToTable(tb => tb.HasTrigger("tr_generate_embeddings"));
+            var unused18 = entity.ToTable(tb => tb.HasTrigger("tr_generate_embeddings"));
 
-            entity.HasIndex(e => new { e.ConversationId, e.TimestampUtc }, "IX_ChatHistoryMessages_Conversation_Timestamp");
+            var unused17 = entity.HasIndex(e => new { e.ConversationId, e.TimestampUtc }, "IX_ChatHistoryMessages_Conversation_Timestamp");
 
-            entity.Property(e => e.MessageId).ValueGeneratedNever();
-            entity.Property(e => e.AgentId).HasMaxLength(128);
-            entity.Property(e => e.ApplicationId).HasMaxLength(128);
-            entity.Property(e => e.ConversationId).HasMaxLength(128);
-            entity.Property(e => e.Embedding).HasMaxLength(1024);
-            entity.Property(e => e.Enabled).HasDefaultValue(false, "DF_ChatHistoryMessages_Enabled");
-            entity.Property(e => e.Role).HasMaxLength(32);
-            entity.Property(e => e.Summary).HasMaxLength(2000);
-            entity.Property(e => e.UserId).HasMaxLength(128);
+            var unused16 = entity.Property(e => e.MessageId).ValueGeneratedNever();
+            var unused15 = entity.Property(e => e.AgentId).HasMaxLength(128);
+            var unused14 = entity.Property(e => e.ApplicationId).HasMaxLength(128);
+            var unused13 = entity.Property(e => e.ConversationId).HasMaxLength(128);
+            var unused12 = entity.Property(e => e.Embedding).HasMaxLength(1024);
+            var unused11 = entity.Property(e => e.Enabled).HasDefaultValue(false, "DF_ChatHistoryMessages_Enabled");
+            var unused10 = entity.Property(e => e.Role).HasMaxLength(32);
+            var unused9 = entity.Property(e => e.Summary).HasMaxLength(2000);
+            var unused8 = entity.Property(e => e.UserId).HasMaxLength(128);
         });
 
-        modelBuilder.Entity<ChatHistoryTextChunk>(entity =>
+        var unused7 = modelBuilder.Entity<ChatHistoryTextChunk>(entity =>
         {
-            entity.HasKey(e => e.ChunkRecordId).HasName("PK__tmp_ms_x__B2ED0F6BA39E36A4");
+            var unused6 = entity.HasKey(e => e.ChunkRecordId).HasName("PK__tmp_ms_x__B2ED0F6BA39E36A4");
 
-            entity.HasIndex(e => e.Embedding, "VIX_ChatHistoryTextChunks_Embedding");
+            var unused5 = entity.HasIndex(e => e.Embedding, "VIX_ChatHistoryTextChunks_Embedding");
 
-            entity.Property(e => e.ChunkRecordId).HasColumnName("ChunkRecordID");
-            entity.Property(e => e.ChunkSetId).HasColumnName("ChunkSetID");
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysdatetime())", "DF__tmp_ms_xx__Creat__2FCF1A8A");
-            entity.Property(e => e.Embedding).HasMaxLength(1024);
-            entity.Property(e => e.MessageId).HasColumnName("MessageID");
+            var unused4 = entity.Property(e => e.ChunkRecordId).HasColumnName("ChunkRecordID");
+            var unused3 = entity.Property(e => e.ChunkSetId).HasColumnName("ChunkSetID");
+            var unused2 = entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysdatetime())", "DF__tmp_ms_xx__Creat__2FCF1A8A");
+            var unused1 = entity.Property(e => e.Embedding).HasMaxLength(1024);
+            var unused = entity.Property(e => e.MessageId).HasColumnName("MessageID");
         });
 
 

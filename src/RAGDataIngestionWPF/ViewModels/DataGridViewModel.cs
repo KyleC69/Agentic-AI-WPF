@@ -12,7 +12,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using DataIngestionLib.RAGModels;
+using DataIngestionLib.EFModels;
 
 using Microsoft.Extensions.Logging;
 
