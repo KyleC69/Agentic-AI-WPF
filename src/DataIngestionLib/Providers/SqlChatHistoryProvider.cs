@@ -337,7 +337,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
     private async ValueTask<AIChatHistoryDb> CreateDbContextAsync(CancellationToken cancellationToken)
     {
-        return new AIChatHistoryDb(null);
+        return new AIChatHistoryDb();
     }
 
 
