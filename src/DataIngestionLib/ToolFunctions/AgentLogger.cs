@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AgentLogger.cs
 // Author: Kyle L. Crowder
-// Build Num: 044300
+// Build Num: 073011
 
 
 
@@ -28,6 +28,7 @@ namespace DataIngestionLib.ToolFunctions;
 public sealed class AgentLogger
 {
     private readonly string _logFile;
+    private const string LogsDirectoryName = "logs";
 
 
 
@@ -39,11 +40,24 @@ public sealed class AgentLogger
     /// <summary>
     ///     Initializes a new instance of the <see cref="AgentLogger" /> class.
     /// </summary>
-    public AgentLogger()
+    public AgentLogger() : this(Environment.CurrentDirectory)
     {
-        //TODO: Make log directory configurable via IAppSettings and dependency injection
-        _ = Directory.CreateDirectory("\\logs");
-        _logFile = Path.Combine("\\logs", "agent.log");
+    }
+
+
+
+
+
+
+
+
+    internal AgentLogger(string sandboxRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sandboxRoot);
+
+        var logRoot = Path.Combine(SandboxPathResolver.NormalizeRoot(sandboxRoot), LogsDirectoryName);
+        _ = Directory.CreateDirectory(logRoot);
+        _logFile = Path.Combine(logRoot, "agent.log");
     }
 
 
@@ -92,7 +106,7 @@ public sealed class AgentLogger
 
         try
         {
-            var line = $"{DateTime.UtcNow:O} | {message}";
+            var line = $"{DateTime.Now:O} | {message}";
             File.AppendAllLines(_logFile, [line]);
             return ToolResult<string>.Ok("Message logged.");
         }

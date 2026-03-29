@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         WebSearchPlugin.cs
 // Author: Kyle L. Crowder
-// Build Num: 044305
+// Build Num: 073018
 
 
 
@@ -25,11 +25,7 @@ public sealed class WebSearchPlugin
 {
     private readonly HttpClient _httpClient;
 
-    private static readonly JsonSerializerOptions WriteOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        WriteIndented = true
-    };
+    private static readonly JsonSerializerOptions WriteOptions = new() { PropertyNameCaseInsensitive = true, WriteIndented = true };
 
 
 
@@ -52,7 +48,7 @@ public sealed class WebSearchPlugin
 
 
 
-    private async Task<ToolResult<string>> ReRankResults(string documents, CancellationToken cancellationToken)
+    internal async Task<ToolResult<string>> ReRankResults(string documents, CancellationToken cancellationToken)
     {
 
 
@@ -72,24 +68,20 @@ public sealed class WebSearchPlugin
             request.Headers.Authorization = new("Bearer", apiKey);
             request.Headers.Accept.ParseAdd("application/json");
 
-            var body = new
-            {
-                    documents,
-                    model = "langsearch-reranker-v1"
-            };
+            var body = new { documents, model = "langsearch-reranker-v1" };
 
 
-                var jsonBody = JsonSerializer.Serialize(body, WriteOptions);
+            var jsonBody = JsonSerializer.Serialize(body, WriteOptions);
             request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResult<string>.Fail($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {errorBody}");
             }
 
-            var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
+            var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             string jsonNorm;
             try
             {
@@ -111,7 +103,7 @@ public sealed class WebSearchPlugin
             }
 
             // 3. Pretty-print
-                var pretty = JsonSerializer.Serialize(doc, WriteOptions);
+            var pretty = JsonSerializer.Serialize(doc, WriteOptions);
 
             return ToolResult<string>.Ok(pretty);
 
@@ -170,28 +162,22 @@ public sealed class WebSearchPlugin
             request.Headers.Authorization = new("Bearer", apiKey);
             request.Headers.Accept.ParseAdd("application/json");
 
-            var body = new
-            {
-                    query = strquery,
-                    count = maxResults,
-                    freshness = "oneMonth",
-                    summary = false
-            };
+            var body = new { query = strquery, count = maxResults, freshness = "oneMonth", summary = false };
 
 
-                var jsonBody = JsonSerializer.Serialize(body, WriteOptions);
+            var jsonBody = JsonSerializer.Serialize(body, WriteOptions);
             request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResult<string>.Fail($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {errorBody}");
             }
 
-            var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
+            var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-            var rerankedresponse = await ReRankResults(jsonResponse, cancellationToken);
+            var rerankedresponse = await ReRankResults(jsonResponse, cancellationToken).ConfigureAwait(false);
 
             return rerankedresponse;
 

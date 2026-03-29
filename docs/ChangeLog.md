@@ -1,4 +1,4 @@
----
+﻿---
 title: Change Log
 path: /docs/ChangeLog.md
 purpose: Track notable repository-level documentation and implementation milestones for developers following project evolution.
@@ -23,7 +23,6 @@ See also: [/docs/DocumentationManifest.md](/docs/DocumentationManifest.md)
 ### Documentation
 
 - Added `/docs/Architecture.md` to give new developers a high-level map of the solution structure and runtime responsibilities.
-- Added `/docs/Capabilities.md` to summarize the major scenarios and features demonstrated by the repository.
 - Updated `/docs/DocumentationManifest.md` to register the active documentation set under `/docs`.
 - Refreshed `/README.md` to point to the new docs and to use the repository's current solution and project paths.
 

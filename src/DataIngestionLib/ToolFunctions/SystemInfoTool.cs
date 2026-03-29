@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         SystemInfoTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 044304
+// Build Num: 073017
 
 
 
@@ -21,13 +21,7 @@ public sealed class SystemInfoTool
 {
     public static ToolResult<SystemInfoSnapshot> GetInfo()
     {
-        return ToolResult<SystemInfoSnapshot>.Ok(new()
-        {
-                Os = Environment.OSVersion.ToString(),
-                MachineName = Environment.MachineName,
-                ProcessorCount = Environment.ProcessorCount,
-                DotNetVersion = Environment.Version.ToString()
-        });
+        return ToolResult<SystemInfoSnapshot>.Ok(new() { Os = Environment.OSVersion.ToString(), MachineName = Environment.MachineName, ProcessorCount = Environment.ProcessorCount, DotNetVersion = Environment.Version.ToString() });
     }
 }
 

@@ -18,7 +18,6 @@ using System.Windows.Threading;
 using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.DocIngestion;
 using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
 
@@ -88,8 +87,8 @@ public sealed partial class App : Application
                     {
                         options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions
                         {
-                                Indented = true,
-                                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                            Indented = true,
+                            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                         };
                     });
                     ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
@@ -317,6 +316,7 @@ public sealed partial class App : Application
         IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
         IServiceCollection unused4 = services.AddSingleton<IChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
         IServiceCollection unused5 = services.AddSingleton<ISQLChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
+        services.AddSingleton<AIContextRAGInjector>();
         IServiceCollection unused2 = services.AddSingleton<IAgentFactory, AgentFactory>();
 
         IServiceCollection unused1 = services.AddSingleton<ChatHistoryContextInjector>();
@@ -336,7 +336,6 @@ public sealed partial class App : Application
         _ = services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
         _ = services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
         _ = services.AddSingleton<ISystemService, SystemService>();
-        _ = services.AddSingleton<LearningHtmlRunner>();
         _ = services.AddSingleton<IAppSettings, AppSettings>();
         _ = services.AddSingleton<IChatConversationService, ChatConversationService>();
         _ = services.AddSingleton<IPageService, PageService>();

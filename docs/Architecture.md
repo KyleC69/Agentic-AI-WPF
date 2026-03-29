@@ -1,4 +1,4 @@
----
+﻿---
 title: Architecture
 path: /docs/Architecture.md
 purpose: Explain the major solution layers, responsibilities, and runtime flow for developers new to the repository.
@@ -24,12 +24,12 @@ See also: [/docs/DocumentationManifest.md](/docs/DocumentationManifest.md)
 
 The repository is organized around a WPF desktop host and a reusable library that contains the AI, RAG, and data-ingestion behavior.
 
-| Project | Path | Responsibility |
-| ------- | ---- | -------------- |
-| WPF application | `/src/RAGDataIngestionWPF` | Desktop shell, startup, dependency injection, navigation, and view orchestration |
-| Core UI infrastructure | `/src/RAGDataIngestionWPF.Core` | Shared app services and non-agent support models used by the WPF shell |
-| Data and agent library | `/src/DataIngestionLib` | Agent composition, tool functions, RAG context injection, chat history, and ingestion logic |
-| Tests | `/tests/RAGDataIngestionWPF.Tests.MSTest` | MSTest coverage for repository behavior and edge cases |
+| Project                | Path                                      | Responsibility                                                                              |
+| ---------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------- |
+| WPF application        | `/src/RAGDataIngestionWPF`                | Desktop shell, startup, dependency injection, navigation, and view orchestration            |
+| Core UI infrastructure | `/src/RAGDataIngestionWPF.Core`           | Shared app services and non-agent support models used by the WPF shell                      |
+| Data and agent library | `/src/DataIngestionLib`                   | Agent composition, tool functions, RAG context injection, chat history, and ingestion logic |
+| Tests                  | `/tests/RAGDataIngestionWPF.Tests.MSTest` | MSTest coverage for repository behavior and edge cases                                      |
 
 ## Layering
 
@@ -64,6 +64,7 @@ This project is the main place to look when you want to understand the repositor
 
 `/tests/RAGDataIngestionWPF.Tests.MSTest` validates behavior with MSTest. The tests are the best executable reference for expected behavior around context injection, identity, and tool boundaries.
 
+
 ## Runtime flow
 
 At a high level, the application starts and runs through the following sequence:
@@ -76,6 +77,8 @@ At a high level, the application starts and runs through the following sequence:
 
 ## Key architectural themes
 
+* 
+
 ### Dependency injection
 
 The repository uses the Generic Host pattern so services can be composed consistently across the UI and library projects.
@@ -86,7 +89,7 @@ The WPF project is the composition root and presentation layer. The reusable log
 
 ### Persistent context
 
-The repository uses SQL-backed chat history and RAG context providers to preserve state and rehydrate relevant context across turns.
+See [/docs/ContextManagement.md](/docs/ContextManagement.md)
 
 ### Local-first developer workflow
 
@@ -95,6 +98,5 @@ The repository is designed for local development with a Windows desktop shell, .
 ## Suggested entry points for new developers
 
 - Start with `/README.md` for setup and repository positioning.
-- Read `/docs/Capabilities.md` for a feature-oriented overview.
 - Explore `/src/RAGDataIngestionWPF/App.xaml.cs` to understand startup and DI wiring.
 - Explore `/src/DataIngestionLib` for the core agent and ingestion implementation.

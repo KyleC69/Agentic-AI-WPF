@@ -43,15 +43,6 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("gpt-oss:cloud")]
-        public string ChatModel {
-            get {
-                return ((string)(this["ChatModel"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("mxbai-embed-large:latest")]
         public string EmbeddingModel {
             get {
@@ -106,15 +97,6 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://learn.microsoft.com/en-us/agent-framework")]
-        public string LearnBaseUrl {
-            get {
-                return ((string)(this["LearnBaseUrl"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("\\logs")]
         public string LogDirectory {
             get {
@@ -142,7 +124,61 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("[Guid(\"15A53D0F-041D-44DD-A150-DFB8D0F133FF\")]")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Agentic-Max")]
+        public string AgentId {
+            get {
+                return ((string)(this["AgentId"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ChatHistoryConnectionString {
+            get {
+                return ((string)(this["ChatHistoryConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RemoteRAGConnectionString {
+            get {
+                return ((string)(this["RemoteRAGConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ResumeLast {
+            get {
+                return ((bool)(this["ResumeLast"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("gpt-oss:cloud")]
+        public string ChatModel {
+            get {
+                return ((string)(this["ChatModel"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://learn.microsoft.com/en-us/agent-framework")]
+        public string LearnBaseUrl {
+            get {
+                return ((string)(this["LearnBaseUrl"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15A53D0F-041D-44DD-A150-DFB8D0F133FF")]
         public string ApplicationId {
             get {
                 return ((string)(this["ApplicationId"]));
@@ -164,24 +200,6 @@ namespace RAGDataIngestionWPF.Properties {
         public string UserName {
             get {
                 return ((string)(this["UserName"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ChatHistoryConnectionString {
-            get {
-                return ((string)(this["ChatHistoryConnectionString"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string RemoteRAGConnectionString {
-            get {
-                return ((string)(this["RemoteRAGConnectionString"]));
             }
         }
     }

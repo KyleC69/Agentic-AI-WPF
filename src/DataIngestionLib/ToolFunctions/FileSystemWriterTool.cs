@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         FileSystemWriterTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 044302
+// Build Num: 073013
 
 
 
@@ -24,6 +24,13 @@ public sealed class FileSystemWriterTool
 
     private readonly string _sandboxRoot;
 
+
+
+
+
+
+
+
     public FileSystemWriterTool(string sandboxRoot)
     {
         if (string.IsNullOrWhiteSpace(sandboxRoot))
@@ -31,12 +38,18 @@ public sealed class FileSystemWriterTool
             throw new ArgumentException("Sandbox root cannot be empty.", nameof(sandboxRoot));
         }
 
-        _sandboxRoot = Path.GetFullPath(sandboxRoot);
+        _sandboxRoot = SandboxPathResolver.NormalizeRoot(sandboxRoot);
     }
 
+
+
+
+
+
+
+
     [Description("Write text content to a file. Path is relative to the sandbox root. Creates or overwrites the file.")]
-    public ToolResult<string> WriteText([Description("File path relative to sandbox root")] string path,
-        [Description("Text content to write")] string content)
+    public ToolResult<string> WriteText([Description("File path relative to sandbox root")] string path, [Description("Text content to write")] string content)
     {
 
 
@@ -47,10 +60,14 @@ public sealed class FileSystemWriterTool
 
         try
         {
-            var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, path));
-            if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
+            if (!SandboxPathResolver.TryResolveFilePath(_sandboxRoot, path, out var fullPath, out var error))
             {
-                return ToolResult<string>.Fail("Access denied: path is outside the sandbox.");
+                return ToolResult<string>.Fail(error!);
+            }
+
+            if (fullPath == null)
+            {
+                return ToolResult<string>.Fail("Resolved file path was not available.");
             }
 
             File.WriteAllText(fullPath, content);

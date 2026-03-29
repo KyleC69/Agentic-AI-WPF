@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         EventLogReader.cs
 // Author: Kyle L. Crowder
-// Build Num: 044301
+// Build Num: 073012
 
 
 
@@ -93,8 +93,7 @@ public sealed class SandboxEventLogReader(int maxEvents = 100)
         {
             using EventLog log = new(logName);
 
-            var entries = log.Entries
-                    .Cast<EventLogEntry>()
+            var entries = log.Entries.Cast<EventLogEntry>()
                     .Reverse() // newest first
                     .Take(_maxEvents)
                     .Select(e => new EventLogEntryDto

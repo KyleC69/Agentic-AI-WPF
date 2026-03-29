@@ -848,8 +848,15 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 : Guid.NewGuid();
     }
 
+
+
+
+
+
+
+
     public void Dispose()
     {
-        throw new NotImplementedException();
+        
     }
 }

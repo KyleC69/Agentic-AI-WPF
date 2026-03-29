@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIModels.cs
 // Author: Kyle L. Crowder
-// Build Num: 044241
+// Build Num: 072952
 
 
 
@@ -15,6 +15,10 @@ namespace DataIngestionLib.Models;
 
 public record AIModels
 {
+
+    public const string BGE_RERANKER = "bbjson/bge-reranker-base:latest";
+
+    public const string GEMMA3 = "gemma3:4b-cloud";
 
     /// <summary>OpenAI GPT-4 cloud model identifier.</summary>
     public const string GPT4 = "gpt-4";

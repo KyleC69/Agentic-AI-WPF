@@ -1,294 +1,153 @@
+﻿---
+
+name: README.md
+description: README for RAGDataIngestionWPF repository
+updated: 2026-03-24
+
+---
+
+Last Update: 3/24/26
+
 # RAGDataIngestionWPF
 
-A **WPF desktop application** that demonstrates key capabilities of the [Microsoft Agent Framework (MAF)](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview) — including AI agent construction, tool invocation, SQL-backed chat history, RAG (Retrieval-Augmented Generation) context injection, and middleware pipeline composition — all hosted within a Generic Host + DI WPF shell.
+A WPF desktop application and supporting libraries demonstrates creating Agentic AI's with Microsoft's Agent Framework using local models, including tool function calling. Due to new framework advancements, it now supports RAG-oriented context handling through middleware components that can manage retrieval, history, and context injection in a flexible way. The current implementation includes a SQL Server-based chat history provider and context injector that can leverage new SQL Server 2025 features for vector search and BM25-based ranking to enhance the agent's retrieval capabilities. The project is designed to be extensible and adaptable, allowing for different configurations of context management and retrieval strategies as needed.
 
-> **Status:** Active development / reference implementation. Targets **.NET 10 Preview** and **Microsoft Agent Framework 1.0-rc3**.
+**Hard limit to .Net10 by design to target Windows 10 at minimum.**
+
+*Status: active development. The current solution targets .NET 10 Windows TFMs and `DataIngestionLib` currently references Microsoft Agent Framework `1.0.0-rc4` packages.*
+
+> **Important Constraints:** This projects intent is to create an Agentic AI using local models as if in an air-gapped environment. As of today there are no libraries that fully implement the Agent Framework with the ability to use a local model by file with tools and tool function calling. I tried many when I started this project including ONNXRuntime and connectors in Semantic Kernel. The only library that I found that could work was OllamaSharp, paired with the Ollama local model server and Caddy to act as reverse proxy for SQL operations. This requires the Ollama server to run locally and for the application to set the endpoint to the local Ollama server. This is the only way I found to use a local model with the Agent Framework and tool function calls it would'nt be Agentic without tools, which is a core requirement for this project.
+
+**Additionally** , this project uses preview features within SQL server 2025 for vector search capabilities and internal functions in preview which include using external LLM's within SQL in stored procedures. This means that the project requires a SQL Server 2025 instance with the appropriate preview features enabled to fully utilize the chat history and retrieval components. SQL Server 2025 is currently in preview and available for download from the Microsoft website. I highly recommend using SSMS for SQL Server management and query editing. Some advanced features and the Vector datatype are not fully recognized in VS2026s SQL Server Object Explorer.
 
 ---
 
 ## Table of Contents
 
 - [Project Purpose](#project-purpose)
+- [Quick Start - Without SQL](#quick-start)
 - [Documentation](#documentation)
-- [Architecture Overview](#architecture-overview)
 - [Solution Structure](#solution-structure)
-- [Key Agent Framework Capabilities Demonstrated](#key-agent-framework-capabilities-demonstrated)
+- [Current Implementation Highlights](#current-implementation-highlights)
 - [Technology Stack](#technology-stack)
+- [SQL Server 2025 Dependency](#sql-server-2025-dependency)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
 - [Running Tests](#running-tests)
-- [Known Issues / Work in Progress](#known-issues--work-in-progress)
-
----
 
 ## Project Purpose
 
-`RAGDataIngestionWPF` is an **example application** whose primary goal is to show how to compose a production-quality AI agent desktop application using:
+`RAGDataIngestionWPF` currently contains:
 
-- **Microsoft Agent Framework** (`Microsoft.Agents.AI` + `Microsoft.Agents.AI.Workflows`) for agent creation, session management, context providers, and middleware pipelines.
-- **Microsoft.Extensions.AI** abstractions for provider-agnostic chat client integration.
-- **Ollama** as the local LLM provider (swappable via DI).
-- **SQL Server / LocalDB** for durable, conversation-scoped chat history with EF Core 10.
-- **RAG (Retrieval-Augmented Generation)** via a hybrid SQL Server search stack (vector, semantic, full-text).
-- **WPF + MahApps.Metro** for the desktop UI shell with Generic Host lifecycle management.
+- a WPF composition root in `src/RAGDataIngestionWPF`
+- a UI-agnostic agent, ingestion, history, and tool library in `src/DataIngestionLib`
+- shared UI infrastructure in `src/RAGDataIngestionWPF.Core`
+- an MSTest suite in `tests/RAGDataIngestionWPF.Tests.MSTest`
 
----
+The repository is useful as a reference for wiring together a desktop shell, host-based dependency injection, Microsoft Agent Framework integrations, and a growing set of local Windows diagnostics tools.
+
+## Quick Start
+
+I have gated SQL operation behind a compiler directive to allow the project to build and run without SQL Server, but for the full experience including chat history and RAG context management, SQL Server 2025 is required.
+To run the project without SQL Server, simply ensure that the `SQL` compiler directive is not defined in the project settings. This will allow the application to use in-memory implementations for chat history and context management, enabling you to explore the agent's capabilities without setting up a SQL Server instance.
 
 ## Documentation
 
-The `/docs` folder contains the developer-facing documentation entry points for this repository:
+The `docs` folder currently contains these developer-facing entry points:
 
-- [`/docs/DocumentationManifest.md`](/docs/DocumentationManifest.md) — index of maintained documentation
-- [`/docs/Architecture.md`](/docs/Architecture.md) — high-level solution and layering overview
-- [`/docs/Capabilities.md`](/docs/Capabilities.md) — feature-oriented summary of what the repository demonstrates
-- [`/docs/ChangeLog.md`](/docs/ChangeLog.md) — narrative change log for notable repository updates
+- [`/docs/DocumentationManifest.md`](/docs/DocumentationManifest.md) - index of maintained documentation
+- [`/docs/Architecture.md`](/docs/Architecture.md) - high-level solution and layering overview
+- [`/docs/Components.md`](/docs/Components.md) - component inventory across the solution
+- [`/docs/ContextManagement.md`](/docs/ContextManagement.md) - context, history, and RAG state model
+- [`/docs/ChangeLog.md`](/docs/ChangeLog.md) - narrative change log for notable repository updates
+- [`/docs/RAG Search Strategy.md`](/docs/RAG%20Search%20Strategy.md) - repository notes about retrieval strategy
 
-Start with the manifest if you are new to the repository and want the shortest path to the right document.
+The `sql` folder contains SQL scripts used to set up the database components of the solution, including stored procedures, triggers, and table definitions.
 
----
+- [`/sql/README.md`](/sql/README.md) - important notes on SQL database dependencies, setup, and configuration for the project
 
-## Architecture Overview
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                      RAGDataIngestionWPF (WPF UI)                │
-│  App.xaml.cs (Generic Host / DI root)                            │
-│  ViewModels  ←→  IChatConversationService                        │
-└────────────────────────┬─────────────────────────────────────────┘
-                         │ depends on
-┌────────────────────────▼─────────────────────────────────────────┐
-│                        DataIngestionLib                           │
-│                                                                   │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │  Agents                                                      │ │
-│  │  ├── AgentFactory         — builds AIAgent via MAF pipeline  │ │
-│  │  └── ChatConversationService — orchestrates agent sessions   │ │
-│  ├─────────────────────────────────────────────────────────────┤ │
-│  │  ToolFunctions (AIFunctionFactory tools exposed to agent)   │ │
-│  │  ├── SandboxFileReader / SandboxFileWriter                   │ │
-│  │  ├── WebSearchPlugin      — external search via LangSearch   │ │
-│  │  ├── SystemInfoTool       — OS / machine info                │ │
-│  │  ├── AgentLogger          — structured agent activity log    │ │
-│  │  └── SafeCommandRunner    — sandboxed shell command runner   │ │
-│  ├─────────────────────────────────────────────────────────────┤ │
-│  │  Services / Context Injectors (MAF MessageAIContextProvider) │ │
-│  │  ├── AIContextHistoryInjector  — SQL-backed history window   │ │
-│  │  ├── AIContextHistoryInjector2a — MAF pipeline variant      │ │
-│  │  └── AIContextRAGInjector      — RAG source aggregator      │ │
-│  ├─────────────────────────────────────────────────────────────┤ │
-│  │  EFModels / SqlChatHistoryProvider                           │ │
-│  │  └── KnowledgeBaseContext  — EF Core + stored procedures     │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────────────┘
-                         │
-┌────────────────────────▼─────────────────────────────────────────┐
-│                    RAGDataIngestionWPF.Core                       │
-│  File, Identity, Graph, SampleData services (UI infrastructure)  │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### Key Architectural Layers
-
-| Layer | Responsibility |
-|---|---|
-| **RAGDataIngestionWPF** (UI) | WPF shell, DI root, view-models, navigation, theming |
-| **DataIngestionLib** | All AI, agent, RAG, and history logic — no UI dependencies |
-| **RAGDataIngestionWPF.Core** | UI infrastructure: file service, identity stub, MS Graph |
-| **Tests.MSTest** | Unit tests for `DataIngestionLib` services and injectors |
-
----
+Start with the manifest if you want the quickest route to the right document.
 
 ## Solution Structure
 
-```
+```text
 RAGDataIngestionWPF/
-├── RAGDataIngestionWPF/            # WPF application (UI shell)
-│   ├── App.xaml.cs                 # Generic Host + DI root
-│   ├── ViewModels/                 # MVVM view-models
-│   ├── Views/                      # XAML pages
-│   ├── Services/                   # Navigation, theming, identity cache
-│   └── appsettings.json            # Configuration (AI endpoint, history DB)
-│
-├── DataIngestionLib/               # Core AI and agent library
-│   ├── Agents/
-│   │   ├── AgentFactory.cs         # Builds and configures AIAgent
-│   │   └── ChatConversationService.cs  # Manages agent session lifecycle
-│   ├── Contracts/                  # Interfaces (ISP-aligned)
-│   │   └── Services/
-│   │       ├── IAgentFactory.cs
-│   │       ├── IChatConversationService.cs
-│   │       ├── IChatHistoryMemoryProvider.cs  # Narrow: read/write
-│   │       ├── IAIContextHistoryInjector.cs   # Full: prune/update/delete
-│   │       ├── IAgentIdentityProvider.cs
-│   │       ├── IRagContextSource.cs
-│   │       └── IRuntimeContextAccessor.cs
-│   ├── Services/
-│   │   ├── ContextInjectors/
-│   │   │   ├── AIContextHistoryInjector.cs    # SQL-backed MAF context provider
-│   │   │   ├── AIContextHistoryInjector2a.cs  # MAF MessageAIContextProvider variant
-│   │   │   └── AIContextRAGInjector.cs        # RAG source aggregator
-│   │   ├── FixedAgentIdentityProvider.cs
-│   │   ├── SqlChatHistoryProvider.cs
-│   │   └── ChatHistoryInitializationService.cs
-│   ├── ToolFunctions/
-│   │   ├── ToolBuilder.cs          # Assembles tool list for agent
-│   │   ├── SandboxFileReader.cs    # Sandboxed file read tool
-│   │   ├── SandboxFileWriter.cs    # Sandboxed file write tool
-│   │   ├── WebSearchPlugin.cs      # Web search via LangSearch API
-│   │   ├── SystemInfoTool.cs       # OS/machine information tool
-│   │   ├── AgentLogger.cs          # Agent activity logger tool
-│   │   ├── SafeCommandRunner.cs    # Sandboxed command runner
-│   │   ├── EventLogReader.cs       # Windows Event Log reader
-│   │   ├── RagSearchTool.cs        # RAG retrieval tool (placeholder)
-│   │   ├── RegistryReaderTool.cs   # Windows Registry reader
-│   │   └── AgentRunMiddleWare.cs   # Agent pipeline middleware (WIP)
-│   ├── EFModels/                   # EF Core models + KnowledgeBaseContext
-│   ├── Models/                     # AIChatMessage, ChatHistory, etc.
-│   └── Options/                    # ChatHistoryOptions, ChatSessionOptions
-│
-├── RAGDataIngestionWPF.Core/       # UI infrastructure library
-│   ├── Services/                   # FileService, IdentityService, GraphService
-│   └── Models/                     # User, SampleOrder, SampleCompany
-│
-└── RAGDataIngestionWPF.Tests.MSTest/  # Unit tests
-    ├── AIContextHistoryInjectorTests.cs
-    ├── EventLogReaderTests.cs
-    └── FixedAgentIdentityProviderTests.cs
+├── docs/                               # Developer-facing documentation
+├── src/
+│   ├── RAGDataIngestionWPF/            # WPF application and composition root
+│   ├── DataIngestionLib/               # Agent, RAG, ingestion, and tool library
+│   └── RAGDataIngestionWPF.Core/       # Shared UI infrastructure
+├── tests/
+│   └── RAGDataIngestionWPF.Tests.MSTest/  # MSTest unit and integration coverage
+└── SolutionFix/                        # A no-op project to fix Solution Explorer - Maintains proper visual of solution structure without affecting build or dependencies
 ```
 
----
+### Current Projects
 
-## Key Agent Framework Capabilities Demonstrated
+| Project | Current role |
+| --- | --- |
+| `src/RAGDataIngestionWPF` | WPF app, host startup, views, view models, navigation, theming, and application orchestration |
+| `src/DataIngestionLib` | AI agent composition, contracts, services, providers, ingestion workflows, models, and agent-visible tools |
+| `src/RAGDataIngestionWPF.Core` | Shared UI-supporting contracts, helpers, models, and services |
+| `tests/RAGDataIngestionWPF.Tests.MSTest` | MSTest coverage for library, UI-supporting services, and integration slices |
 
-### 1. AI Agent Construction with ChatClientBuilder Pipeline
+## Current Implementation Highlights
 
-`AgentFactory` demonstrates how to assemble a `Microsoft.Agents.AI.AIAgent` from an `IChatClient` using the fluent `ChatClientBuilder` pipeline:
+The repository currently includes the following observable implementation areas:
 
-```csharp
-IChatClient outer = new ChatClientBuilder(_innerClient)
-    .UseLogging(_factory)
-    .UseFunctionInvocation()
-    .ConfigureOptions(chatOptions =>
-    {
-        chatOptions.Instructions = _modelInstructions;
-        chatOptions.Temperature = 0.7f;
-    })
-    .Build();
-
-return outer.AsAIAgent(tools: ToolBuilder.GetAiTools());
-```
-
-This wires together:
-- **Logging middleware** — structured logging of every request/response
-- **Function invocation middleware** — automatic tool dispatch from model responses
-- **System instructions** — injected as the agent's persona/constraints
-- **Tool registration** — `AIFunctionFactory`-created tools exposed to the model
-
-### 2. Agent Sessions (`AgentSession`)
-
-`ChatConversationService` shows how to create and reuse an `AgentSession` for multi-turn conversations:
-
-```csharp
-_agentSession = _agent.CreateSessionAsync().Result;
-// Later, per turn:
-AgentResponse response = await _agent.RunAsync(userMessage, _agentSession, null, cancellationToken);
-```
-
-Sessions maintain conversation context across turns without manual message threading.
-
-### 3. Tool Functions via `AIFunctionFactory`
-
-Agent tools are registered using `Microsoft.Extensions.AI.AIFunctionFactory.Create`, making .NET methods callable by the LLM:
-
-| Tool | Class | Capability |
-|---|---|---|
-| File read | `SandboxFileReader` | Read files within a sandboxed directory |
-| File write | `SandboxFileWriter` | Write files within a sandboxed directory |
-| Web search | `WebSearchPlugin` | Query LangSearch API and return results |
-| System info | `SystemInfoTool` | Return OS, machine name, .NET version |
-| Agent logger | `AgentLogger` | Append timestamped log entries |
-| Shell commands | `SafeCommandRunner` | Execute an allow-listed set of shell commands |
-
-### 4. SQL-Backed Durable Chat History
-
-`SqlChatHistoryProvider` + `AIContextHistoryInjector` provide a full conversation persistence stack:
-
-- Messages are stored per `(conversationId, sessionId, agentId, userId, applicationId)`.
-- `AIContextHistoryInjector.BuildContextMessagesAsync` retrieves a windowed view of history (capped by `MaxContextMessages`) and deduplicates against the current request.
-- `PruneConversationAsync` trims oldest messages when the conversation exceeds the configured limit.
-- `ChatHistoryInitializationService` (an `IHostedService`) ensures the database is initialized and restores the last active session on startup.
-
-### 5. RAG Context Injection (`AIContextRAGInjector`)
-
-`AIContextRAGInjector` extends `MessageAIContextProvider` to aggregate context from multiple `IRagContextSource` implementations and prepend them to each agent invocation. This enables a hybrid retrieval strategy:
-
-- Vector search
-- Semantic search
-- Full-text search
-
-All backed by SQL Server with EF Core (`KnowledgeBaseContext`).
-
-### 6. Interface Segregation for Context Providers
-
-The contract hierarchy demonstrates ISP in practice:
-
-- `IChatHistoryMemoryProvider` — narrow interface: `BuildContextMessagesAsync` + `StoreMessagesAsync`
-- `IAIContextHistoryInjector` — extends with full lifecycle: `PruneConversationAsync`, `UpdateMessageContentAsync`, `DeleteMessageAsync`
-- `IAgentIdentityProvider` — decouples agent ID from hard-coded strings; `FixedAgentIdentityProvider` provides the startup default
-
-### 7. Generic Host Integration
-
-`App.xaml.cs` registers all services via `IHostBuilder` / `IServiceCollection`, following the WPF Generic Host pattern:
-
-- `ApplicationHostService` controls window activation as an `IHostedService`
-- `ChatHistoryInitializationService` initializes the history DB on startup
-- `ToastNotificationActivationHandler` handles toast-activated launch
-
-### 8. Declarative Workflow Support
-
-The `DataIngestionLib.csproj` references:
-- `Microsoft.Agents.AI.Workflows` — for graph-based multi-step agent workflows
-- `Microsoft.Agents.AI.Declarative` — for declarative agent configuration
-- `Microsoft.Agents.AI.A2A` — for agent-to-agent communication patterns
-
-These packages enable composing agents into sequential, concurrent, or hand-off orchestration patterns.
-
----
+- WPF host composition in `src/RAGDataIngestionWPF/App.xaml.cs`
+- agent orchestration and chat services under `src/DataIngestionLib/Agents` and `src/DataIngestionLib/Services`
+- contracts and service seams under `src/DataIngestionLib/Contracts`
+- ingestion and provider code under `src/DataIngestionLib/DocIngestion`, `src/DataIngestionLib/Providers`, and related folders
+- staged retrieval/search strategy in `src/DataIngestionLib/Providers/SqlChatHistoryProvider.cs`: broad full-text retrieval first, BM25-based concentration/ranking next, and semantic vector-similarity refinement when vector matches are available
+- read-only agent tool registration through `src/DataIngestionLib/ToolFunctions/ToolBuilder.cs`
+- a Windows diagnostics tool set that currently includes file read, web search, system info, event log access, event channel access, registry reads, WMI reads, service health, startup inventory, storage health, network configuration, process snapshots, performance counters, reliability history, installed updates, and a bounded command runner
+- MSTest coverage for unit, boundary, host, UI-supporting, and integration scenarios in `tests/RAGDataIngestionWPF.Tests.MSTest`
 
 ## Technology Stack
 
 | Component | Package / Version |
-|---|---|
-| AI Agent Framework | `Microsoft.Agents.AI` 1.0.0-rc3 |
-| Agent Workflows | `Microsoft.Agents.AI.Workflows` 1.0.0-rc3 |
-| Agent A2A | `Microsoft.Agents.AI.A2A` 1.0.0-preview |
-| AI Abstractions | `Microsoft.Extensions.AI` 10.3.0 |
-| LLM Provider | [OllamaSharp](https://github.com/awaescher/OllamaSharp) 5.4.23 (local Ollama) |
-| ORM | EF Core 10 (`Microsoft.EntityFrameworkCore.SqlServer`) |
-| Database | SQL Server / LocalDB |
+| --- | --- |
+| AI Agent Framework | `Microsoft.Agents.AI` 1.0.0-rc4 |
+| Agent Builder | `Microsoft.Agents.Builder` 1.5.60-beta |
+| AI Abstractions | `Microsoft.Extensions.AI` 10.4.1 |
+| LLM Provider | [OllamaSharp](https://github.com/awaescher/OllamaSharp) 5.4.24 |
+| ORM | EF Core 10.0.3 (`Microsoft.EntityFrameworkCore.SqlServer`) |
+| Database integrations | SQL Server-oriented history and retrieval components in `DataIngestionLib` |
 | UI Framework | WPF on .NET 10 Preview |
-| UI Theming | MahApps.Metro 3.0.0-rc |
-| MVVM Toolkit | CommunityToolkit.Mvvm 8.4 |
+| UI Theming | MahApps.Metro 3.0.0-rc0529 |
+| Hosting / logging | Microsoft.Extensions.Hosting 10.0.5 |
+| MVVM Toolkit | CommunityToolkit.Mvvm 8.4.0 |
 | Notifications | Microsoft.Toolkit.Uwp.Notifications 7.1.3 |
-| DI / Hosting | Microsoft.Extensions.Hosting 11 Preview |
-| Testing | MSTest + Moq |
+| Testing | MSTest 4.1.0 + Moq 4.20.72 |
 
----
+## SQL Server 2025 Dependency
+
+The repository's chat history and RAG context management components currently depend on SQL Server 2025 for enhanced retrieval capabilities. This includes the use of vector search features, BM25-based ranking, and full-text search to provide more relevant context to the agent during conversations. The SQL-based implementation allows for persistent chat history storage, advanced retrieval strategies, and the ability to leverage SQL Server's performance optimizations for handling large volumes of conversational data.
+
+SQL Server dependency can be easily removed by removing the SQL-based provider and context injector from the agent configuration, which will cause the agent to fall back to in-memory history and context management. However, this will limit the agent's ability to retrieve relevant historical context across sessions and reduce the overall effectiveness of the RAG strategy. For rapid out of the box operation, the in-memory configuration allows the agent to operate without any external dependencies, but for a more robust and capable implementation, SQL Server 2025 is recommended.
+
+For Data Ingestion SQL Server is mandatory as the ingestion workflows are built around SQL-based storage and retrieval of documents and related metadata. The ingestion processes rely on SQL Server's capabilities to manage and query the ingested data effectively, making it a critical component of the overall solution.
 
 ## Prerequisites
 
-- **Windows 10 / 11** (WPF + Windows Event Log / Registry tools require Windows)
-- **.NET 10 Preview SDK** — [Download](https://dotnet.microsoft.com/download/dotnet/10.0)
-- **Visual Studio 2022 17.13+** or **VS 2026 Preview** (for .NET 10 WPF tooling)
-- **Ollama** — [Install](https://ollama.ai/) and pull the desired model:
-  ```bash
-  ollama pull <model-name>
-  ```
-- **SQL Server** or **LocalDB** for chat history persistence
-- **LangSearch API key** (optional) — set `LANGAPI_KEY` environment variable to enable web search tool
+- Windows 10 or 11
+- .NET 10 Preview SDK
+- Visual Studio 2022 or Visual Studio Preview with .NET desktop tooling if you want to run the WPF app interactively
+- Ollama if you want to exercise the local chat model settings in the app
+- SQL Server if you want to exercise chat history or related database-backed features
+- local Windows access for the Windows diagnostics tools and integration tests
 
----
+Optional external dependency:
+
+- `LANGAPI_KEY` to enable the web-search tool surface
+
+Example Ollama setup:
+
+```bash
+ollama pull <model-name>
+```
 
 ## Getting Started
 
@@ -299,97 +158,63 @@ git clone https://github.com/KyleC69/RAGDataIngestionWPF.git
 cd RAGDataIngestionWPF
 ```
 
-### 2. Configure the application
-
-The default `appsettings.json` uses `Server=.` (local default SQL Server instance). To override with your own server name, create a **git-ignored** local override file:
-
-```powershell
-# PowerShell (Windows)
-Copy-Item RAGDataIngestionWPF\appsettings.Development.json.example RAGDataIngestionWPF\appsettings.Development.json
-```
-
-Then edit `RAGDataIngestionWPF/appsettings.Development.json` with your SQL Server instance:
-
-```jsonc
-{
-  "ChatHistory": {
-    "ConnectionString": "Server=YOUR_SERVER_NAME;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;"
-  }
-}
-```
-
-> **Note:** `appsettings.Development.json` is excluded from source control (listed in `.gitignore`). Always use this file for machine-specific overrides — never edit `appsettings.json` directly with a local server name.
-
-Alternatively, override the connection string via an environment variable (no file required):
-
-```powershell
-# PowerShell
-$env:ChatHistory__ConnectionString = "Server=YOUR_SERVER_NAME;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;"
-```
-
-### 3. Set the Ollama model
-
-In `RAGDataIngestionWPF/App.xaml.cs`, update the model constant to match a model you have pulled:
-
-```csharp
-private const string OllamaModel = "llama3.2"; // or whichever model you have
-```
-
-### 4. Build and run
+### 2. Build the main projects
 
 ```bash
+dotnet build src/DataIngestionLib/DataIngestionLib.csproj
 dotnet build src/RAGDataIngestionWPF/RAGDataIngestionWPF.csproj
-dotnet run --project src/RAGDataIngestionWPF/RAGDataIngestionWPF.csproj
 ```
 
-Or open `RAGDataIngestionWPF.slnx` in Visual Studio and press **F5**.
+### 3. Open the solution
 
----
+Open `RAGDataIngestionWPF.slnx` in Visual Studio if you want to run or debug the WPF application.
+
+### 4. Configure local settings as needed
+
+The app currently ships with `src/RAGDataIngestionWPF/App.config` and generated settings files under `src/RAGDataIngestionWPF/Properties`.
+Machine-specific values such as model selection, host information, and database connection strings should be supplied through local settings rather than committed repository edits.
+
+Key settings visible in `App.config` include:
+
+- `OllamaHost`
+- `OllamaPort`
+- `ChatModel`
+- `EmbeddingModel`
+- `ChatHistoryConnectionString`
+- `RemoteRAGConnectionString`
 
 ## Configuration
 
-| Section | Key | Default | Description |
-|---|---|---|---|
-| `AppConfig` | `configurationsFolder` | `RAGDataIngestionWPF\Configurations` | Local config storage folder |
-| `AppConfig` | `chatSessionFileName` | `ChatSession.json` | Chat session persistence file |
-| `AppConfig` | `userFileName` | `User.json` | User profile file |
-| `ChatHistory` | `ConnectionString` | `Server=.` (local default) | SQL Server connection for chat history |
-| `ChatHistory` | `MaxContextMessages` | `40` | Max messages retained in context window |
-| `ChatHistory` | `MaxContextTokens` | `120000` | Token budget for context |
-| `ChatHistory` | `EnableSummarization` | `false` | Enable automatic history summarization |
+Configuration is currently split across:
+
+- `src/RAGDataIngestionWPF/App.config`
+- `src/RAGDataIngestionWPF/Properties/Settings.settings`
+- machine-local user settings generated by the .NET settings infrastructure
+
+The repository does not currently expose an `appsettings.json`-based configuration story at the root README level. When updating settings-backed behavior, inspect the WPF project's settings files and the code paths that consume them.
 
 ### Environment Variables
 
 | Variable | Required | Description |
-|---|---|---|
-| `LANGAPI_KEY` | Optional | API key for LangSearch web search tool |
-
----
+| --- | --- | --- |
+| `LANGAPI_KEY` | Optional | API key used by the web-search tool |
 
 ## Running Tests
+
+Run the full MSTest project with:
 
 ```bash
 dotnet test tests/RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj
 ```
 
-The test project covers:
-- `AIContextHistoryInjector` — context windowing, deduplication, pruning, persistence
-- `EventLogReader` — constructor validation, result factory methods
-- `FixedAgentIdentityProvider` — guard clause and identity contract
+The test project currently includes:
 
----
+- broad unit coverage across conversation services, providers, models, view-model support code, and tool functions
+- focused boundary tests for the Windows diagnostics tools
+- integration-tagged diagnostics suites
 
-## Known Issues / Work in Progress
+Run only the integration-tagged tests with:
 
-The following items are tracked as open issues in this repository:
+```bash
 
-- **`EventLogReader.cs`** — `SandboxEventLogReader`, `EventLogReadResult`, and `EventLogEntryDto` classes are declared in the global namespace instead of `DataIngestionLib.ToolFunctions`.
-- **`RegistryReaderTool.cs`** — Contains unreachable code, an undefined `value` variable reference, and uses a static `LoggerFactory.Create()` instead of constructor-injected `ILogger`.
-- **`AgentRunMiddleWare.cs`** — Dead code: empty `run2()` method, `Console.WriteLine` used instead of the injected `ILoggerFactory`, and the class is not integrated into the agent pipeline.
-- **`ChatConversationService.cs`** — Blocking `.Result` call on `CreateSessionAsync()` in the constructor creates a deadlock risk. `FormatMarkdownLite` private method is declared but never called.
-- **`WebSearchPlugin.cs`** — ~~Creates `HttpClient` directly with `new()` instead of using `IHttpClientFactory`, bypassing connection pooling and lifetime management.~~ Fixed: now accepts `IHttpClientFactory` via constructor injection and uses the named `"langsearch"` client.
-- **`RagSearchTool.cs`** — Generic type parameter incorrectly named `IRagRetriever` (shadows the interface of the same name), and `Search()` returns an empty stub.
-- **`FileSystemPlugin.cs`** — ~~Class named `FileSystemSearch` but its `WriteText` method writes files rather than searching; description is misleading.~~ Fixed: class renamed to `FileSystemPlugin` and `WriteText` description corrected.
-- **`appsettings.json`** — Connection string contains a hard-coded machine name (`Server=Desktop-nc01091`). Should use `(localdb)\MSSQLLocalDB` or a placeholder.
-
-See the [Issues tab](../../issues) for full details and status.
+dotnet test tests/RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj --filter "TestCategory=Integration"

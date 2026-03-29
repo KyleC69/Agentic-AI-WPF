@@ -3,56 +3,12 @@
 // Project:   DataIngestionLib
 // File:         IngestQualityControl.cs
 // Author: Kyle L. Crowder
-// Build Num: 175051
-
-
-
-using System.Diagnostics;
-
-using DataIngestionLib.Contracts;
-
-using Microsoft.Agents.AI;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-
-using Newtonsoft.Json;
-
-
-
-
-namespace DataIngestionLib.DocIngestion;
-
-
-
-
-
-//An LLM assisted quality control process for ingested data, ensuring that the data meets certain standards, to be used in a RAG system.
-// An important note here is that there is no specific domain specified in the instructions for the LLM, my dataset is specifically the dotnet documentation,
-// this process could easily have been done in one or two steps but i have chosen to have a more gradual evaluation process, to relieve the reasoning burden on the LLM and to allow for more flexibility in the evaluation process.
-// The dataset being processed has 12,000 + documents, and I am using local models not cloud models, so it is important to have a process that can quickly and efficiently evaluate the content of the ingested data, without requiring a lot of manual review or intervention.
-// The LLM should be able to evaluate the content of the ingested data based on general criteria for usefulness and conversational relevance, rather than being limited to a specific domain or type of data.
-// This allows for greater flexibility and applicability of the quality control process across different contexts and use cases.
-// This class has a gradual evaluation process and starts with simple criteria for determining if the content is "garbage" or "valuable",
-// At this point you can get more specific with the instructions for the LLM, as you are now evaluating the content for a specific use case (RAG), and can provide more detailed criteria for what makes content suitable for that use case.
-// The final step in this evaluator is to take the content that has been deemed "valuable" and had "RAGQuality" and organize it in a way that is suitable for prompt injection
-// and can produce a valuable vector index for retrieval, this is where you can get very specific with the instructions for the LLM, as you are now evaluating the content for a specific use case (RAG).
-// At this point you could get very specific for domain use and specify semantic relevance, for example, AI only, or game development only, or even more specific, like "This content is relevant for a RAG system that is designed to assist with troubleshooting .NET error messages,
-// so it should be evaluated based on its relevance and usefulness for that specific use case."
-// My final step here is to create formatted output with headings and content blocks, this is because the output of this process will be used for prompt injection, and it is important to have a clear and organized format for the output,
-// to make it easier to use in prompts and to ensure that the content is presented in a way that is easy to understand and use for retrieval.
 // ###########
 // ## This process is currently use experimental API's in the Agent Framework, which is changing rapidly. Use at your own risk acknowledging it may change significantly.
 // ## MAF has recently introduced a much easier way of using structured output. You no longer have to create your own json schemas.
 // ## Here I am just passing a simple enum to the LLM, but you can pass more complex data structures if needed, and the LLM will be able to understand and work with them,
 // ## this is a powerful feature of the MAF that allows for more complex and nuanced interactions with the LLM, and can help to improve the quality and relevance of the output.
 // ## It requires that the client implement the IChatClient interface, and that the LLM is able to understand and work with the data structures being passed to it, but it can be a powerful tool for improving the quality and relevance of the output from the LLM.
-public interface IIngestQualityControl
-{
-    List<IngestQualityControl.StructuredResults> RagResults { get; set; }
-
-
-    Task EvaluateDocument(DocPage doc);
-
 
 
 
@@ -98,7 +54,7 @@ public interface IIngestQualityControl
 
 
 
-public sealed class IngestQualityControl : IIngestQualityControl
+public sealed class IngestQualityControl
 {
     private readonly IAgentFactory _agentFactory;
     private readonly IDocRepository _docRepository;

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ToolResult.cs
 // Author: Kyle L. Crowder
-// Build Num: 044305
+// Build Num: 073018
 
 
 
@@ -35,9 +35,7 @@ public sealed class ToolResult<T>
 
     public static ToolResult<T> Fail(string message)
     {
-        return string.IsNullOrWhiteSpace(message)
-                ? throw new ArgumentException("Failure message cannot be null or whitespace.", nameof(message))
-                : new() { Success = false, Error = message };
+        return string.IsNullOrWhiteSpace(message) ? throw new ArgumentException("Failure message cannot be null or whitespace.", nameof(message)) : new() { Success = false, Error = message };
     }
 
 

@@ -149,7 +149,17 @@ public class AppSettings : IAppSettings
         set { SetString(UserNameSettingName, value); }
     }
 
+    public bool ResumeLast
+    {
+        get { return (bool)Properties.Settings.Default[nameof(ResumeLast)]; }
+        set { SetBool(nameof(ResumeLast), value); }
+    }
 
+
+    private static void SetBool(string settingName, bool value)
+    {
+        SaveSetting(settingName, value);
+    }
 
 
 
@@ -160,13 +170,13 @@ public class AppSettings : IAppSettings
     {
         return new TokenBudget
         {
-                SessionBudget = SessionBudget,
-                SystemBudget = SystemBudget,
-                RAGBudget = RAGBudget,
-                ToolBudget = ToolBudget,
-                MetaBudget = MetaBudget,
-                BudgetTotal = SessionBudget + SystemBudget + RAGBudget + ToolBudget + MetaBudget,
-                MaximumContext = MaximumContext
+            SessionBudget = SessionBudget,
+            SystemBudget = SystemBudget,
+            RAGBudget = RAGBudget,
+            ToolBudget = ToolBudget,
+            MetaBudget = MetaBudget,
+            BudgetTotal = SessionBudget + SystemBudget + RAGBudget + ToolBudget + MetaBudget,
+            MaximumContext = MaximumContext
         };
     }
 

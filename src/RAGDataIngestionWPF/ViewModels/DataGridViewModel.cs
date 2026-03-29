@@ -12,7 +12,6 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using DataIngestionLib.DocIngestion;
 using DataIngestionLib.RAGModels;
 
 using Microsoft.Extensions.Logging;
@@ -32,7 +31,6 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 {
     private AsyncRelayCommand _startIngestionCommand;
     private readonly ILogger<DataGridViewModel> _logger;
-    private readonly LearningHtmlRunner _runner;
 
 
 
@@ -52,10 +50,9 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    public DataGridViewModel(ILogger<DataGridViewModel> logger, LearningHtmlRunner runner)
+    public DataGridViewModel(ILogger<DataGridViewModel> logger)
     {
         _logger = logger;
-        _runner = runner;
     }
 
 
@@ -106,11 +103,10 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
     private async Task StartIngestion()
     {
 
-        await _runner.IngestRemoteKnowledgeSource();
-        
-        
-        
-        
-        
+
+
+
+
+
     }
 }

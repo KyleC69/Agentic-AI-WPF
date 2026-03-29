@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         FileSystemReaderTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 044301
+// Build Num: 073012
 
 
 
@@ -27,6 +27,13 @@ public sealed class FileSystemReaderTool
 {
     private readonly string _sandboxRoot;
 
+
+
+
+
+
+
+
     public FileSystemReaderTool(string sandboxRoot)
     {
         if (string.IsNullOrWhiteSpace(sandboxRoot))
@@ -34,23 +41,24 @@ public sealed class FileSystemReaderTool
             throw new ArgumentException("Sandbox root cannot be empty.", nameof(sandboxRoot));
         }
 
-        _sandboxRoot = Path.GetFullPath(sandboxRoot);
+        _sandboxRoot = SandboxPathResolver.NormalizeRoot(sandboxRoot);
     }
+
+
+
+
+
+
+
 
     [Description("Read a file's text content. The path is relative to the sandbox root.")]
     public ToolResult<string> ReadFile(string relativePath)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(relativePath))
+            if (!SandboxPathResolver.TryResolveFilePath(_sandboxRoot, relativePath, out var fullPath, out var error))
             {
-                return ToolResult<string>.Fail("Path cannot be empty.");
-            }
-
-            var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
-            if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
-            {
-                return ToolResult<string>.Fail("Access denied: path is outside the sandbox.");
+                return ToolResult<string>.Fail(error!);
             }
 
             if (!File.Exists(fullPath))

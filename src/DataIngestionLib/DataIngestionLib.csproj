@@ -75,6 +75,8 @@
 	  <PackageReference Include="OllamaSharp" Version="5.4.24" />
 	  <PackageReference Include="PuppeteerSharp" Version="24.39.1" />
 	  <PackageReference Include="MarkDig" Version="1.0.0" />
+	  <PackageReference Include="System.Management" Version="10.0.5" />
+	  <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.5" />
 
   </ItemGroup>
 

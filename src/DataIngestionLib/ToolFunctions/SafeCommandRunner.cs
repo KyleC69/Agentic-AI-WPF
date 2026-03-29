@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         SafeCommandRunner.cs
 // Author: Kyle L. Crowder
-// Build Num: 044304
+// Build Num: 073015
 
 
 
@@ -20,10 +20,16 @@ namespace DataIngestionLib.ToolFunctions;
 
 public sealed class SafeCommandRunner(string sandboxRoot)
 {
-    private readonly string _sandboxRoot = Path.GetFullPath(sandboxRoot);
+    private readonly string _sandboxRoot = SandboxPathResolver.NormalizeRoot(sandboxRoot);
 
-    private static readonly HashSet<string> AllowedCommands =
-        new(StringComparer.OrdinalIgnoreCase) { "dir", "ls", "type", "cat", "echo" };
+    private static readonly HashSet<string> AllowedCommands = new(StringComparer.OrdinalIgnoreCase)
+    {
+            "dir",
+            "ls",
+            "type",
+            "cat",
+            "echo"
+    };
 
 
 
@@ -32,7 +38,7 @@ public sealed class SafeCommandRunner(string sandboxRoot)
 
 
 
-    private ToolResult<string> ExecuteAllowedCommand(string cmd, string args)
+    internal ToolResult<string> ExecuteAllowedCommand(string cmd, string args)
     {
         switch (cmd.ToUpperInvariant())
         {
@@ -45,8 +51,7 @@ public sealed class SafeCommandRunner(string sandboxRoot)
 
             case "CAT":
             case "TYPE":
-                var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, args));
-                if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
+                if (!SandboxPathResolver.TryResolveFilePath(_sandboxRoot, args, out var fullPath, out _))
                 {
                     return ToolResult<string>.Fail("Access denied.");
                 }
@@ -81,9 +86,7 @@ public sealed class SafeCommandRunner(string sandboxRoot)
         var cmd = parts[0];
         var args = parts.Length > 1 ? parts[1] : string.Empty;
 
-        return !AllowedCommands.Contains(cmd)
-                ? ToolResult<string>.Fail($"Command '{cmd}' is not allowed.")
-                : ExecuteAllowedCommand(cmd, args);
+        return !AllowedCommands.Contains(cmd) ? ToolResult<string>.Fail($"Command '{cmd}' is not allowed.") : ExecuteAllowedCommand(cmd, args);
 
     }
 }
