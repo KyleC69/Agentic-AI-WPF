@@ -42,35 +42,6 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
 
-    public static string FullTextSearch(string query, int topK = 5)
-    {
-        //Database full text search logic here, return the search results as a string. 
-        List<FullTextResults> results = [];
-        using SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
-
-        using SqlCommand cmd = new("EXEC sp_Search_FullText @query, @topK", conn);
-        SqlParameter unused1 = cmd.Parameters.AddWithValue("@query", query);
-        SqlParameter unused = cmd.Parameters.AddWithValue("@topK", topK);
-
-        conn.Open();
-        using SqlDataReader reader = cmd.ExecuteReader();
-        while (reader.Read())
-        {
-            results.Add(new FullTextResults
-            {
-                Id = reader.GetInt32(0),
-                Title = reader.GetString(1),
-                Summary = reader.GetString(2),
-                Keywords = reader.GetString(3).Split(','),
-                Score = reader.GetDouble(4)
-            });
-        }
-
-        return JsonConvert.SerializeObject(results);
-    }
-
-
-
 
 
 
@@ -102,7 +73,7 @@ public class RagDataService(ILogger<RagDataService> logger)
             _logger.LogErrorFetchingRAGDataEntriesMessage(ex.Message);
         }
 
-        var unused = rags.Select(ms => ChatMessageExtensions.WithAgentRequestMessageSource(ms, AgentRequestMessageSourceType.AIContextProvider));
+        IEnumerable<ChatMessage> unused = rags.Select(ms => ChatMessageExtensions.WithAgentRequestMessageSource(ms, AgentRequestMessageSourceType.AIContextProvider));
         return rags;
     }
 
@@ -118,12 +89,13 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
 
-
+    //TODO: move to data service change to EF
     public static string HybridSearch(string query, int topK = 5)
     {
         //Database vector search logic here, return the search results as a string. 
         List<FullTextResults> results = [];
-        using SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
+        SqlConnection conn = null!;
+
 
         using SqlCommand cmd = new("EXEC sp_Search_hybrid @query, @topK", conn);
         SqlParameter unused1 = cmd.Parameters.AddWithValue("@query", query);

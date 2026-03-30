@@ -130,7 +130,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     ///     Thrown if an agent with the specified <paramref name="agentId" /> already
     ///     exists.
     /// </exception>
-    public AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null, Action<UsageDetails>? usageMiddlewareSink = null)
+    public AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null, Action<TokenUsageSnapshot>? tokenSnapshotSink = null)
     {
 
         Guard.IsNotNullOrWhiteSpace(agentId);
@@ -144,10 +144,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
         _innerClient = new OllamaApiClient(ollamaUri, model);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
-        if (usageMiddlewareSink is not null)
-        {
-            _innerClient = new TokenUsageTrackingChatClient(_innerClient, usageMiddlewareSink);
-        }
+        _innerClient = new TokenAccountingMiddleware(_innerClient, tokenSnapshotSink);
 
 #if !SQL
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions

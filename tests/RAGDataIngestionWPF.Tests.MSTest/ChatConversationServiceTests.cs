@@ -350,6 +350,27 @@ public class ChatConversationServiceTests
         Assert.AreEqual(2, service.ContextTokenCount);
     }
 
+    [TestMethod]
+    public async Task OversizedNewestMessageIsClippedToRemainingSlidingWindowBudget()
+    {
+        // One 12-char message estimates as 3 tokens. Session budget is 2, so the newest
+        // message should contribute 2 tokens instead of dropping to zero.
+        var budget = MakeBudget(sessionBudget: 2, maximumContext: 999_999);
+        var settings = MakeSettingsMock(budget: budget);
+        var service = CreateService(settings: settings.Object);
+        service.Initialized = true;
+
+        service.AIHistory.Add(new ChatMessage(ChatRole.User, "abcdefghijkl"));
+
+        await TriggerTokenUpdateAsync(service);
+
+        Assert.AreEqual(2, service.ContextTokenCount);
+        Assert.AreEqual(2, service.SessionTokenCount);
+        Assert.AreEqual(0, service.RagTokenCount);
+        Assert.AreEqual(0, service.ToolTokenCount);
+        Assert.AreEqual(0, service.SystemTokenCount);
+    }
+
     // -------------------------------------------------------------------------
     // Budget event tests
     // -------------------------------------------------------------------------

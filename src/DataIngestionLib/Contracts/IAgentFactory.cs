@@ -10,6 +10,8 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
+using DataIngestionLib.Models;
+
 
 
 
@@ -21,5 +23,5 @@ namespace DataIngestionLib.Contracts;
 
 public interface IAgentFactory
 {
-    AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null, Action<UsageDetails>? usageMiddlewareSink = null);
+    AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null, Action<TokenUsageSnapshot>? tokenSnapshotSink = null);
 }
