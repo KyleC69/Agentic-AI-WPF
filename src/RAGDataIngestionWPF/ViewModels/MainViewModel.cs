@@ -9,13 +9,12 @@
 
 using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Threading;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using DataIngestionLib.Models;
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 
@@ -196,10 +195,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         _historyLoaded = true;
         try
         {
-            var historyMessages = await _chatConversationService.LoadConversationHistoryAsync().ConfigureAwait(true);
-
             Messages.Clear();
-            foreach (ChatMessage historyMessage in historyMessages) Messages.Add(CreateUiMessage(historyMessage));
+            var historyMessages = await _chatConversationService.LoadConversationHistoryAsync().ConfigureAwait(true);
+            if (historyMessages is not null)
+            {
+
+                foreach (ChatMessage historyMessage in historyMessages) Messages.Add(CreateUiMessage(historyMessage));
+            }
 
             RefreshTokenCountsFromService();
         }

@@ -1,13 +1,11 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 using DataIngestionLib.ToolFunctions;
 
-using Microsoft.Extensions.Logging;
-
 using Moq;
 
-using RAGDataIngestionWPF.Converters;
 using RAGDataIngestionWPF.Contracts.Services;
+using RAGDataIngestionWPF.Converters;
 using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Core.Helpers;
 using RAGDataIngestionWPF.Core.Models;
@@ -59,16 +57,7 @@ public class ViewModelAndConverterTests
         Assert.AreEqual(AppTheme.Default, (AppTheme)result);
     }
 
-    [TestMethod]
-    public void DataGridViewModelOnNavigatedToClearsSource()
-    {
-        DataGridViewModel viewModel = new();
-        viewModel.Source.Add(new DataIngestionLib.RAGModels.RemoteRag { Title = "t", Description = "d", OgUrl = "u" });
 
-        viewModel.OnNavigatedTo(null);
-
-        Assert.AreEqual(0, viewModel.Source.Count);
-    }
 
     [TestMethod]
     public async Task DataGridViewModelStartIngestionCommandExecutes()

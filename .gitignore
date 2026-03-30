@@ -365,3 +365,4 @@ FodyWeavers.xsd
 
 # Developer-local appsettings overrides (contain machine-specific connection strings)
 **/appsettings.Development.json
+/src/DataIngestionLib/efpt.config.json

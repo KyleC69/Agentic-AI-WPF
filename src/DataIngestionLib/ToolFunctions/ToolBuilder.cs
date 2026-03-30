@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         ToolBuilder.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051940
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -58,15 +62,13 @@ internal sealed class ToolBuilder
 
         return
         [
-                AIFunctionFactory.Create(new FileSystemReaderTool(Environment.CurrentDirectory).ReadFile),
-                //AIFunctionFactory.Create(FullTextRagSearchTool.Search),
                 AIFunctionFactory.Create(webSearchPlugin.WebSearch),
                 AIFunctionFactory.Create(SystemInfoTool.GetInfo),
                 AIFunctionFactory.Create(eventLogReader.ReadLog),
                 AIFunctionFactory.Create(installedUpdatesTool.ReadInstalledUpdates),
                 AIFunctionFactory.Create(networkConfigurationTool.ReadActiveAdapters),
                 AIFunctionFactory.Create(performanceCounterTool.ReadSnapshot),
-                //   AIFunctionFactory.Create(processSnapshotTool.ReadTopProcesses),
+                AIFunctionFactory.Create(processSnapshotTool.ReadTopProcesses),
                 AIFunctionFactory.Create(windowsEventChannelReaderTool.ReadChannel),
                 AIFunctionFactory.Create(registryReaderTool.ReadValue),
                 AIFunctionFactory.Create(reliabilityHistoryTool.ReadRecent),
@@ -74,8 +76,19 @@ internal sealed class ToolBuilder
                 AIFunctionFactory.Create(startupInventoryTool.ReadStartupItems),
                 AIFunctionFactory.Create(storageHealthTool.ReadLogicalDisks),
                 AIFunctionFactory.Create(windowsWmiReaderTool.ReadClass),
-                AIFunctionFactory.Create(safeCommandRunner.Run)
+                AIFunctionFactory.Create(safeCommandRunner.Run),
+                AIFunctionFactory.Create(ListFolderContentsTool.ListFolderContents)
 
         ];
     }
+
+    internal static IList<AITool> GetWritingAiTools()
+    {
+        return
+        [
+                AIFunctionFactory.Create(FileSystemWriterTool.WriteText)
+        ];
+    }
+
+
 }

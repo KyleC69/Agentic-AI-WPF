@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         HistoryIdentityService.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 052959
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -38,11 +42,10 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
             {
                 return new HistoryIdentity
                 {
-                        AgentId = _current.AgentId,
-                        ApplicationId = _current.ApplicationId,
-                        ConversationId = _current.ConversationId,
-                        MessageId = _current.MessageId,
-                        UserId = _current.UserId
+                    AgentId = _current.AgentId,
+                    ApplicationId = _current.ApplicationId,
+                    ConversationId = _current.ConversationId,
+                    UserId = _current.UserId
                 };
             }
         }

@@ -13,6 +13,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>8</WarningLevel>
     <IsPublishable>False</IsPublishable>
+	  
+    <DefineConstants>$(DefineConstants);SQL</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

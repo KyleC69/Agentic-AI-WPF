@@ -1,8 +1,8 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
+using DataIngestionLib.EFModels;
 using DataIngestionLib.Models;
-using DataIngestionLib.RAGModels;
 using DataIngestionLib.Services.Contracts;
 
 namespace RAGDataIngestionWPF.Tests.MSTest;
@@ -28,7 +28,6 @@ public class PersistedAndModelContractsTests
     [TestMethod]
     public void PersistedChatMessageRecordEqualityIsValueBased()
     {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
         using JsonDocument metadata = JsonDocument.Parse("{\"a\":1}");
 
         PersistedChatMessage left = new()
@@ -40,7 +39,7 @@ public class PersistedAndModelContractsTests
             MessageId = Guid.NewGuid(),
             Metadata = metadata,
             Role = "user",
-            TimestampUtc = now,
+            TimestampUtc = DateTime.Now,
             UserId = "u"
         };
 
@@ -110,58 +109,5 @@ public class PersistedAndModelContractsTests
         Assert.AreEqual("user", identity.UserId);
     }
 
-    [TestMethod]
-    public void DocumentHonorsMaxLengthValidation()
-    {
-        Document document = new()
-        {
-            Title = new string('t', 513),
-            ContentRaw = "content"
-        };
 
-        ValidationContext context = new(document);
-        List<ValidationResult> results = [];
-
-        bool valid = Validator.TryValidateObject(document, context, results, true);
-
-        Assert.IsFalse(valid);
-        Assert.IsTrue(results.Any(result => result.MemberNames.Contains(nameof(Document.Title))));
-    }
-
-    [TestMethod]
-    public void MetadataHonorsMaxLengthValidation()
-    {
-        Metadata metadata = new()
-        {
-            Tags = new string('x', 1025)
-        };
-
-        ValidationContext context = new(metadata);
-        List<ValidationResult> results = [];
-
-        bool valid = Validator.TryValidateObject(metadata, context, results, true);
-
-        Assert.IsFalse(valid);
-        Assert.IsTrue(results.Any(result => result.MemberNames.Contains(nameof(Metadata.Tags))));
-    }
-
-    [TestMethod]
-    public void RemoteRagHonorsMaxLengthValidation()
-    {
-        RemoteRag rag = new()
-        {
-            Title = "title",
-            Description = "description",
-            OgUrl = "https://example.com",
-            Summary = new string('s', 4001)
-        };
-
-        ValidationContext context = new(rag);
-        List<ValidationResult> results = [];
-
-        bool valid = Validator.TryValidateObject(rag, context, results, true);
-
-        Assert.IsFalse(valid);
-        Assert.IsTrue(results.Any(result => result.MemberNames.Contains(nameof(RemoteRag.Summary))));
-    }
 }

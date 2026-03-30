@@ -11,6 +11,8 @@
 
 
 
+using System.Text.Json;
+
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
@@ -46,6 +48,7 @@ public sealed class ChatConversationService : IChatConversationService
     private AIAgent? _agent;
     private AgentSession? _agentSession;
     private UsageDetails? _latestUsageDetails;
+    private ProviderSessionState<HistoryIdentity> _sessionStateHelper;
     private const string DefaultAgentId = "Agentic-Max";
 
 
@@ -236,7 +239,11 @@ public sealed class ChatConversationService : IChatConversationService
 
             historyMessages.Add(new ChatMessage(role, persistedMessage.Content) { CreatedAt = persistedMessage.TimestampUtc, MessageId = persistedMessage.MessageId.ToString("D") });
         }
-
+   
+        // Save the loaded history to the session state for access by context injectors and providers, and to keep it in sync with the history identity service.
+        // populating the agent context with the last used Conversion.
+        _sessionStateHelper.SaveState(_agentSession, new HistoryIdentity { Messages = historyMessages });
+    
         AIHistory.Clear();
         AIHistory.AddRange(historyMessages);
         this.UpdateTokenCounts(null);
@@ -380,6 +387,10 @@ public sealed class ChatConversationService : IChatConversationService
                 return;
             }
 
+
+
+
+
             _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GPTOSS, "Agentic-Max Description", usageMiddlewareSink: this.OnMiddlewareUsageObserved);
 
             _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
@@ -391,6 +402,25 @@ public sealed class ChatConversationService : IChatConversationService
             _historyIdentityService.ApplyToSession(_agentSession);
 
             ConversationId = _historyIdentityService.Current.ConversationId;
+
+
+
+
+            // Database keys are stored in the state bag of the session for easy access by the providers and context injectors,
+            // and to keep them in sync with the history identity service which is the source of truth for these identifiers.
+            _sessionStateHelper = new ProviderSessionState<HistoryIdentity>(
+                    // stateInitializer is called when there is no state in the session for this ChatHistoryProvider yet
+                    stateInitializer: currentSession => _historyIdentityService.Current,
+                    // The key under which to store state in the session for this provider. Make sure it does not clash with the keys of other providers.
+                    stateKey: this.GetType().Name);
+
+            _sessionStateHelper.SaveState(_agentSession, _historyIdentityService.Current);
+
+
+
+
+
+
 
             Initialized = true;
         }
@@ -539,7 +569,7 @@ public sealed class ChatConversationService : IChatConversationService
                 ? new Dictionary<string, long>(effectiveUsageDetails.AdditionalCounts, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
 
-        var snapshot = new TokenUsageSnapshot(
+        TokenUsageSnapshot snapshot = new(
                 ContextTokenCount,
                 SessionTokenCount,
                 RagTokenCount,

@@ -11,16 +11,16 @@
 
 
 
-using System.Collections.ObjectModel;
-
 using DataIngestionLib.EFModels;
 
+using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 
+using ChatMessageExtensions = DataIngestionLib.Models.Extensions.ChatMessageExtensions;
 
 
 
@@ -76,15 +76,25 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
 
-    public ObservableCollection<RemoteRag> GetRagDataEntries()
+    public async Task<List<ChatMessage>> GetRagDataEntries(string query)
     {
-        ObservableCollection<RemoteRag> rags = [];
+        List<ChatMessage> rags = new();
 
         try
         {
             using AIRemoteRagContext context = new(null);
-            context.RemoteRags.Load();
-            rags = context.RemoteRags.Local.ToObservableCollection();
+            List<sp_LearnDocs_Search_VectorResult> results = await context.Procedures.sp_LearnDocs_Search_VectorAsync(query, 10);
+
+            if (results == null || results.Count == 0)
+            {
+                return rags;
+            }
+
+            foreach (sp_LearnDocs_Search_VectorResult result in results)
+            {
+                rags.Add(new ChatMessage(ChatRole.Tool, result.Content));
+            }
+
         }
         catch (Exception ex)
         {
@@ -92,12 +102,19 @@ public class RagDataService(ILogger<RagDataService> logger)
             _logger.LogErrorFetchingRAGDataEntriesMessage(ex.Message);
         }
 
+        var unused = rags.Select(ms => ChatMessageExtensions.WithAgentRequestMessageSource(ms, AgentRequestMessageSourceType.AIContextProvider));
         return rags;
     }
 
 
 
 
+
+    public class vectorSearchResult
+    {
+        public required string[] Content { get; init; }
+        public double Score { get; init; }
+    }
 
 
 

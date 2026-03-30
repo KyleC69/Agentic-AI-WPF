@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         FileSystemWriterTool.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051939
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -22,34 +26,10 @@ namespace DataIngestionLib.ToolFunctions;
 public sealed class FileSystemWriterTool
 {
 
-    private readonly string _sandboxRoot;
-
-
-
-
-
-
-
-
-    public FileSystemWriterTool(string sandboxRoot)
-    {
-        if (string.IsNullOrWhiteSpace(sandboxRoot))
-        {
-            throw new ArgumentException("Sandbox root cannot be empty.", nameof(sandboxRoot));
-        }
-
-        _sandboxRoot = SandboxPathResolver.NormalizeRoot(sandboxRoot);
-    }
-
-
-
-
-
-
 
 
     [Description("Write text content to a file. Path is relative to the sandbox root. Creates or overwrites the file.")]
-    public ToolResult<string> WriteText([Description("File path relative to sandbox root")] string path, [Description("Text content to write")] string content)
+    public static ToolResult<string> WriteText([Description("File path relative to sandbox root")] string path, [Description("Text content to write")] string content)
     {
 
 
@@ -60,7 +40,7 @@ public sealed class FileSystemWriterTool
 
         try
         {
-            if (!SandboxPathResolver.TryResolveFilePath(_sandboxRoot, path, out var fullPath, out var error))
+            if (!PathResolver.TryResolvePath(path, out var fullPath, out var error))
             {
                 return ToolResult<string>.Fail(error!);
             }

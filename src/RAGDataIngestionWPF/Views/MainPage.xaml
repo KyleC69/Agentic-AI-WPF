@@ -6,12 +6,12 @@
     xmlns:mdxam="clr-namespace:MdXaml;assembly=MdXaml"
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     xmlns:models="clr-namespace:RAGDataIngestionWPF.Models"
-
     x:Class="RAGDataIngestionWPF.Views.MainPage"
     Style="{DynamicResource MahApps.Styles.Page}"
-    mc:Ignorable="d" Width="1200" Height="800">
+    mc:Ignorable="d" Width="1400" Height="1000">
 
     <Page.Resources>
+      
     </Page.Resources>
 
 
@@ -82,16 +82,16 @@
                                 Padding="10"
                                 MaxWidth="{Binding ElementName=MessagesListBox, Path=ActualWidth}"
                                 HorizontalAlignment="Left"
-                                Background="{DynamicResource MahApps.Brushes.Gray8}">
+                                Background="LightBlue">
                                 <Border.Style>
                                     <Style TargetType="{x:Type Border}">
                                         <Setter Property="HorizontalAlignment" Value="Left" />
-                                        <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Gray8}" />
+                                        <Setter Property="Background" Value="BurlyWood" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsUser}" Value="True">
                                                 <Setter Property="HorizontalAlignment" Value="Right" />
                                                 <Setter Property="Background"
-                                                        Value="{DynamicResource MahApps.Brushes.Gray6}" />
+                                                        Value="BurlyWood" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -104,20 +104,24 @@
                                                                 Margin="0,6,0,0"
                                                                 HorizontalAlignment="Stretch"
                                                                 IsSelectionEnabled="True"
-                                                                BorderBrush="BlanchedAlmond" Markdown="{Binding Text}"
-                                                               >
+                                                                Markdown="{Binding Text}"
+                                                                Foreground="DarkSlateGray"
+                                                                Background="BurlyWood"
+                                                                MarkdownStyleName="SasaBune">
                                         <mdxam:MarkdownScrollViewer.Resources>
-                                            <!-- Override MdXaml alternating row color -->
-                                            <Style TargetType="TableCell" BasedOn="{StaticResource {x:Type TableCell}}">
+                                            <Style TargetType="TableRowGroup">
+                                                <Setter Property="Background" Value="DarkGray"/>
+                                            </Style>
+                                            <Style TargetType="TableCell">
+                                                <Setter Property="BorderThickness" Value="0.5" />
+                                                <Setter Property="BorderBrush" Value="Gray" />
+                                                <Setter Property="Padding" Value="2" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TableRow}}, Path=Tag}" Value="EvenTableRow">
-                                                        <Setter Property="Background" Value="#2A2A2A"/>
-                                                        <!-- dark alternate -->
+                                                        <Setter Property="Background" Value="#AAFFAA" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
-
-
                                         </mdxam:MarkdownScrollViewer.Resources>
                                     </mdxam:MarkdownScrollViewer>
                                 </StackPanel>

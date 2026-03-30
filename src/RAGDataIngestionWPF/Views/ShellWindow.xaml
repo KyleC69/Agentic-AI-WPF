@@ -9,9 +9,7 @@
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     xmlns:templateSelectors="clr-namespace:RAGDataIngestionWPF.TemplateSelectors"
     Style="{StaticResource CustomMetroWindow}"
-    mc:Ignorable="d" Width="1100" Height="900"
-    MinWidth="500"
-    MinHeight="350"
+    mc:Ignorable="d" Width="1500" Height="1100"
     Title="{x:Static properties:Resources.AppDisplayName}">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">

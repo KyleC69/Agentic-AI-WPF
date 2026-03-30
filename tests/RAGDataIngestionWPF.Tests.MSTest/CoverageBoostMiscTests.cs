@@ -69,7 +69,7 @@ public class CoverageBoostMiscTests
             Metadata = "{\"x\":1}",
             Role = "assistant",
             Summary = "summary",
-            TimestampUtc = DateTimeOffset.UtcNow,
+            TimestampUtc = DateTime.Now,
             UserId = "user"
         };
 

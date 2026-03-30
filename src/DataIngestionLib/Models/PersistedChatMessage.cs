@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         PersistedChatMessage.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051930
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -33,8 +37,9 @@ public sealed record PersistedChatMessage
     public JsonDocument? Metadata { get; init; }
 
     public string Role { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
 
-    public DateTimeOffset TimestampUtc { get; init; }
+    public DateTime TimestampUtc { get; init; }
 
     public string UserId { get; init; } = string.Empty;
 }

@@ -1,9 +1,13 @@
-// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         SandboxPathResolver.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051943
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -17,7 +21,11 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-
+/// <summary>
+/// Provides utility methods for resolving and validating file paths within a sandboxed environment.
+/// This class ensures that file paths remain confined to a specified sandbox root directory,
+/// preventing access to paths outside the sandbox or paths that use unsupported reparse points.
+/// </summary>
 internal static class SandboxPathResolver
 {
 
@@ -85,12 +93,7 @@ internal static class SandboxPathResolver
 
     private static string TrimTrailingDirectorySeparator(string path)
     {
-        if (path.Length <= 1)
-        {
-            return path;
-        }
-
-        return path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        return path.Length <= 1 ? path : path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
     }
 
 

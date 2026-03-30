@@ -8,5 +8,8 @@ namespace DataIngestionLib.EFModels
 {
     public partial class sp_LearnDocs_Search_VectorResult
     {
+        public string Content { get; set; }
+        public float Score { get; set; }
+        
     }
 }

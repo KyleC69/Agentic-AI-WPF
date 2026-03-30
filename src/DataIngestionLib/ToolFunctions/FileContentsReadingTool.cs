@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         FileSystemReaderTool.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051939
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -21,11 +25,11 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-[OllamaTool]
+
 [Description("Reads files from the file system. Paths are resolved relative to the configured sandbox root.")]
-public sealed class FileSystemReaderTool
+public sealed class FileContentsReadingTool
 {
-    private readonly string _sandboxRoot;
+    private static string? _sandboxRoot;
 
 
 
@@ -34,7 +38,7 @@ public sealed class FileSystemReaderTool
 
 
 
-    public FileSystemReaderTool(string sandboxRoot)
+    public FileContentsReadingTool(string sandboxRoot)
     {
         if (string.IsNullOrWhiteSpace(sandboxRoot))
         {
@@ -50,9 +54,9 @@ public sealed class FileSystemReaderTool
 
 
 
-
+    [OllamaTool]
     [Description("Read a file's text content. The path is relative to the sandbox root.")]
-    public ToolResult<string> ReadFile(string relativePath)
+    public static ToolResult<string> ReadFileContents(string relativePath)
     {
         try
         {

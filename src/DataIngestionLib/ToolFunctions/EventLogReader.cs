@@ -1,12 +1,18 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         EventLogReader.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051939
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 
 
@@ -76,7 +82,7 @@ public sealed class SandboxEventLogReader(int maxEvents = 100)
 
 
 
-
+    [Description("An event log reader by log name, returns 100 of the newest events.")]
     public ToolResult<IReadOnlyList<EventLogEntryDto>> ReadLog(string logName)
     {
         if (string.IsNullOrWhiteSpace(logName))
@@ -93,16 +99,16 @@ public sealed class SandboxEventLogReader(int maxEvents = 100)
         {
             using EventLog log = new(logName);
 
-            var entries = log.Entries.Cast<EventLogEntry>()
+            ReadOnlyCollection<EventLogEntryDto> entries = log.Entries.Cast<EventLogEntry>()
                     .Reverse() // newest first
                     .Take(_maxEvents)
                     .Select(e => new EventLogEntryDto
                     {
-                            TimeGenerated = e.TimeGenerated,
-                            Source = e.Source,
-                            Message = e.Message,
-                            EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
-                            EntryType = e.EntryType
+                        TimeGenerated = e.TimeGenerated,
+                        Source = e.Source,
+                        Message = e.Message,
+                        EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
+                        EntryType = e.EntryType
                     })
                     .ToList()
                     .AsReadOnly();

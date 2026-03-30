@@ -21,7 +21,6 @@ using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
 
-using Microsoft.Agents.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -306,7 +305,6 @@ public sealed partial class App : Application
         _ = services.AddSingleton<IHistoryIdentityService>(provider => provider.GetRequiredService<HistoryIdentityService>());
 
         IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
-        IServiceCollection unused4 = services.AddSingleton<ChatHistoryProvider>();
         services.AddSingleton<AIContextRAGInjector>();
         IServiceCollection unused2 = services.AddSingleton<IAgentFactory, AgentFactory>();
 

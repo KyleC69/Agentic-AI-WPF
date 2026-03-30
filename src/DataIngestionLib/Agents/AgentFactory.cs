@@ -232,6 +232,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     public AIAgent GetBasicAIAgent()
     {
         Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
+        _innerClient = new OllamaChatClient();
         _innerClient = new OllamaApiClient(ollamaUri, AIModels.LLAMA1_B);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 

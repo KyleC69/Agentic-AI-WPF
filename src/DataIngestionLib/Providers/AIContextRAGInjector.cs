@@ -1,13 +1,20 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         AIContextRAGInjector.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051930
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
+
+using CommunityToolkit.Diagnostics;
 
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -24,6 +31,7 @@ namespace DataIngestionLib.Providers;
 public sealed class AIContextRAGInjector : MessageAIContextProvider
 {
     private readonly IReadOnlyList<IRagContextSource> _sources;
+    private readonly RagDataService _ragData;
 
 
 
@@ -32,10 +40,11 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
 
-    public AIContextRAGInjector(IEnumerable<IRagContextSource> sources)
+    public AIContextRAGInjector(RagDataService ragData)
     {
-        ArgumentNullException.ThrowIfNull(sources);
-        _sources = sources.ToArray();
+        Guard.IsNotNull(ragData);
+        _ragData = ragData;
+
     }
 
 
@@ -48,32 +57,16 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     protected override async ValueTask<IEnumerable<ChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(context);
+      
+        ChatMessage search = context.RequestMessages.Last();
 
-        List<ChatMessage> requestMessages =
-        [
-                .. context.RequestMessages.Select(m => new ChatMessage(m.Role, m.Text))
-        ];
-        if (_sources.Count == 0)
-        {
-            return [];
-        }
+        List<ChatMessage> results = await _ragData.GetRagDataEntries(search.Text);
 
-        List<ChatMessage> aggregatedContext = [];
-        foreach (IRagContextSource source in _sources)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var sourceMessages = await source.GetContextMessagesAsync(requestMessages, context.Session, cancellationToken).ConfigureAwait(false);
 
-            if (sourceMessages.Count == 0)
-            {
-                continue;
-            }
+        return results;
 
-            aggregatedContext.AddRange(sourceMessages.Where(static message => !string.IsNullOrWhiteSpace(message.Text)));
-        }
 
-        return aggregatedContext.Where(m => !string.IsNullOrWhiteSpace(m.Text)).Select(m => new ChatMessage(m.Role, m.Text)).ToArray();
+
     }
 
 
@@ -82,7 +75,18 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
 
-
+    /// <summary>
+    /// Stores the AI context asynchronously after the invocation of a specific operation.
+    /// </summary>
+    /// <param name="context">
+    /// The <see cref="InvokedContext"/> containing details about the invoked operation and its associated data.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> that can be used to observe cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValueTask"/> representing the asynchronous operation.
+    /// </returns>
     protected override ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = default)
     {
         return ValueTask.CompletedTask;
