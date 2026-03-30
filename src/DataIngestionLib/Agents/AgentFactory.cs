@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         AgentFactory.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051916
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -159,26 +163,26 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 #else
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-                {
-                        Id = agentId,
-                        Name = agentId,
-                        Description = agentDescription,
-                        ChatOptions = new ChatOptions
-                        {
-                                Instructions = instructions ?? GetModelInstructions(),
-                                Temperature = 0.7f,
-                                MaxOutputTokens = 10000,
-                                AllowMultipleToolCalls = true,
-                                Tools = ToolBuilder.GetReadOnlyAiTools(),
-                        },
-                        AIContextProviders =
+        {
+            Id = agentId,
+            Name = agentId,
+            Description = agentDescription,
+            ChatOptions = new ChatOptions
+            {
+                Instructions = instructions ?? GetModelInstructions(),
+                Temperature = 0.7f,
+                MaxOutputTokens = 10000,
+                AllowMultipleToolCalls = true,
+                Tools = ToolBuilder.GetReadOnlyAiTools(),
+            },
+            AIContextProviders =
                         [
                                 _historyContextInjector,
                                 _ragContextInjector
                         ],
-                        ThrowOnChatHistoryProviderConflict = true,
-                        ChatHistoryProvider = _chatHistoryProvider
-                }, loggerFactory: _factory).AsBuilder()
+            ThrowOnChatHistoryProviderConflict = true,
+            ChatHistoryProvider = _chatHistoryProvider
+        }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
                 .Build();
 
@@ -197,7 +201,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
+        this.Dispose(disposing: true);
     }
 
 
@@ -232,7 +236,6 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     public AIAgent GetBasicAIAgent()
     {
         Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
-        _innerClient = new OllamaChatClient();
         _innerClient = new OllamaApiClient(ollamaUri, AIModels.LLAMA1_B);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 
