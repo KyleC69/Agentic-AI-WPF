@@ -11,11 +11,11 @@
     mc:Ignorable="d" Width="1400" Height="1000">
 
     <Page.Resources>
-      
+
     </Page.Resources>
 
 
-    <Grid DataContext="{Binding}">
+    <Grid DataContext="{Binding}" ShowGridLines="True">
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                 <GradientStop Color="Black" Offset="0.153" />
@@ -34,22 +34,22 @@
         <TextBlock
             Style="{StaticResource PageTitleStyle}"
             Text="{x:Static properties:Resources.MainPageTitle}" />
-        <Grid
-            Grid.Row="1"
-            Margin="{StaticResource MediumLeftRightMargin}"
-            Background="{DynamicResource MahApps.Brushes.Gray60}">
-            <Grid Margin="{StaticResource SmallTopBottomMargin}">
-
+        <Grid Grid.Row="1" Margin="{StaticResource MediumLeftRightMargin}"
+              Background="{DynamicResource MahApps.Brushes.Gray60}">
+            <Grid Margin="{StaticResource SmallTopBottomMargin}" ScrollViewer.VerticalScrollBarVisibility="Disabled">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="733*" />
+                    <ColumnDefinition Width="933*" />
                     <ColumnDefinition Width="19*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="124" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                <GroupBox Header="Options" Width="120" Grid.Column="3">
+                    <Button Content="New Convo" x:Name="convoBtn" Margin="8,20,0,8" Command="{Binding NewConvoCommand}" />
+                </GroupBox>
                 <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
                     <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
                                Text="{Binding TotalTokenCount, StringFormat=Total tokens: \{0\} / 130000}" />
@@ -59,11 +59,16 @@
                                Text="{Binding SystemTokenCount, StringFormat=System tokens: \{0\} / 5000}" />
                     <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
                                Text="{Binding RagTokenCount, StringFormat=Rag tokens: \{0\} / 10000}" />
-                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding ToolTokenCount, StringFormat=Tool tokens: \{0\} / 3000}" />
-                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding InputTokenCount, StringFormat=Input tokens: \{0\}}" />
-                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding OutputTokenCount, StringFormat=Outputtokens: \{0\}}" />
-                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding CachedInputTokenCount, StringFormat=Cached tokens: \{0\}}" />
-                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding ReasoningTokenCount, StringFormat=Reasoning tokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding ToolTokenCount, StringFormat=Tool tokens: \{0\} / 3000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding InputTokenCount, StringFormat=Input tokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding OutputTokenCount, StringFormat=Outputtokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding CachedInputTokenCount, StringFormat=Cached tokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding ReasoningTokenCount, StringFormat=Reasoning tokens: \{0\}}" />
                 </StackPanel>
                 <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
                          x:Name="MessagesListBox"
@@ -107,17 +112,19 @@
                                                                 Markdown="{Binding Text}"
                                                                 Foreground="DarkSlateGray"
                                                                 Background="BurlyWood"
-                                                                MarkdownStyleName="SasaBune">
+                                                                MarkdownStyleName="SasaBune" Syntax="MdXaml">
                                         <mdxam:MarkdownScrollViewer.Resources>
                                             <Style TargetType="TableRowGroup">
-                                                <Setter Property="Background" Value="DarkGray"/>
+                                                <Setter Property="Background" Value="DarkGray" />
                                             </Style>
                                             <Style TargetType="TableCell">
                                                 <Setter Property="BorderThickness" Value="0.5" />
                                                 <Setter Property="BorderBrush" Value="Gray" />
                                                 <Setter Property="Padding" Value="2" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TableRow}}, Path=Tag}" Value="EvenTableRow">
+                                                    <DataTrigger
+                                                        Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TableRow}}, Path=Tag}"
+                                                        Value="EvenTableRow">
                                                         <Setter Property="Background" Value="#AAFFAA" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
@@ -130,7 +137,7 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <Grid Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" Grid.ColumnSpan="3">
+                <Grid Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" Grid.ColumnSpan="3" ShowGridLines="True">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />

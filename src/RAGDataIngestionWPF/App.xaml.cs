@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 052006
+// Build Num: 233211
 
 
 
@@ -303,6 +303,7 @@ public sealed partial class App : Application
 
         _ = services.AddSingleton<HistoryIdentityService>();
         _ = services.AddSingleton<IHistoryIdentityService>(provider => provider.GetRequiredService<HistoryIdentityService>());
+        services.AddSingleton<RagDataService>();
 
         IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
         services.AddSingleton<AIContextRAGInjector>();

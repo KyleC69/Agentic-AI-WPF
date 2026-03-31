@@ -11,16 +11,17 @@
 
 
 
+using DataIngestionLib.Data;
 using DataIngestionLib.EFModels;
+using DataIngestionLib.HistoryModels;
 
 using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
-
-using ChatMessageExtensions = DataIngestionLib.Models.Extensions.ChatMessageExtensions;
 
 
 
@@ -42,6 +43,22 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
 
+    public static async Task<IReadOnlyList<ChatMessage>?> GetChatHistoryByConversationId(Guid convoId)
+    {
+        AIChatHistoryDb db = new();
+
+
+
+        IReadOnlyList<ChatHistoryMessage> chm = await db.ChatHistoryMessages.Where(m => m.ConversationId == convoId.ToString()).ToListAsync();
+
+        IReadOnlyList<ChatMessage> cm = chm.ToChatMessages();
+        IEnumerable<ChatMessage> unused = cm.Select(cd => cd.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory));
+
+        return cm;
+    }
+
+
+
 
 
 
@@ -53,19 +70,15 @@ public class RagDataService(ILogger<RagDataService> logger)
 
         try
         {
-            using AIRemoteRagContext context = new(null);
+            using AIRemoteRagContext context = new();
             List<sp_LearnDocs_Search_VectorResult> results = await context.Procedures.sp_LearnDocs_Search_VectorAsync(query, 10);
 
-            if (results == null || results.Count == 0)
-            {
-                return rags;
-            }
+
 
             foreach (sp_LearnDocs_Search_VectorResult result in results)
             {
                 rags.Add(new ChatMessage(ChatRole.Tool, result.Content));
             }
-
         }
         catch (Exception ex)
         {
@@ -73,7 +86,8 @@ public class RagDataService(ILogger<RagDataService> logger)
             _logger.LogErrorFetchingRAGDataEntriesMessage(ex.Message);
         }
 
-        IEnumerable<ChatMessage> unused = rags.Select(ms => ChatMessageExtensions.WithAgentRequestMessageSource(ms, AgentRequestMessageSourceType.AIContextProvider));
+
+        IEnumerable<ChatMessage> unused = rags.Select(ms => ms.WithAgentRequestMessageSource(AgentRequestMessageSourceType.AIContextProvider));
         return rags;
     }
 
@@ -81,11 +95,6 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
 
-    public class vectorSearchResult
-    {
-        public required string[] Content { get; init; }
-        public double Score { get; init; }
-    }
 
 
 
@@ -117,6 +126,19 @@ public class RagDataService(ILogger<RagDataService> logger)
 
         return JsonConvert.SerializeObject(results);
 
+    }
+
+
+
+
+
+
+
+
+    public class vectorSearchResult
+    {
+        public required string[] Content { get; init; }
+        public double Score { get; init; }
     }
 }
 

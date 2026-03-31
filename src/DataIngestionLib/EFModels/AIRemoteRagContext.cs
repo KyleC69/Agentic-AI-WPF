@@ -8,8 +8,8 @@ namespace DataIngestionLib.EFModels;
 
 public partial class AIRemoteRagContext : DbContext
 {
-    public AIRemoteRagContext(DbContextOptions<AIRemoteRagContext> options)
-        : base(options)
+    public AIRemoteRagContext()
+        : base()
     {
     }
 

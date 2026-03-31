@@ -36,15 +36,17 @@ namespace DataIngestionLib.EFModels
 
     public partial class AIRemoteRagContextProcedures : IAIRemoteRagContextProcedures
     {
-        private readonly AIRemoteRagContext _context;
+        private AIRemoteRagContext _context;
 
         public AIRemoteRagContextProcedures(AIRemoteRagContext context)
         {
-            _context = context;
+            _context = context ?? new AIRemoteRagContext();
         }
 
         public virtual async Task<List<Search_FullTextResult>> Search_FullTextAsync(string query, int? topN, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
+            
+            using var _context = new AIRemoteRagContext();
             var parameterreturnValue = new SqlParameter
             {
                 ParameterName = "returnValue",

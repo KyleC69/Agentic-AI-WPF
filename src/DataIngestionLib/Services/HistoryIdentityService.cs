@@ -1,126 +1,37 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         HistoryIdentityService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 233139
 
 
+
+using CommunityToolkit.Diagnostics;
 
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Agents.AI;
 
+
+
+
 namespace DataIngestionLib.Services;
 
 
 
 
+
 /// <summary>
-/// For the centralized management of the ConversationIdentity across the conversation.
+///     For the centralized management of the ConversationIdentity across the conversation.
 /// </summary>
 public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIdentityProvider
 {
-    private readonly object _syncLock = new();
     private readonly HistoryIdentity _current = new();
+    private readonly object _syncLock = new();
 
 
-
-
-
-
-    public HistoryIdentity Current
-    {
-        get
-        {
-            lock (_syncLock)
-            {
-                return new HistoryIdentity
-                {
-                    AgentId = _current.AgentId,
-                    ApplicationId = _current.ApplicationId,
-                    ConversationId = _current.ConversationId,
-                    UserId = _current.UserId
-                };
-            }
-        }
-    }
-
-
-
-
-
-
-    public void Initialize(string applicationId, string agentId, string userId)
-    {
-        if (string.IsNullOrWhiteSpace(applicationId))
-        {
-            throw new ArgumentException("Application identity cannot be empty.", nameof(applicationId));
-        }
-
-        if (string.IsNullOrWhiteSpace(agentId))
-        {
-            throw new ArgumentException("Agent identity cannot be empty.", nameof(agentId));
-        }
-
-        var normalizedUserId = string.IsNullOrWhiteSpace(userId) ? Environment.UserName : userId.Trim();
-        if (string.IsNullOrWhiteSpace(normalizedUserId))
-        {
-            throw new ArgumentException("User identity cannot be empty.", nameof(userId));
-        }
-
-        lock (_syncLock)
-        {
-            _current.ApplicationId = applicationId.Trim();
-            _current.AgentId = agentId.Trim();
-            _current.UserId = normalizedUserId;
-        }
-    }
-
-
-
-
-
-
-    public void SetConversationId(string conversationId)
-    {
-        if (string.IsNullOrWhiteSpace(conversationId))
-        {
-            throw new ArgumentException("Conversation identity cannot be empty.", nameof(conversationId));
-        }
-
-        lock (_syncLock)
-        {
-            _current.ConversationId = conversationId.Trim();
-        }
-    }
-
-
-
-
-
-
-    public void ApplyToSession(AgentSession session)
-    {
-        ArgumentNullException.ThrowIfNull(session);
-
-        HistoryIdentity snapshot = Current;
-
-        session.StateBag.SetValue("ApplicationId", snapshot.ApplicationId);
-        session.StateBag.SetValue("AgentId", snapshot.AgentId);
-        session.StateBag.SetValue("UserId", snapshot.UserId);
-        session.StateBag.SetValue("UserName", snapshot.UserId);
-
-        if (!string.IsNullOrWhiteSpace(snapshot.ConversationId))
-        {
-            session.StateBag.SetValue("ConversationId", snapshot.ConversationId);
-        }
-    }
 
 
 
@@ -137,5 +48,80 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
 
 
 
-}
 
+
+
+    public HistoryIdentity Current
+    {
+        get
+        {
+            lock (_syncLock)
+            {
+                return new HistoryIdentity { AgentId = _current.AgentId, ApplicationId = _current.ApplicationId, ConversationId = _current.ConversationId, UserId = _current.UserId };
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+    public void Initialize(string applicationId, string agentId, string userId)
+    {
+        Guard.IsNotNullOrEmpty(applicationId);
+        Guard.IsNotNullOrEmpty(agentId);
+
+        var normalizedUserId = string.IsNullOrWhiteSpace(userId) ? Environment.UserName : userId.Trim();
+        Guard.IsNotNullOrEmpty(normalizedUserId, nameof(userId));
+        lock (_syncLock)
+        {
+            _current.ApplicationId = applicationId.Trim();
+            _current.AgentId = agentId.Trim();
+            _current.UserId = normalizedUserId;
+        }
+    }
+
+
+
+
+
+
+
+
+    public void SetConversationId(string conversationId)
+    {
+        Guard.IsNotNullOrEmpty(conversationId);
+
+        lock (_syncLock)
+        {
+            _current.ConversationId = conversationId.Trim();
+        }
+    }
+
+
+
+
+
+
+
+
+    public void ApplyToSession(AgentSession session)
+    {
+        Guard.IsNotNull(session);
+
+        HistoryIdentity snapshot = Current;
+
+        session.StateBag.SetValue("ApplicationId", snapshot.ApplicationId);
+        session.StateBag.SetValue("AgentId", snapshot.AgentId);
+        session.StateBag.SetValue("UserId", snapshot.UserId);
+        session.StateBag.SetValue("UserName", snapshot.UserId);
+
+        if (!string.IsNullOrWhiteSpace(snapshot.ConversationId))
+        {
+            session.StateBag.SetValue("ConversationId", snapshot.ConversationId);
+        }
+    }
+}

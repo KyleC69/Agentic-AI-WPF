@@ -62,7 +62,7 @@
             </templateSelectors:MenuItemTemplateSelector.GlyphDataTemplate>
             <templateSelectors:MenuItemTemplateSelector.ImageDataTemplate>
                 <DataTemplate DataType="{x:Type controls:HamburgerMenuImageItem}">
-                    <Grid Height="48">
+                    <Grid Height="48" ShowGridLines="True" Background="DodgerBlue">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="48" />
                             <ColumnDefinition />

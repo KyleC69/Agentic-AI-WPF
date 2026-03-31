@@ -1,4 +1,4 @@
-// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
 // Solution: ${File.SolutionName}
 // Project:   ${File.ProjectName}
 // File:         ${File.FileName}
@@ -9,8 +9,11 @@
 //
 //
 
-using System.Text.Json;
 
+
+using System.Diagnostics;
+
+using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
@@ -21,7 +24,14 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
+
+
+
 namespace DataIngestionLib.Services;
+
+
+
+
 
 /// <summary>
 ///     Class is responsible for managing the chat conversation round with LLM, self-contained and keeps viewmodel clean.
@@ -37,8 +47,15 @@ public sealed class ChatConversationService : IChatConversationService
     private readonly SqlChatHistoryProvider? _sqlChatHistoryProvider;
     private AIAgent? _agent;
     private AgentSession? _agentSession;
-    private ProviderSessionState<HistoryIdentity> _sessionStateHelper;
+    private ProviderSessionState<HistoryIdentity> _sessionStateHelper = null!;
     private const string DefaultAgentId = "Agentic-Max";
+
+
+
+
+
+
+
 
     public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings, IHistoryIdentityService historyIdentityService, SqlChatHistoryProvider? sqlChatHistoryProvider = null)
     {
@@ -52,6 +69,13 @@ public sealed class ChatConversationService : IChatConversationService
         _sqlChatHistoryProvider = sqlChatHistoryProvider;
         _logger = factory.CreateLogger<ChatConversationService>();
     }
+
+
+
+
+
+
+
 
     /// <summary>
     ///     This is to provide an identifier in enterprise scenarios running multiple applications.
@@ -89,6 +113,13 @@ public sealed class ChatConversationService : IChatConversationService
 
     /// <inheritdoc />
     public int SystemTokenCount { get; private set; }
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Sends request to LLM and waits for a response.
@@ -129,61 +160,106 @@ public sealed class ChatConversationService : IChatConversationService
         }
     }
 
-    public async ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default)
+
+
+
+
+
+
+
+    public async Task StartNewConversationAsync(CancellationToken cancellationToken)
     {
+        //Initiates a new conversation by clearing the current history and generating a new conversation ID.
+        ConversationId = Guid.NewGuid().ToString("N");
+        _appSettings.LastConversationId = ConversationId;
+
+        _logger.LogWarning("A new conversation has been started at users request.");
+
+
+        //Making  sure our identity sessionState is populated.
+        HistoryIdentity State = _sessionStateHelper.GetOrInitializeState(_agentSession);
+        State.ApplicationId = _historyIdentityService.Current.ApplicationId;
+        State.AgentId = _historyIdentityService.Current.AgentId;
+        State.ConversationId = ConversationId;
+        State.Messages.Clear();
+        AIHistory.Clear();
+
+        _agentSession?.StateBag.SetValue("ConversationId", ConversationId);
+        // This is crucial to ensure the _sessionStateHelper has the latest ConversationId from the _historyIdentityService.
+        // It synchronizes the session state with the conversation state managed by _historyIdentityService.
+        Debug.Assert(_agentSession != null, nameof(_agentSession) + " != null");
+        _historyIdentityService.ApplyToSession(_agentSession);
+        _historyIdentityService.SetConversationId(ConversationId);
+        _sessionStateHelper.SaveState(_agentSession, State);
+
+        this.OnTokenSnapshotObserved(TokenAccountingMiddleware.CreateContextSnapshot(AIHistory, "history.new"));
+    }
+
+
+
+
+
+
+
+
+    async ValueTask<IReadOnlyList<ChatMessage>?> IChatConversationService.LoadConversationHistoryAsync(CancellationToken token = default)
+    {
+        //To prevent loading history after resetting the conversationId
+        if (!_appSettings.ResumeLast) // <---- Must not load previous history if this is false
+        {
+            return default;
+        }
+
         token.ThrowIfCancellationRequested();
         await this.InitializeAsync().ConfigureAwait(false);
 
         if (_sqlChatHistoryProvider is null || _agentSession is null)
         {
             AIHistory.Clear();
+            this.OnTokenSnapshotObserved(TokenAccountingMiddleware.CreateContextSnapshot(AIHistory, "history.loaded.empty"));
             return [];
         }
 
-        var conversationId = _agentSession.StateBag.GetValue<string>("ConversationId") ?? _historyIdentityService.Current.ConversationId;
-        if (string.IsNullOrWhiteSpace(conversationId))
-        {
-            AIHistory.Clear();
-            return [];
-        }
-
-        _historyIdentityService.SetConversationId(conversationId);
-        _historyIdentityService.ApplyToSession(_agentSession);
         ConversationId = _historyIdentityService.Current.ConversationId;
 
-        IReadOnlyList<PersistedChatMessage> persistedMessages = await _sqlChatHistoryProvider.GetMessagesAsync(conversationId, token).ConfigureAwait(false);
+        IReadOnlyList<ChatMessage>? historyMessages = await RagDataService.GetChatHistoryByConversationId(Guid.Parse(ConversationId));
 
-        List<ChatMessage> historyMessages = [];
-        foreach (PersistedChatMessage persistedMessage in persistedMessages)
-        {
-            if (string.IsNullOrWhiteSpace(persistedMessage.Content))
-            {
-                continue;
-            }
-
-            var roleValue = persistedMessage.Role?.Trim() ?? string.Empty;
-            ChatRole role = roleValue.Length == 0 ? ChatRole.User : new ChatRole(roleValue);
-
-            historyMessages.Add(new ChatMessage(role, persistedMessage.Content)
-            {
-                CreatedAt = persistedMessage.TimestampUtc,
-                MessageId = persistedMessage.MessageId.ToString("D")
-            });
-        }
-
-        _sessionStateHelper.SaveState(_agentSession, new HistoryIdentity { Messages = historyMessages });
-
-        AIHistory.Clear();
-        AIHistory.AddRange(historyMessages);
+        this.OnTokenSnapshotObserved(TokenAccountingMiddleware.CreateContextSnapshot(AIHistory, "history.loaded"));
 
         return historyMessages;
     }
+
+
+
+
+
+
+
 
     /// <inheritdoc />
     public event EventHandler<bool>? BusyStateChanged;
 
     /// <inheritdoc />
     public event EventHandler<TokenUsageSnapshot>? TokenUsageUpdated;
+
+
+
+
+
+
+
+
+    private static int ClampToInt(long value)
+    {
+        return value <= 0 ? 0 : value >= int.MaxValue ? int.MaxValue : (int)value;
+    }
+
+
+
+
+
+
+
 
     private async Task InitializeAsync()
     {
@@ -212,9 +288,7 @@ public sealed class ChatConversationService : IChatConversationService
 
             ConversationId = _historyIdentityService.Current.ConversationId;
 
-            _sessionStateHelper = new ProviderSessionState<HistoryIdentity>(
-                stateInitializer: currentSession => _historyIdentityService.Current,
-                stateKey: this.GetType().Name);
+            _sessionStateHelper = new ProviderSessionState<HistoryIdentity>(stateInitializer: currentSession => _historyIdentityService.Current, stateKey: this.GetType().Name);
 
             _sessionStateHelper.SaveState(_agentSession, _historyIdentityService.Current);
 
@@ -226,8 +300,43 @@ public sealed class ChatConversationService : IChatConversationService
         }
     }
 
+
+
+
+
+
+
+
     /// <inheritdoc />
     public event EventHandler<int>? MaximumContextWarning;
+
+
+
+
+
+
+
+
+    private void OnTokenSnapshotObserved(TokenUsageSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        ContextTokenCount = ReadInt(snapshot.AdditionalCounts, "context_total_tokens", snapshot.TotalTokens);
+        SessionTokenCount = ReadInt(snapshot.AdditionalCounts, "context_session_tokens", snapshot.SessionTokens);
+        RagTokenCount = ReadInt(snapshot.AdditionalCounts, "context_rag_tokens", snapshot.RagTokens);
+        ToolTokenCount = ReadInt(snapshot.AdditionalCounts, "context_tool_tokens", snapshot.ToolTokens);
+        SystemTokenCount = ReadInt(snapshot.AdditionalCounts, "context_system_tokens", snapshot.SystemTokens);
+
+        this.PublishTokenCounts();
+        TokenUsageUpdated?.Invoke(this, snapshot);
+    }
+
+
+
+
+
+
+
 
     private void PublishTokenCounts()
     {
@@ -245,6 +354,25 @@ public sealed class ChatConversationService : IChatConversationService
             MaximumContextWarning?.Invoke(this, sessionTokens);
         }
     }
+
+
+
+
+
+
+
+
+    private static int ReadInt(IReadOnlyDictionary<string, long> values, string key, int fallback)
+    {
+        return values.TryGetValue(key, out var value) ? ClampToInt(value) : fallback;
+    }
+
+
+
+
+
+
+
 
     private async ValueTask<string> ResolveStartupConversationIdAsync(CancellationToken cancellationToken)
     {
@@ -267,33 +395,16 @@ public sealed class ChatConversationService : IChatConversationService
         return !string.IsNullOrWhiteSpace(configuredConversationId) ? configuredConversationId : Guid.NewGuid().ToString("N");
     }
 
+
+
+
+
+
+
+
     /// <inheritdoc />
     public event EventHandler? SessionBugetExceeded;
 
     /// <inheritdoc />
     public event EventHandler? TokenBudgetExceeded;
-
-    private void OnTokenSnapshotObserved(TokenUsageSnapshot snapshot)
-    {
-        ArgumentNullException.ThrowIfNull(snapshot);
-
-        ContextTokenCount = ReadInt(snapshot.AdditionalCounts, "context_total_tokens", snapshot.TotalTokens);
-        SessionTokenCount = ReadInt(snapshot.AdditionalCounts, "context_session_tokens", snapshot.SessionTokens);
-        RagTokenCount = ReadInt(snapshot.AdditionalCounts, "context_rag_tokens", snapshot.RagTokens);
-        ToolTokenCount = ReadInt(snapshot.AdditionalCounts, "context_tool_tokens", snapshot.ToolTokens);
-        SystemTokenCount = ReadInt(snapshot.AdditionalCounts, "context_system_tokens", snapshot.SystemTokens);
-
-        this.PublishTokenCounts();
-        TokenUsageUpdated?.Invoke(this, snapshot);
-    }
-
-    private static int ReadInt(IReadOnlyDictionary<string, long> values, string key, int fallback)
-    {
-        return values.TryGetValue(key, out long value) ? ClampToInt(value) : fallback;
-    }
-
-    private static int ClampToInt(long value)
-    {
-        return value <= 0 ? 0 : value >= int.MaxValue ? int.MaxValue : (int)value;
-    }
 }

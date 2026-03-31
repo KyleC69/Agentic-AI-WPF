@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
-// Project:   DataIngestionLib
-// File:         Vectorizer.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 051945
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -27,12 +31,12 @@ internal class Vectorizer
 
     public static async Task<string> ToVector(string text)
     {
-        var generator = AgentFactory.GetEmbeddingClient();
+        LoggingEmbeddingGenerator<string, Embedding<float>> generator = AgentFactory.GetEmbeddingClient();
 
-        var embedding = await generator.GenerateAsync(text).ConfigureAwait(false);
+        Embedding<float> embedding = await generator.GenerateAsync(text).ConfigureAwait(false);
 
 
 
-        return embedding.Vector.ToJsonElements().ToString();
+        return embedding.Vector.ToJsonElements().ToString()!;
     }
 }

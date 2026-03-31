@@ -11,6 +11,7 @@
 
 
 
+using System.Diagnostics;
 using System.Text.Json;
 
 using CommunityToolkit.Diagnostics;
@@ -43,7 +44,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     private readonly IHistoryIdentityService _historyIdentityService;
 
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
-    private readonly int _isInitialized;
     private readonly ILogger<SqlChatHistoryProvider> _logger;
     private readonly ProviderSessionState<HistoryIdentity> _sessionStateHelper;
     private AIChatHistoryDb? _dbcontext;
@@ -250,63 +250,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
-    /// <summary>
-    /// Retrieves a combined list of context messages from the provided <see cref="InvokedContext"/>.
-    /// </summary>
-    /// <param name="context">
-    /// The context containing the request and response messages to be aggregated.
-    /// </param>
-    /// <returns>
-    /// A list of <see cref="ChatMessage"/> objects that includes both request and response messages.
-    /// </returns>
-    private List<ChatMessage> GetContextMessages(InvokedContext context)
-    {
-        List<ChatMessage> msgs = [];
-        foreach (ChatMessage m in context.ResponseMessages) { msgs.Add(m); }
-
-        foreach (ChatMessage m in context.RequestMessages) { msgs.Add(m); }
-
-        return msgs;
-    }
-
-
-
-
-
-
-    /// <summary>
-    /// Determines whether the specified chat message represents an errored tool result.
-    /// </summary>
-    /// <param name="msg">The chat message to evaluate.</param>
-    /// <returns>
-    /// <c>true</c> if the chat message is from a tool and contains an error; otherwise, <c>false</c>.
-    /// </returns>
-    private static bool IsErroredToolResult(ChatMessage msg)
-    {
-        if (msg.Role != ChatRole.Tool)
-        {
-            return false;
-        }
-
-        _ = msg.ToJsonElements();
-
-        foreach (AIContent content in msg.Contents)
-        {
-            if (content is FunctionResultContent rc)
-            {
-                if (rc.Result is not null && rc.Result is JsonElement resultElement && resultElement.TryGetProperty("error", out _))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-
-
-
 
     /// <summary>
     ///     Gets the set of keys used to store the provider state in the
@@ -328,9 +271,17 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
-    private async ValueTask<AIChatHistoryDb> CreateDbContextAsync(CancellationToken cancellationToken)
+    /// <summary>
+    ///     Validates and converts a nullable <see cref="DateTimeOffset" /> to a <see cref="DateTime" /> in UTC format.
+    /// </summary>
+    /// <param name="offset">The nullable <see cref="DateTimeOffset" /> to be validated and converted.</param>
+    /// <returns>
+    ///     A <see cref="DateTime" /> in UTC format. If <paramref name="offset" /> is <c>null</c>, the current UTC time is
+    ///     returned.
+    /// </returns>
+    private DateTime CheckDateStamp(DateTimeOffset? offset)
     {
-        return new AIChatHistoryDb();
+        return offset?.UtcDateTime ?? DateTime.UtcNow;
     }
 
 
@@ -339,6 +290,11 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
+
+    private async ValueTask<AIChatHistoryDb> CreateDbContextAsync(CancellationToken cancellationToken)
+    {
+        return new AIChatHistoryDb();
+    }
 
 
 
@@ -365,6 +321,35 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
+    /// <summary>
+    ///     Retrieves a combined list of context messages from the provided <see cref="InvokedContext" />.
+    /// </summary>
+    /// <param name="context">
+    ///     The context containing the request and response messages to be aggregated.
+    /// </param>
+    /// <returns>
+    ///     A list of <see cref="ChatMessage" /> objects that includes both request and response messages.
+    /// </returns>
+    private List<ChatMessage> GetContextMessages(InvokedContext context)
+    {
+        List<ChatMessage> msgs = [];
+        Debug.Assert(context.ResponseMessages != null, "context.ResponseMessages != null");
+        foreach (ChatMessage m in context.ResponseMessages)
+        {
+            msgs.Add(m);
+        }
+
+        foreach (ChatMessage m in context.RequestMessages)
+        {
+            msgs.Add(m);
+        }
+
+        return msgs;
+    }
+
+
+
+
 
 
 
@@ -384,18 +369,59 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
+    //TODO: Refactor
     public async ValueTask<IReadOnlyList<PersistedChatMessage>> GetMessagesAsync(string conversationId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         _dbcontext = new();
         _logger.LogTrace("Fetching chat history messages for conversation {ConversationId}", conversationId);
-        List<ChatHistoryMessage> ordered = _dbcontext.ChatHistoryMessages.Where(message => message.ConversationId == conversationId).ToList();
+        var ordered = _dbcontext.ChatHistoryMessages.Where(message => message.ConversationId == conversationId).ToList();
+
+        IReadOnlyList<ChatMessage> chatMessages = ordered.ToChatMessages();
+
+        IEnumerable<ChatMessage> tagged = chatMessages.Select(m => m.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory));
 
 
-
-        List<PersistedChatMessage> messages = ordered.Select(this.ToPersisted).ToList();
+        var messages = ordered.Select(this.ToPersisted).ToList();
 
         return messages;
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Determines whether the specified chat message represents an errored tool result.
+    /// </summary>
+    /// <param name="msg">The chat message to evaluate.</param>
+    /// <returns>
+    ///     <c>true</c> if the chat message is from a tool and contains an error; otherwise, <c>false</c>.
+    /// </returns>
+    private static bool IsErroredToolResult(ChatMessage msg)
+    {
+        if (msg.Role != ChatRole.Tool)
+        {
+            return false;
+        }
+
+        _ = msg.ToJsonElements();
+
+        foreach (AIContent content in msg.Contents)
+        {
+            if (content is FunctionResultContent rc)
+            {
+                if (rc.Result is not null && rc.Result is JsonElement resultElement && resultElement.TryGetProperty("error", out _))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
 
@@ -577,20 +603,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
-
-
-
-    /// <summary>
-    /// Validates and converts a nullable <see cref="DateTimeOffset"/> to a <see cref="DateTime"/> in UTC format.
-    /// </summary>
-    /// <param name="offset">The nullable <see cref="DateTimeOffset"/> to be validated and converted.</param>
-    /// <returns>
-    /// A <see cref="DateTime"/> in UTC format. If <paramref name="offset"/> is <c>null</c>, the current UTC time is returned.
-    /// </returns>
-    private DateTime CheckDateStamp(DateTimeOffset? offset)
-    {
-        return offset?.UtcDateTime ?? DateTime.UtcNow;
-    }
 
 
 

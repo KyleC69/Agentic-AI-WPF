@@ -1,19 +1,17 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         FileReadingTool.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 233148
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 internal class FileReadingTool
 {

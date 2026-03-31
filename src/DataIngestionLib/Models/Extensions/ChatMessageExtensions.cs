@@ -116,10 +116,10 @@ public static class ChatMessageExtensions
     /// </remarks>
     public static ChatMessage WithAgentRequestMessageSource(this ChatMessage message, AgentRequestMessageSourceType sourceType, string? sourceId = null)
     {
-        if (message.AdditionalProperties != null && message.AdditionalProperties.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out var value) && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution && agentRequestMessageSourceAttribution.SourceType == sourceType && agentRequestMessageSourceAttribution.SourceId == sourceId)
-        {
-            return message;
-        }
+    
+        
+        
+
 
         message = message.Clone();
         ChatMessage chatMessage = message;

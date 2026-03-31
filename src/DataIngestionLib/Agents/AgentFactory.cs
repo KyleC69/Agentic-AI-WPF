@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 233117
 
 
 
@@ -160,26 +156,26 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 #else
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-        {
-            Id = agentId,
-            Name = agentId,
-            Description = agentDescription,
-            ChatOptions = new ChatOptions
-            {
-                Instructions = instructions ?? GetModelInstructions(),
-                Temperature = 0.7f,
-                MaxOutputTokens = 10000,
-                AllowMultipleToolCalls = true,
-                Tools = ToolBuilder.GetReadOnlyAiTools(),
-            },
-            AIContextProviders =
+                {
+                        Id = agentId,
+                        Name = agentId,
+                        Description = agentDescription,
+                        ChatOptions = new ChatOptions
+                        {
+                                Instructions = instructions ?? GetModelInstructions(),
+                                Temperature = 0.7f,
+                                MaxOutputTokens = 10000,
+                                AllowMultipleToolCalls = true,
+                                Tools = ToolBuilder.GetReadOnlyAiTools()
+                        },
+                        AIContextProviders =
                         [
                                 _historyContextInjector,
                                 _ragContextInjector
                         ],
-            ThrowOnChatHistoryProviderConflict = true,
-            ChatHistoryProvider = _chatHistoryProvider
-        }, loggerFactory: _factory).AsBuilder()
+                        ThrowOnChatHistoryProviderConflict = true,
+                        ChatHistoryProvider = _chatHistoryProvider
+                }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
                 .Build();
 
@@ -198,7 +194,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
+        Dispose(disposing: true);
     }
 
 

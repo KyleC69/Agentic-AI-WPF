@@ -31,6 +31,7 @@
     <Compile Remove="DocIngestion\LocalFileParser.cs" />
     <Compile Remove="Models\AIChatHistory.cs" />
     <Compile Remove="Models\ChatHistory.cs" />
+    <Compile Remove="Models\Extensions\ChatMessageExtensions.cs" />
 		<Compile Remove="Providers\ExampleUsage.cs" />
   </ItemGroup>
 
@@ -80,6 +81,13 @@
 	  <PackageReference Include="System.Management" Version="10.0.5" />
 	  <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.5" />
 
+  </ItemGroup>
+
+
+
+
+  <ItemGroup>
+    <Folder Include="Models\Extensions\" />
   </ItemGroup>
 
 

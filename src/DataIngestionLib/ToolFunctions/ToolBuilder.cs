@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ToolBuilder.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 233146
 
 
 
@@ -82,6 +78,13 @@ internal sealed class ToolBuilder
         ];
     }
 
+
+
+
+
+
+
+
     internal static IList<AITool> GetWritingAiTools()
     {
         return
@@ -89,6 +92,4 @@ internal sealed class ToolBuilder
                 AIFunctionFactory.Create(FileSystemWriterTool.WriteText)
         ];
     }
-
-
 }

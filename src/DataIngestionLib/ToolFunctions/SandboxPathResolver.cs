@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         SandboxPathResolver.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 233144
 
 
 
@@ -21,10 +17,11 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
+
 /// <summary>
-/// Provides utility methods for resolving and validating file paths within a sandboxed environment.
-/// This class ensures that file paths remain confined to a specified sandbox root directory,
-/// preventing access to paths outside the sandbox or paths that use unsupported reparse points.
+///     Provides utility methods for resolving and validating file paths within a sandboxed environment.
+///     This class ensures that file paths remain confined to a specified sandbox root directory,
+///     preventing access to paths outside the sandbox or paths that use unsupported reparse points.
 /// </summary>
 internal static class SandboxPathResolver
 {

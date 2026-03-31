@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         PersistedChatMessage.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 233132
 
 
 
@@ -32,12 +28,12 @@ public sealed record PersistedChatMessage
     public string Content { get; init; } = string.Empty;
 
     public string ConversationId { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
     public Guid MessageId { get; init; }
 
     public JsonDocument? Metadata { get; init; }
 
     public string Role { get; init; } = string.Empty;
-    public DateTime CreatedAt { get; init; }
 
     public DateTime TimestampUtc { get; init; }
 

@@ -133,7 +133,7 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("CHAT_HISTORY")]
         public string ChatHistoryConnectionString {
             get {
                 return ((string)(this["ChatHistoryConnectionString"]));
@@ -142,7 +142,7 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("REMOTE_RAG")]
         public string RemoteRAGConnectionString {
             get {
                 return ((string)(this["RemoteRAGConnectionString"]));
@@ -187,16 +187,7 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastConversationId {
-            get {
-                return ((string)(this["LastConversationId"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("TommyCat")]
         public string UserName {
             get {
                 return ((string)(this["UserName"]));

@@ -1,15 +1,15 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 051918
+// Build Num: 233122
 
 
-
-using Microsoft.Extensions.AI;
 
 using DataIngestionLib.Models;
+
+using Microsoft.Extensions.AI;
 
 
 
@@ -49,11 +49,15 @@ public interface IChatConversationService
 
     event EventHandler<bool> BusyStateChanged;
 
-    event EventHandler<TokenUsageSnapshot> TokenUsageUpdated;
 
-
-    ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default);
+    ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token);
 
 
     ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
+
+
+    Task StartNewConversationAsync(CancellationToken cancellationToken);
+
+
+    event EventHandler<TokenUsageSnapshot> TokenUsageUpdated;
 }

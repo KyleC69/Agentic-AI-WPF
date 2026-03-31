@@ -39,10 +39,10 @@
       <Value Profile="(Default)">Agentic-Max</Value>
     </Setting>
     <Setting Name="ChatHistoryConnectionString" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">CHAT_HISTORY</Value>
     </Setting>
     <Setting Name="RemoteRAGConnectionString" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">REMOTE_RAG</Value>
     </Setting>
     <Setting Name="ResumeLast" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">True</Value>
@@ -56,11 +56,8 @@
     <Setting Name="ApplicationId" Type="System.String" Scope="Application">
       <Value Profile="(Default)">15A53D0F-041D-44DD-A150-DFB8D0F133FF</Value>
     </Setting>
-    <Setting Name="LastConversationId" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="UserName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">TommyCat</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         AIChatHistoryDb.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 233124
 
 
 
@@ -15,6 +11,7 @@ using DataIngestionLib.History.HistoryModels;
 using DataIngestionLib.HistoryModels;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 
 
@@ -28,32 +25,23 @@ namespace DataIngestionLib.Data;
 public class AIChatHistoryDb : DbContext
 {
 
-
-
-
-
-
-    public AIChatHistoryDb() : base()
-    {
-    }
-
-
-
-
-
-
-
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         _ = optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CHAT_HISTORY"));
     }
 
+
+
+
+
+
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var unused20 = modelBuilder.Entity<ChatHistoryMessage>(entity =>
+        ModelBuilder unused20 = modelBuilder.Entity<ChatHistoryMessage>(entity =>
         {
-            var unused19 = entity.HasKey(e => e.MessageId);
+            KeyBuilder unused19 = entity.HasKey(e => e.MessageId);
 
             var unused18 = entity.ToTable(tb => tb.HasTrigger("tr_generate_embeddings"));
 
@@ -70,9 +58,9 @@ public class AIChatHistoryDb : DbContext
             var unused8 = entity.Property(e => e.UserId).HasMaxLength(128);
         });
 
-        var unused7 = modelBuilder.Entity<ChatHistoryTextChunk>(entity =>
+        ModelBuilder unused7 = modelBuilder.Entity<ChatHistoryTextChunk>(entity =>
         {
-            var unused6 = entity.HasKey(e => e.ChunkRecordId).HasName("PK__tmp_ms_x__B2ED0F6BA39E36A4");
+            KeyBuilder unused6 = entity.HasKey(e => e.ChunkRecordId).HasName("PK__tmp_ms_x__B2ED0F6BA39E36A4");
 
             var unused5 = entity.HasIndex(e => e.Embedding, "VIX_ChatHistoryTextChunks_Embedding");
 

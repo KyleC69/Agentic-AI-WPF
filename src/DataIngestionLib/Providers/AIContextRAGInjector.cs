@@ -13,7 +13,6 @@
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
@@ -30,7 +29,6 @@ namespace DataIngestionLib.Providers;
 
 public sealed class AIContextRAGInjector : MessageAIContextProvider
 {
-    private readonly IReadOnlyList<IRagContextSource> _sources;
     private readonly RagDataService _ragData;
 
 
@@ -57,7 +55,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     protected override async ValueTask<IEnumerable<ChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-      
+
         ChatMessage search = context.RequestMessages.Last();
 
         List<ChatMessage> results = await _ragData.GetRagDataEntries(search.Text);
@@ -75,17 +73,18 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
 
+
     /// <summary>
-    /// Stores the AI context asynchronously after the invocation of a specific operation.
+    ///     Stores the AI context asynchronously after the invocation of a specific operation.
     /// </summary>
     /// <param name="context">
-    /// The <see cref="InvokedContext"/> containing details about the invoked operation and its associated data.
+    ///     The <see cref="InvokedContext" /> containing details about the invoked operation and its associated data.
     /// </param>
     /// <param name="cancellationToken">
-    /// A <see cref="CancellationToken"/> that can be used to observe cancellation requests.
+    ///     A <see cref="CancellationToken" /> that can be used to observe cancellation requests.
     /// </param>
     /// <returns>
-    /// A <see cref="ValueTask"/> representing the asynchronous operation.
+    ///     A <see cref="ValueTask" /> representing the asynchronous operation.
     /// </returns>
     protected override ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = default)
     {

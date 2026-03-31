@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         UserViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 052001
+// Build Num: 233206
 
 
 

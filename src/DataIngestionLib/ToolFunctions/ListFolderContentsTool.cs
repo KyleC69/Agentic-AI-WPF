@@ -23,15 +23,9 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-
 [Description("Reads files from the file system. Paths are resolved relative to the configured sandbox root.")]
 public sealed class ListFolderContentsTool
 {
-
-
-
-
-
 
     [Description("Reads the contents of a folder. Can be used to list files and subfolders. Path can be relative or absolute.")]
     public static ToolResult<List<string>> ListFolderContents(string relativePath)
@@ -48,12 +42,9 @@ public sealed class ListFolderContentsTool
                 return ToolResult<List<string>>.Fail($"Directory not found: {relativePath}");
             }
 
-            List<string?> content = Directory.GetFileSystemEntries(fullPath)
-                .Select(Path.GetFileName)
-                .Where(name => !string.IsNullOrWhiteSpace(name))
-                .ToList()!;
+            List<string?> content = Directory.GetFileSystemEntries(fullPath).Select(Path.GetFileName).Where(name => !string.IsNullOrWhiteSpace(name)).ToList()!;
 
-            return ToolResult<List<string>>.Ok(content);
+            return ToolResult<List<string>>.Ok(content!);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -67,9 +58,48 @@ public sealed class ListFolderContentsTool
 }
 
 
+
+
+
 //Resolves a path to an existing accessible absolute path from relative or absolute input.
 internal static class PathResolver
 {
+
+    private static bool CanAccessPath(string resolvedPath, out string? error)
+    {
+        error = null;
+
+        try
+        {
+            if (Directory.Exists(resolvedPath))
+            {
+                using IEnumerator<string> enumerator = Directory.EnumerateFileSystemEntries(resolvedPath).GetEnumerator();
+                _ = enumerator.MoveNext();
+                return true;
+            }
+
+            using FileStream stream = File.Open(resolvedPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            return true;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+        catch (IOException ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+    }
+
+
+
+
+
+
+
+
     internal static bool TryResolvePath(string path, out string? fullPath, out string? error)
     {
         fullPath = null;
@@ -99,34 +129,6 @@ internal static class PathResolver
             return true;
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
-        {
-            error = ex.Message;
-            return false;
-        }
-    }
-
-    private static bool CanAccessPath(string resolvedPath, out string? error)
-    {
-        error = null;
-
-        try
-        {
-            if (Directory.Exists(resolvedPath))
-            {
-                using IEnumerator<string> enumerator = Directory.EnumerateFileSystemEntries(resolvedPath).GetEnumerator();
-                _ = enumerator.MoveNext();
-                return true;
-            }
-
-            using FileStream stream = File.Open(resolvedPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            return true;
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            error = ex.Message;
-            return false;
-        }
-        catch (IOException ex)
         {
             error = ex.Message;
             return false;

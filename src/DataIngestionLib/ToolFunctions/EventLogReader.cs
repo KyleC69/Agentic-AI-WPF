@@ -1,17 +1,12 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/30
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         EventLogReader.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 233140
 
 
 
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 
@@ -82,6 +77,7 @@ public sealed class SandboxEventLogReader(int maxEvents = 100)
 
 
 
+
     [Description("An event log reader by log name, returns 100 of the newest events.")]
     public ToolResult<IReadOnlyList<EventLogEntryDto>> ReadLog(string logName)
     {
@@ -99,16 +95,16 @@ public sealed class SandboxEventLogReader(int maxEvents = 100)
         {
             using EventLog log = new(logName);
 
-            ReadOnlyCollection<EventLogEntryDto> entries = log.Entries.Cast<EventLogEntry>()
+            var entries = log.Entries.Cast<EventLogEntry>()
                     .Reverse() // newest first
                     .Take(_maxEvents)
                     .Select(e => new EventLogEntryDto
                     {
-                        TimeGenerated = e.TimeGenerated,
-                        Source = e.Source,
-                        Message = e.Message,
-                        EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
-                        EntryType = e.EntryType
+                            TimeGenerated = e.TimeGenerated,
+                            Source = e.Source,
+                            Message = e.Message,
+                            EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
+                            EntryType = e.EntryType
                     })
                     .ToList()
                     .AsReadOnly();
@@ -127,7 +123,7 @@ public sealed class SandboxEventLogReader(int maxEvents = 100)
         {
             return ToolResult<IReadOnlyList<EventLogEntryDto>>.Fail($"Invalid event log operation: {ex.Message}");
         }
-        catch (System.ComponentModel.Win32Exception ex)
+        catch (Win32Exception ex)
         {
             return ToolResult<IReadOnlyList<EventLogEntryDto>>.Fail($"Windows error while reading event log: {ex.Message}");
         }

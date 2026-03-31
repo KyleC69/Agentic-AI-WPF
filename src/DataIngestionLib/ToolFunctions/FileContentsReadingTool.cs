@@ -25,7 +25,6 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-
 [Description("Reads files from the file system. Paths are resolved relative to the configured sandbox root.")]
 public sealed class FileContentsReadingTool
 {
@@ -54,13 +53,14 @@ public sealed class FileContentsReadingTool
 
 
 
+
     [OllamaTool]
     [Description("Read a file's text content. The path is relative to the sandbox root.")]
     public static ToolResult<string> ReadFileContents(string relativePath)
     {
         try
         {
-            if (!SandboxPathResolver.TryResolveFilePath(_sandboxRoot, relativePath, out var fullPath, out var error))
+            if (!SandboxPathResolver.TryResolveFilePath(_sandboxRoot!, relativePath, out var fullPath, out var error))
             {
                 return ToolResult<string>.Fail(error!);
             }

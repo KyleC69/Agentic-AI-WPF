@@ -1,7 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
+﻿using System.Text.Json;
 
-using DataIngestionLib.EFModels;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services.Contracts;
 
@@ -99,13 +97,11 @@ public class PersistedAndModelContractsTests
         };
 
         identity.AgentId = "agent";
-        identity.MessageId = "mid";
         identity.UserId = "user";
 
         Assert.AreEqual("app", identity.ApplicationId);
         Assert.AreEqual("conv", identity.ConversationId);
         Assert.AreEqual("agent", identity.AgentId);
-        Assert.AreEqual("mid", identity.MessageId);
         Assert.AreEqual("user", identity.UserId);
     }
 
