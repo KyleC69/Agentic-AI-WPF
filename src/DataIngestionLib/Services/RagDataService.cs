@@ -63,7 +63,19 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
 
-
+    /// <summary>
+    /// Retrieves a list of RAG (Retrieval-Augmented Generation) data entries based on the provided query.
+    /// </summary>
+    /// <param name="query">The search query used to retrieve RAG data entries.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains a list of 
+    /// <see cref="ChatMessage"/> objects representing the RAG data entries.
+    /// </returns>
+    /// <remarks>
+    /// This method interacts with a remote database to perform a vector-based search using the provided query.
+    /// It logs an error message if an exception occurs during the operation.
+    /// </remarks>
+    /// <exception cref="Exception">Thrown when an error occurs while fetching RAG data entries.</exception>
     public async Task<List<ChatMessage>> GetRagDataEntries(string query)
     {
         List<ChatMessage> rags = new();

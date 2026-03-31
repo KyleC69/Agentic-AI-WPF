@@ -9,20 +9,110 @@
     public sealed partial class Settings {
         
         public Settings() {
-            // // To add event handlers for saving and changing settings, uncomment the lines below:
-            //
-            // this.SettingChanging += this.SettingChangingEventHandler;
-            //
-            // this.SettingsSaving += this.SettingsSavingEventHandler;
-            //
+            this.SettingChanging += this.SettingChangingEventHandler;
+            this.PropertyChanged += this.PropertyChangedEventHandler;
+            this.SettingsLoaded += this.SettingsLoadedEventHandler;
+            this.SettingsSaving += this.SettingsSavingEventHandler;
         }
         
         private void SettingChangingEventHandler(object sender, System.Configuration.SettingChangingEventArgs e) {
-            // Add code to handle the SettingChangingEvent event here.
+            System.ArgumentNullException.ThrowIfNull(e);
+
+            if (!IsValidSettingValue(e.SettingName, e.NewValue)) {
+                e.Cancel = true;
+            }
+        }
+
+        private void PropertyChangedEventHandler(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            System.ArgumentNullException.ThrowIfNull(e);
+
+            if (string.IsNullOrWhiteSpace(e.PropertyName)) {
+                return;
+            }
+
+            if (!IsValidSettingValue(e.PropertyName, this[e.PropertyName])) {
+                throw new System.InvalidOperationException($"The '{e.PropertyName}' setting value is invalid.");
+            }
+        }
+
+        private void SettingsLoadedEventHandler(object sender, System.Configuration.SettingsLoadedEventArgs e) {
+            if (!AreCurrentSettingsValid()) {
+                throw new System.InvalidOperationException("One or more application settings are invalid.");
+            }
         }
         
         private void SettingsSavingEventHandler(object sender, System.ComponentModel.CancelEventArgs e) {
-            // Add code to handle the SettingsSaving event here.
+            System.ArgumentNullException.ThrowIfNull(e);
+
+            if (!AreCurrentSettingsValid()) {
+                e.Cancel = true;
+            }
+        }
+
+        private bool AreCurrentSettingsValid() {
+            return IsValidSettingValue(nameof(OllamaHost), OllamaHost)
+                && IsValidSettingValue(nameof(OllamaPort), OllamaPort)
+                && IsValidSettingValue(nameof(EmbeddingModel), EmbeddingModel)
+                && IsValidSettingValue(nameof(SessionBudget), SessionBudget)
+                && IsValidSettingValue(nameof(SystemBudget), SystemBudget)
+                && IsValidSettingValue(nameof(RAGBudget), RAGBudget)
+                && IsValidSettingValue(nameof(ToolBudget), ToolBudget)
+                && IsValidSettingValue(nameof(MetaBudget), MetaBudget)
+                && IsValidSettingValue(nameof(LogDirectory), LogDirectory)
+                && IsValidSettingValue(nameof(LogName), LogName)
+                && IsValidSettingValue(nameof(MaximumContext), MaximumContext)
+                && IsValidSettingValue(nameof(AgentId), AgentId)
+                && IsValidSettingValue(nameof(ChatHistoryConnectionString), ChatHistoryConnectionString)
+                && IsValidSettingValue(nameof(RemoteRAGConnectionString), RemoteRAGConnectionString)
+                && IsValidSettingValue(nameof(ChatModel), ChatModel)
+                && IsValidSettingValue(nameof(LearnBaseUrl), LearnBaseUrl)
+                && IsValidSettingValue(nameof(ApplicationId), ApplicationId)
+                && IsValidSettingValue(nameof(UserName), UserName);
+        }
+
+        private static bool IsValidSettingValue(string settingName, object value) {
+            switch (settingName) {
+                case nameof(OllamaPort):
+                    return TryGetInt32(value, out var port) && port is >= 1 and <= 65535;
+                case nameof(SessionBudget):
+                case nameof(SystemBudget):
+                case nameof(RAGBudget):
+                case nameof(ToolBudget):
+                case nameof(MetaBudget):
+                case nameof(MaximumContext):
+                    return TryGetInt32(value, out var budget) && budget > 0;
+                case nameof(LearnBaseUrl):
+                    return value is string learnBaseUrl
+                        && System.Uri.TryCreate(learnBaseUrl, System.UriKind.Absolute, out var uri)
+                        && (uri.Scheme == System.Uri.UriSchemeHttp || uri.Scheme == System.Uri.UriSchemeHttps);
+                case nameof(ApplicationId):
+                    return value is string applicationId && System.Guid.TryParse(applicationId, out _);
+                case nameof(OllamaHost):
+                case nameof(EmbeddingModel):
+                case nameof(LogDirectory):
+                case nameof(LogName):
+                case nameof(AgentId):
+                case nameof(ChatHistoryConnectionString):
+                case nameof(RemoteRAGConnectionString):
+                case nameof(ChatModel):
+                case nameof(UserName):
+                    return value is string stringValue && !string.IsNullOrWhiteSpace(stringValue);
+                default:
+                    return true;
+            }
+        }
+
+        private static bool TryGetInt32(object value, out int result) {
+            switch (value) {
+                case int intValue:
+                    result = intValue;
+                    return true;
+                case string stringValue:
+                    return int.TryParse(stringValue, out result);
+                default:
+                    result = default;
+                    return false;
+            }
         }
     }
 }

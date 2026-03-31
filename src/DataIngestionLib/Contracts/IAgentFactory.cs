@@ -1,13 +1,15 @@
-﻿// Build Date: 2026/03/30
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         IAgentFactory.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 233121
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
-
-using DataIngestionLib.Models;
 
 using Microsoft.Agents.AI;
 
@@ -22,5 +24,5 @@ namespace DataIngestionLib.Contracts;
 
 public interface IAgentFactory
 {
-    AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null, Action<TokenUsageSnapshot>? tokenSnapshotSink = null);
+    AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null);
 }

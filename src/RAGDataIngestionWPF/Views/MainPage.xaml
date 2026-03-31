@@ -154,6 +154,7 @@
                              AcceptsReturn="True"
                              VerticalContentAlignment="Top"
                              KeyDown="UIElement_OnKeyDown"
+                             PreviewKeyDown="UIElement_OnPreviewKeyDown"
                              TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto"
                              Text="{Binding MessageInput, UpdateSourceTrigger=PropertyChanged}">

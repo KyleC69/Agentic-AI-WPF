@@ -9,6 +9,11 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
+
+
+
 namespace DataIngestionLib.EFModels
 {
     public partial class AIRemoteRagContext
@@ -41,6 +46,10 @@ namespace DataIngestionLib.EFModels
         public AIRemoteRagContextProcedures(AIRemoteRagContext context)
         {
             _context = context ?? new AIRemoteRagContext();
+      
+            // This is a workaround to ensure the LoggerFactory is used by EF Core.
+            // In a real-world scenario, you might want to inject ILoggerFactory or ILogger directly
+            // if this context is managed by a DI container.
         }
 
         public virtual async Task<List<Search_FullTextResult>> Search_FullTextAsync(string query, int? topN, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)

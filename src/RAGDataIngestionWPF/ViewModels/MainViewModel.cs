@@ -68,12 +68,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
 
         _chatConversationService.BusyStateChanged += OnBusyStateChange;
-        _chatConversationService.TokenUsageUpdated += OnTokenUsageUpdated;
 
         NewConvoCommand = new AsyncRelayCommand(StartNewConversationAsync);
 
         // Need to link this back to applicaion lifecycle
         _tokenSource = new CancellationTokenSource();
+
+
     }
 
 
@@ -135,7 +136,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     {
         _tokenSource?.Dispose();
         _chatConversationService.BusyStateChanged -= OnBusyStateChange;
-        _chatConversationService.TokenUsageUpdated -= OnTokenUsageUpdated;
 
     }
 
@@ -329,7 +329,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private async Task SendMessageAsync()
     {
-
+        _tokenSource= new CancellationTokenSource();
 
         var content = MessageInput.Trim();
         if (string.IsNullOrWhiteSpace(content))

@@ -40,6 +40,7 @@ public sealed partial class MainPage
 
     public MainPage(MainViewModel viewModel)
     {
+        ViewModel = viewModel;
         InitializeComponent();
         DataContext = viewModel;
         Loaded += OnLoaded;
@@ -49,7 +50,7 @@ public sealed partial class MainPage
 
 
 
-
+    public MainViewModel ViewModel { get; private set; }
 
 
 
@@ -161,5 +162,32 @@ public sealed partial class MainPage
         {
             SendBtn.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }
+    }
+
+
+
+
+
+
+
+
+    private void UIElement_OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+
+
+
+        // Shift+Enter → allow newline
+        if (e.Key == Key.Enter && Keyboard.Modifiers == ModifierKeys.Shift)
+            return;
+
+        // Enter alone → send
+        if (e.Key == Key.Enter)
+        {
+            e.Handled = true; // prevent newline
+            ViewModel.SendMessageCommand.Execute(null);
+        }
+
+
+
     }
 }

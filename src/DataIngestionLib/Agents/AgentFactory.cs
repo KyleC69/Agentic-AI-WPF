@@ -39,7 +39,8 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     //keep track of created agents to prevent duplicate IDs, and to manage their lifecycle if needed
     private readonly Dictionary<string, string> _agents = [];
 
-    private readonly IAppSettings _appSettings;
+        private readonly string _ollamaHost;
+        private readonly int _ollamaPort;
 
     private readonly SqlChatHistoryProvider _chatHistoryProvider;
     private readonly ChatHistoryContextInjector _historyContextInjector;
@@ -68,9 +69,6 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     /// <param name="factory">
     ///     The <see cref="ILoggerFactory" /> instance used for logging.
     /// </param>
-    /// <param name="appSettings">
-    ///     The application settings containing configuration values.
-    /// </param>
     /// <param name="chatHistoryProvider">
     ///     The provider responsible for managing chat history.
     /// </param>
@@ -83,10 +81,10 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     /// <exception cref="ArgumentNullException">
     ///     Thrown when any of the provided parameters is <c>null</c>.
     /// </exception>
-    public AgentFactory(ILoggerFactory factory, IAppSettings appSettings, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector, AIContextRAGInjector ragContextInjector)
+    public AgentFactory(ILoggerFactory factory, string ollamaHost, int ollamaPort, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector, AIContextRAGInjector ragContextInjector)
     {
         Guard.IsNotNull(factory);
-        Guard.IsNotNull(appSettings);
+        Guard.IsNotNullOrEmpty(ollamaHost);
         Guard.IsNotNull(chatHistoryProvider);
         Guard.IsNotNull(contextInjector);
         Guard.IsNotNull(ragContextInjector);
@@ -94,7 +92,8 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         _factory = factory;
         _historyContextInjector = contextInjector;
         _chatHistoryProvider = chatHistoryProvider;
-        _appSettings = appSettings;
+        _ollamaHost = ollamaHost;
+        _ollamaPort = ollamaPort;
         _ragContextInjector = ragContextInjector;
     }
 
@@ -126,7 +125,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     ///     Thrown if an agent with the specified <paramref name="agentId" /> already
     ///     exists.
     /// </exception>
-    public AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null, Action<TokenUsageSnapshot>? tokenSnapshotSink = null)
+    public AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null)
     {
 
         Guard.IsNotNullOrWhiteSpace(agentId);
@@ -137,10 +136,10 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         }
 
         _agents.Add(agentId, model);
-        Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
+            Uri ollamaUri = new UriBuilder(_ollamaHost) { Port = _ollamaPort }.Uri;
         _innerClient = new OllamaApiClient(ollamaUri, model);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
-        _innerClient = new TokenAccountingMiddleware(_innerClient, tokenSnapshotSink);
+        _innerClient = new TokenAccountingMiddleware(_innerClient);
 
 #if !SQL
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
@@ -228,7 +227,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
     public AIAgent GetBasicAIAgent()
     {
-        Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
+        Uri ollamaUri = new UriBuilder(_ollamaHost) { Port = _ollamaPort }.Uri;
         _innerClient = new OllamaApiClient(ollamaUri, AIModels.LLAMA1_B);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 
@@ -333,7 +332,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     {
 
 
-        Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
+        Uri ollamaUri = new UriBuilder(_ollamaHost) { Port = _ollamaPort }.Uri;
         _innerClient = new OllamaApiClient(ollamaUri, AIModels.BGE_RERANKER);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 

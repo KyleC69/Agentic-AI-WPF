@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/03/30
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         HistoryIdentity.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 233137
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -23,11 +27,11 @@ namespace DataIngestionLib.Services.Contracts;
 public record HistoryIdentity
 {
 
-    public string AgentId { get; set; } = string.Empty;
-    public string ApplicationId { get; set; } = string.Empty;
-    public string ConversationId { get; set; } = string.Empty;
+    [JsonPropertyName("agentid")] public string AgentId { get; set; } = string.Empty;
+    [JsonPropertyName("applicationid")] public string ApplicationId { get; set; } = string.Empty;
+    [JsonPropertyName("conversationid")] public string ConversationId { get; set; } = string.Empty;
 
     [JsonPropertyName("messages")] public List<ChatMessage> Messages { get; set; } = [];
 
-    public string UserId { get; set; } = string.Empty;
+    [JsonPropertyName("userid")] public string UserId { get; set; } = string.Empty;
 }

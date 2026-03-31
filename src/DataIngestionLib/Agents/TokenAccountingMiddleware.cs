@@ -26,6 +26,18 @@ internal sealed class TokenAccountingMiddleware : DelegatingChatClient
 {
     private readonly Action<TokenUsageSnapshot>? _tokenSnapshotSink;
     private static readonly AsyncLocal<TurnState?> CurrentTurnState = new();
+    private static readonly object CategoryEventsGate = new();
+    private static CategoryCounts LastPublishedCounts;
+
+    internal static event EventHandler<TokenCategoryChangedEventArgs>? TotalTokensChanged;
+    internal static event EventHandler<TokenCategoryChangedEventArgs>? SessionTokensChanged;
+    internal static event EventHandler<TokenCategoryChangedEventArgs>? RagTokensChanged;
+    internal static event EventHandler<TokenCategoryChangedEventArgs>? ToolTokensChanged;
+    internal static event EventHandler<TokenCategoryChangedEventArgs>? SystemTokensChanged;
+    internal static event EventHandler<TokenCategoryChangedEventArgs>? InputTokensChanged;
+    internal static event EventHandler<TokenCategoryChangedEventArgs>? OutputTokensChanged;
+    internal static event EventHandler<TokenCategoryChangedEventArgs>? CachedInputTokensChanged;
+    internal static event EventHandler<TokenCategoryChangedEventArgs>? ReasoningTokensChanged;
 
 
 
@@ -159,7 +171,11 @@ internal sealed class TokenAccountingMiddleware : DelegatingChatClient
                 ["usage_system_tokens"] = 0
         };
 
-        return new TokenUsageSnapshot(TotalTokens: buckets.Total, SessionTokens: buckets.Session, RagTokens: buckets.Rag, ToolTokens: buckets.Tool, SystemTokens: buckets.System, InputTokens: 0, OutputTokens: 0, CachedInputTokens: 0, ReasoningTokens: 0, Source: source, UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
+        TokenUsageSnapshot snapshot = new TokenUsageSnapshot(TotalTokens: buckets.Total, SessionTokens: buckets.Session, RagTokens: buckets.Rag, ToolTokens: buckets.Tool, SystemTokens: buckets.System, InputTokens: 0, OutputTokens: 0, CachedInputTokens: 0, ReasoningTokens: 0, Source: source, UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
+
+        PublishCategoryEvents(snapshot);
+
+        return snapshot;
     }
 
 
@@ -208,6 +224,59 @@ internal sealed class TokenAccountingMiddleware : DelegatingChatClient
             }
 
         return total;
+    }
+
+
+
+
+
+
+
+
+    private static void PublishCategoryEvents(TokenUsageSnapshot snapshot)
+    {
+        List<PendingCategoryChange> pendingChanges = [];
+
+        lock (CategoryEventsGate)
+        {
+            CategoryCounts currentCounts = new CategoryCounts(snapshot.TotalTokens, snapshot.SessionTokens, snapshot.RagTokens, snapshot.ToolTokens, snapshot.SystemTokens, snapshot.InputTokens, snapshot.OutputTokens, snapshot.CachedInputTokens, snapshot.ReasoningTokens);
+            CategoryCounts previousCounts = LastPublishedCounts;
+
+            RegisterChange(pendingChanges, TotalTokensChanged, "total", previousCounts.Total, currentCounts.Total, snapshot.Source, snapshot.UpdatedAtUtc);
+            RegisterChange(pendingChanges, SessionTokensChanged, "session", previousCounts.Session, currentCounts.Session, snapshot.Source, snapshot.UpdatedAtUtc);
+            RegisterChange(pendingChanges, RagTokensChanged, "rag", previousCounts.Rag, currentCounts.Rag, snapshot.Source, snapshot.UpdatedAtUtc);
+            RegisterChange(pendingChanges, ToolTokensChanged, "tool", previousCounts.Tool, currentCounts.Tool, snapshot.Source, snapshot.UpdatedAtUtc);
+            RegisterChange(pendingChanges, SystemTokensChanged, "system", previousCounts.System, currentCounts.System, snapshot.Source, snapshot.UpdatedAtUtc);
+            RegisterChange(pendingChanges, InputTokensChanged, "input", previousCounts.Input, currentCounts.Input, snapshot.Source, snapshot.UpdatedAtUtc);
+            RegisterChange(pendingChanges, OutputTokensChanged, "output", previousCounts.Output, currentCounts.Output, snapshot.Source, snapshot.UpdatedAtUtc);
+            RegisterChange(pendingChanges, CachedInputTokensChanged, "cached_input", previousCounts.CachedInput, currentCounts.CachedInput, snapshot.Source, snapshot.UpdatedAtUtc);
+            RegisterChange(pendingChanges, ReasoningTokensChanged, "reasoning", previousCounts.Reasoning, currentCounts.Reasoning, snapshot.Source, snapshot.UpdatedAtUtc);
+
+            LastPublishedCounts = currentCounts;
+        }
+
+        foreach (PendingCategoryChange pendingChange in pendingChanges)
+        {
+            pendingChange.Handler?.Invoke(null, pendingChange.Args);
+        }
+    }
+
+
+
+
+
+
+
+
+    private static void RegisterChange(List<PendingCategoryChange> pendingChanges, EventHandler<TokenCategoryChangedEventArgs>? categoryHandler, string category, int previousValue, int currentValue, string source, DateTimeOffset updatedAtUtc)
+    {
+        if (previousValue == currentValue)
+        {
+            return;
+        }
+
+        TokenCategoryChangedEventArgs args = new TokenCategoryChangedEventArgs(category, previousValue, currentValue, source, updatedAtUtc);
+        pendingChanges.Add(new PendingCategoryChange(categoryHandler, args));
     }
 
 
@@ -340,6 +409,7 @@ internal sealed class TokenAccountingMiddleware : DelegatingChatClient
 
         TokenUsageSnapshot snapshot = new TokenUsageSnapshot(TotalTokens: ClampToInt(aggregatedUsage.TotalTokenCount ?? 0), SessionTokens: buckets.Session, RagTokens: buckets.Rag, ToolTokens: buckets.Tool, SystemTokens: buckets.System, InputTokens: ClampToInt(aggregatedUsage.InputTokenCount ?? 0), OutputTokens: ClampToInt(aggregatedUsage.OutputTokenCount ?? 0), CachedInputTokens: ClampToInt(aggregatedUsage.CachedInputTokenCount ?? 0), ReasoningTokens: ClampToInt(aggregatedUsage.ReasoningTokenCount ?? 0), Source: "middleware.turn.consolidated", UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
 
+        PublishCategoryEvents(snapshot);
         _tokenSnapshotSink?.Invoke(snapshot);
         CurrentTurnState.Value = null;
 
@@ -359,6 +429,29 @@ internal sealed class TokenAccountingMiddleware : DelegatingChatClient
 
 
 
+    internal sealed class TokenCategoryChangedEventArgs : EventArgs
+    {
+        public TokenCategoryChangedEventArgs(string category, int previousValue, int currentValue, string source, DateTimeOffset updatedAtUtc)
+        {
+            Category = category;
+            PreviousValue = previousValue;
+            CurrentValue = currentValue;
+            Source = source;
+            UpdatedAtUtc = updatedAtUtc;
+        }
+
+        public string Category { get; }
+        public int PreviousValue { get; }
+        public int CurrentValue { get; }
+        public int Delta => CurrentValue - PreviousValue;
+        public string Source { get; }
+        public DateTimeOffset UpdatedAtUtc { get; }
+    }
+
+
+
+
+
     private sealed class TurnState
     {
         public UsageDetails AggregatedUsage { get; } = new UsageDetails { AdditionalCounts = new AdditionalPropertiesDictionary<long>() };
@@ -367,6 +460,13 @@ internal sealed class TokenAccountingMiddleware : DelegatingChatClient
         public int EstimatedInputTokens { get; set; }
         public int ModelCallCount { get; set; }
     }
+
+
+
+
+
+    private readonly record struct PendingCategoryChange(EventHandler<TokenCategoryChangedEventArgs>? Handler, TokenCategoryChangedEventArgs Args);
+    private readonly record struct CategoryCounts(int Total, int Session, int Rag, int Tool, int System, int Input, int Output, int CachedInput, int Reasoning);
 
 
 

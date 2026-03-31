@@ -1,13 +1,15 @@
-﻿// Build Date: 2026/03/30
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         IChatConversationService.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 233122
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
-
-using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 
@@ -59,5 +61,4 @@ public interface IChatConversationService
     Task StartNewConversationAsync(CancellationToken cancellationToken);
 
 
-    event EventHandler<TokenUsageSnapshot> TokenUsageUpdated;
 }

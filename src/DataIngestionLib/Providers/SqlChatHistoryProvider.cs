@@ -16,7 +16,6 @@ using System.Text.Json;
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Data;
 using DataIngestionLib.HistoryModels;
@@ -40,7 +39,6 @@ namespace DataIngestionLib.Providers;
 
 public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 {
-    private readonly IAppSettings _appSettings;
     private readonly IHistoryIdentityService _historyIdentityService;
 
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -60,14 +58,12 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
-    public SqlChatHistoryProvider(ILogger<SqlChatHistoryProvider> logger, IAppSettings appSettings, IHistoryIdentityService historyIdentityService, IDbContextFactory<AIChatHistoryDb>? dbContextFactory = null)
+    public SqlChatHistoryProvider(ILogger<SqlChatHistoryProvider> logger, IHistoryIdentityService historyIdentityService, IDbContextFactory<AIChatHistoryDb>? dbContextFactory = null)
     {
         ArgumentNullException.ThrowIfNull(logger);
-        ArgumentNullException.ThrowIfNull(appSettings);
         ArgumentNullException.ThrowIfNull(historyIdentityService);
 
         _logger = logger;
-        _appSettings = appSettings;
         _historyIdentityService = historyIdentityService;
         _dbcontext = dbContextFactory?.CreateDbContext();
 

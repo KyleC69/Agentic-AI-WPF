@@ -29,5 +29,5 @@ public interface IAgentIdentityProvider
     /// <returns>
     ///     A non-null, non-empty string that uniquely identifies the agent within the application.
     /// </returns>
-    string GetAgentId();
+    public string GetAgentId();
 }

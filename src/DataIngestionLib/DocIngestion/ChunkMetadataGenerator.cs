@@ -14,8 +14,8 @@
 using CommunityToolkit.Diagnostics;
 
 using DataIngestionLib.Agents;
-using DataIngestionLib.Contracts;
 using DataIngestionLib.Models;
+using DataIngestionLib.Utils;
 
 using Microsoft.Agents.Core.Serialization;
 using Microsoft.Extensions.AI;

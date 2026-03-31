@@ -10,7 +10,7 @@
 using System.Data;
 using System.Diagnostics;
 
-using DataIngestionLib.Contracts;
+using DataIngestionLib.Utils;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -41,13 +41,13 @@ public sealed class SqlTableMaint
 
 
 
-    public SqlTableMaint(IAppSettings appSettings, ChunkMetadataGenerator metadataGenerator, ILogger<SqlTableMaint> logger)
+    public SqlTableMaint(string remoteRagConnectionString, ChunkMetadataGenerator metadataGenerator, ILogger<SqlTableMaint> logger)
     {
-        ArgumentNullException.ThrowIfNull(appSettings);
+        ArgumentException.ThrowIfNullOrWhiteSpace(remoteRagConnectionString);
         ArgumentNullException.ThrowIfNull(metadataGenerator);
         ArgumentNullException.ThrowIfNull(logger);
 
-        _connectionStringProvider = () => ResolveConnectionString(appSettings);
+        _connectionStringProvider = () => ResolveConnectionString(remoteRagConnectionString);
         _metadataGenerator = metadataGenerator;
         _logger = logger;
         _batchSize = DefaultBatchSize;
@@ -237,9 +237,9 @@ public sealed class SqlTableMaint
 
 
 
-    private static string ResolveConnectionString(IAppSettings appSettings)
+    private static string ResolveConnectionString(string remoteRagConnectionString)
     {
-        return !string.IsNullOrWhiteSpace(appSettings.RemoteRAGConnectionString) ? appSettings.RemoteRAGConnectionString : Environment.GetEnvironmentVariable("REMOTE_RAG") ?? string.Empty;
+        return !string.IsNullOrWhiteSpace(remoteRagConnectionString) ? remoteRagConnectionString : Environment.GetEnvironmentVariable("REMOTE_RAG") ?? string.Empty;
     }
 
 

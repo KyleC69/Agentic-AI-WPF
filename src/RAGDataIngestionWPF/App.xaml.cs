@@ -20,6 +20,7 @@ using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
+using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,15 +31,14 @@ using Microsoft.Toolkit.Uwp.Notifications;
 using RAGDataIngestionWPF.Activation;
 using RAGDataIngestionWPF.Contracts.Activation;
 using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.Contracts.Settings;
 using RAGDataIngestionWPF.Contracts.Views;
 using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Core.Services;
+using RAGDataIngestionWPF.Properties;
 using RAGDataIngestionWPF.Services;
 using RAGDataIngestionWPF.ViewModels;
 using RAGDataIngestionWPF.Views;
 
-using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
 
 
@@ -57,6 +57,8 @@ public sealed partial class App : Application
     private LogLevel _loglevel;
 
 
+    public static App CurrentApp => (App)System.Windows.Application.Current;
+
 
 
 
@@ -65,7 +67,7 @@ public sealed partial class App : Application
 
     private IHost BuildHost()
     {
-        _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel) ? configLevel : LogLevel.Trace;
+
         return Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c =>
                 {
@@ -303,13 +305,23 @@ public sealed partial class App : Application
 
         _ = services.AddSingleton<HistoryIdentityService>();
         _ = services.AddSingleton<IHistoryIdentityService>(provider => provider.GetRequiredService<HistoryIdentityService>());
-        services.AddSingleton<RagDataService>();
+        _ = services.AddSingleton<RagDataService>();
+        _ = services.AddSingleton<SqlChatHistoryProvider>();
+        _ = services.AddSingleton<AIContextRAGInjector>();
+        _ = services.AddSingleton<IAgentFactory>(provider =>
+        {
+            Settings settings = Settings.Default;
 
-        IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
-        services.AddSingleton<AIContextRAGInjector>();
-        IServiceCollection unused2 = services.AddSingleton<IAgentFactory, AgentFactory>();
+            return new AgentFactory(
+                provider.GetRequiredService<ILoggerFactory>(),
+                settings.OllamaHost,
+                settings.OllamaPort,
+                provider.GetRequiredService<SqlChatHistoryProvider>(),
+                provider.GetRequiredService<ChatHistoryContextInjector>(),
+                provider.GetRequiredService<AIContextRAGInjector>());
+        });
 
-        IServiceCollection unused1 = services.AddSingleton<ChatHistoryContextInjector>();
+        _ = services.AddSingleton<ChatHistoryContextInjector>();
     }
 
 
@@ -326,8 +338,30 @@ public sealed partial class App : Application
         _ = services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
         _ = services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
         _ = services.AddSingleton<ISystemService, SystemService>();
-        _ = services.AddSingleton<IAppSettings, AppSettings>();
-        _ = services.AddSingleton<IChatConversationService, ChatConversationService>();
+        _ = services.AddSingleton<IChatConversationService>(provider =>
+        {
+            Settings settings = Settings.Default;
+
+            return new ChatConversationService(
+                provider.GetRequiredService<ILoggerFactory>(),
+                provider.GetRequiredService<IAgentFactory>(),
+                settings.ApplicationId,
+                settings.ResumeLast,
+                settings.UserName,
+                string.Empty,
+                new TokenBudget
+                {
+                    MaximumContext = settings.MaximumContext,
+                    MetaBudget = settings.MetaBudget,
+                    RAGBudget = settings.RAGBudget,
+                    SessionBudget = settings.SessionBudget,
+                    SystemBudget = settings.SystemBudget,
+                    ToolBudget = settings.ToolBudget,
+                    BudgetTotal = settings.SystemBudget + settings.SessionBudget + settings.RAGBudget + settings.ToolBudget + settings.MetaBudget
+                },
+                provider.GetRequiredService<IHistoryIdentityService>(),
+                provider.GetRequiredService<SqlChatHistoryProvider>());
+        });
         _ = services.AddSingleton<IPageService, PageService>();
         _ = services.AddSingleton<INavigationService, NavigationService>();
         _ = services.AddSingleton<IUserDataService, UserDataService>();
@@ -387,4 +421,5 @@ public sealed partial class App : Application
         _ = services.AddTransient<ILogInWindow, LogInWindow>();
         _ = services.AddTransient<LogInViewModel>();
     }
+
 }

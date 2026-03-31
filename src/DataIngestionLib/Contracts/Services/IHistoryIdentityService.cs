@@ -1,9 +1,13 @@
-// Build Date: 2026/03/30
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         IHistoryIdentityService.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 233123
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -22,14 +26,14 @@ namespace DataIngestionLib.Contracts.Services;
 
 public interface IHistoryIdentityService
 {
+    string GetAgentId();
+
+
     HistoryIdentity Current { get; }
-
-
-    void ApplyToSession(AgentSession session);
 
 
     void Initialize(string applicationId, string agentId, string userId);
 
 
-    void SetConversationId(string conversationId);
+    void ApplyToSession(AgentSession session);
 }
