@@ -13,47 +13,6 @@ public partial class AIRemoteRagContext : DbContext
     {
     }
 
-
-
-
-
-
-
-
-    /// <summary>
-    ///     Override this method to configure the database (and other options) to be used for this context.
-    ///     This method is called for each instance of the context that is created.
-    ///     The base implementation does nothing.
-    /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         In situations where an instance of <see cref="T:Microsoft.EntityFrameworkCore.DbContextOptions" /> may or may not have been passed
-    ///         to the constructor, you can use <see cref="P:Microsoft.EntityFrameworkCore.DbContextOptionsBuilder.IsConfigured" /> to determine if
-    ///         the options have already been set, and skip some or all of the logic in
-    ///         <see cref="M:Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)" />.
-    ///     </para>
-    ///     <para>
-    ///         See <see href="https://aka.ms/efcore-docs-dbcontext">DbContext lifetime, configuration, and initialization</see>
-    ///         for more information and examples.
-    ///     </para>
-    /// </remarks>
-    /// <param name="optionsBuilder">
-    ///     A builder used to create or modify options for this context. Databases (and other extensions)
-    ///     typically define extension methods on this object that allow you to configure the context.
-    /// </param>
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("REMOTE_RAG"));
-        //base.OnConfiguring(optionsBuilder);
-    }
-
-
-
-
-
-
-
-
     public virtual DbSet<MdDocument> MdDocuments { get; set; }
 
     public virtual DbSet<MdDocumentChunk> MdDocumentChunks { get; set; }
@@ -73,7 +32,7 @@ public partial class AIRemoteRagContext : DbContext
             entity.HasIndex(e => e.FilePath, "UQ_md_documents_file_path").IsUnique();
 
             entity.Property(e => e.DocId)
-                .HasDefaultValueSql("(newsequentialid())", "DF_md_documents_doc_id")
+                .ValueGeneratedNever()
                 .HasColumnName("doc_id");
             entity.Property(e => e.Author)
                 .HasMaxLength(256)
@@ -99,15 +58,20 @@ public partial class AIRemoteRagContext : DbContext
                 .HasColumnName("file_path");
             entity.Property(e => e.IngestedAt)
                 .HasDefaultValueSql("(sysutcdatetime())", "DF_md_documents_ingested_at")
+                .HasColumnType("datetime")
                 .HasColumnName("ingested_at");
-            entity.Property(e => e.MsDate).HasColumnName("ms_date");
+            entity.Property(e => e.MsDate)
+                .HasColumnType("date")
+                .HasColumnName("ms_date");
             entity.Property(e => e.MsTopic)
                 .HasMaxLength(256)
                 .HasColumnName("ms_topic");
             entity.Property(e => e.Title)
                 .HasMaxLength(512)
                 .HasColumnName("title");
-            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_at");
             entity.Property(e => e.WordCount).HasColumnName("word_count");
             entity.Property(e => e.YamlFrontMatter)
                 .HasMaxLength(4000)
@@ -120,7 +84,7 @@ public partial class AIRemoteRagContext : DbContext
 
             entity.HasIndex(e => new { e.DocId, e.ChunkType }, "IX_md_document_chunks_doc_id_chunk_type");
 
-            entity.HasIndex(e => e.Embeddings, "VectorIndex-20260327-210733");
+            entity.HasIndex(e => e.Embeddings, "VectorIndex-20260331-145032");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.ChunkId)
@@ -196,7 +160,9 @@ public partial class AIRemoteRagContext : DbContext
             entity.Property(e => e.Keywords)
                 .HasMaxLength(500)
                 .HasColumnName("keywords");
-            entity.Property(e => e.MsDate).HasColumnName("ms_date");
+            entity.Property(e => e.MsDate)
+                .HasColumnType("datetime")
+                .HasColumnName("ms_date");
             entity.Property(e => e.OgUrl)
                 .IsRequired()
                 .HasMaxLength(500)
@@ -208,12 +174,49 @@ public partial class AIRemoteRagContext : DbContext
                 .HasMaxLength(450)
                 .HasColumnName("title");
             entity.Property(e => e.TokenCount).HasColumnName("token_count");
-            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_at");
             entity.Property(e => e.Version).HasColumnName("version");
         });
 
+        OnModelCreatingGeneratedFunctions(modelBuilder);
         OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Override this method to configure the database (and other options) to be used for this context.
+    ///     This method is called for each instance of the context that is created.
+    ///     The base implementation does nothing.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         In situations where an instance of <see cref="T:Microsoft.EntityFrameworkCore.DbContextOptions" /> may or may not have been passed
+    ///         to the constructor, you can use <see cref="P:Microsoft.EntityFrameworkCore.DbContextOptionsBuilder.IsConfigured" /> to determine if
+    ///         the options have already been set, and skip some or all of the logic in
+    ///         <see cref="M:Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)" />.
+    ///     </para>
+    ///     <para>
+    ///         See <see href="https://aka.ms/efcore-docs-dbcontext">DbContext lifetime, configuration, and initialization</see>
+    ///         for more information and examples.
+    ///     </para>
+    /// </remarks>
+    /// <param name="optionsBuilder">
+    ///     A builder used to create or modify options for this context. Databases (and other extensions)
+    ///     typically define extension methods on this object that allow you to configure the context.
+    /// </param>
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("REMOTE_RAG"));  
+    }
+
 }

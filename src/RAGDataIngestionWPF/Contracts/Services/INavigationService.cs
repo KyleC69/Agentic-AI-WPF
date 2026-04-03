@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/30
+﻿// Build Date: 2026/03/31
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         INavigationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 233153
+// Build Num: 232119
 
 
 

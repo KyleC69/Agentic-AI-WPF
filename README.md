@@ -2,23 +2,21 @@
 
 name: README.md
 description: README for RAGDataIngestionWPF repository
-updated: 2026-03-24
+updated: 2026-04-02
 
 ---
 
-Last Update: 3/24/26
+Last Update: 4/2/2026
 
 # RAGDataIngestionWPF
 
-A WPF desktop application and supporting libraries demonstrates creating Agentic AI's with Microsoft's Agent Framework using local models, including tool function calling. Due to new framework advancements, it now supports RAG-oriented context handling through middleware components that can manage retrieval, history, and context injection in a flexible way. The current implementation includes a SQL Server-based chat history provider and context injector that can leverage new SQL Server 2025 features for vector search and BM25-based ranking to enhance the agent's retrieval capabilities. The project is designed to be extensible and adaptable, allowing for different configurations of context management and retrieval strategies as needed.
+A WPF desktop application and supporting libraries demonstrates creating Agentic AI's with Microsoft's Agent Framework using local models, including tool function calling. The current implementation includes a SQL Server-based chat history provider and context enhancement injectors that can leverage new SQL Server 2025 features for vector search and vector embeddings to enhance the context retrieval capabilities. The project is designed to be extensible and adaptable, allowing for different configurations of context management and retrieval strategies as needed. Agent tools are designed as individual sets of functions Readonly diagnostic tools, and a set of more powerful tools that can modify the system state. The powerful tools are gated behind configuration settings and clearly marked in the UI to prevent accidental use, and the repository includes documentation and comments to highlight the potential risks associated with these tools.
 
 **Hard limit to .Net10 by design to target Windows 10 at minimum.**
 
 *Status: active development. The current solution targets .NET 10 Windows TFMs and `DataIngestionLib` currently references Microsoft Agent Framework `1.0.0-rc4` packages.*
 
-> **Important Constraints:** This projects intent is to create an Agentic AI using local models as if in an air-gapped environment. As of today there are no libraries that fully implement the Agent Framework with the ability to use a local model by file with tools and tool function calling. I tried many when I started this project including ONNXRuntime and connectors in Semantic Kernel. The only library that I found that could work was OllamaSharp, paired with the Ollama local model server and Caddy to act as reverse proxy for SQL operations. This requires the Ollama server to run locally and for the application to set the endpoint to the local Ollama server. This is the only way I found to use a local model with the Agent Framework and tool function calls it would'nt be Agentic without tools, which is a core requirement for this project.
-
-**Additionally** , this project uses preview features within SQL server 2025 for vector search capabilities and internal functions in preview which include using external LLM's within SQL in stored procedures. This means that the project requires a SQL Server 2025 instance with the appropriate preview features enabled to fully utilize the chat history and retrieval components. SQL Server 2025 is currently in preview and available for download from the Microsoft website. I highly recommend using SSMS for SQL Server management and query editing. Some advanced features and the Vector datatype are not fully recognized in VS2026s SQL Server Object Explorer.
+Project is not cross-platform nor intended to be. The focus is Agentic AI diagnostics of Windows systems, Windows 0 and above.
 
 ---
 
@@ -26,6 +24,7 @@ A WPF desktop application and supporting libraries demonstrates creating Agentic
 
 - [Project Purpose](#project-purpose)
 - [Quick Start - Without SQL](#quick-start)
+- [Experimental Features](#experimental-features)
 - [Documentation](#documentation)
 - [Solution Structure](#solution-structure)
 - [Current Implementation Highlights](#current-implementation-highlights)
@@ -45,12 +44,9 @@ A WPF desktop application and supporting libraries demonstrates creating Agentic
 - shared UI infrastructure in `src/RAGDataIngestionWPF.Core`
 - an MSTest suite in `tests/RAGDataIngestionWPF.Tests.MSTest`
 
-The repository is useful as a reference for wiring together a desktop shell, host-based dependency injection, Microsoft Agent Framework integrations, and a growing set of local Windows diagnostics tools.
-
 ## Quick Start
 
-I have gated SQL operation behind a compiler directive to allow the project to build and run without SQL Server, but for the full experience including chat history and RAG context management, SQL Server 2025 is required.
-To run the project without SQL Server, simply ensure that the `SQL` compiler directive is not defined in the project settings. This will allow the application to use in-memory implementations for chat history and context management, enabling you to explore the agent's capabilities without setting up a SQL Server instance.
+This project has gated features and experimental attributes enforcing the acknowledgement of potentially unreliable results or destructive tool functions. To get started with the core agent read the section on experimental features in this document.[Experimental Features](#experimental-features)
 
 ## Documentation
 
@@ -68,6 +64,15 @@ The `sql` folder contains SQL scripts used to set up the database components of 
 - [`/sql/README.md`](/sql/README.md) - important notes on SQL database dependencies, setup, and configuration for the project
 
 Start with the manifest if you want the quickest route to the right document.
+
+## Experimental Features
+
+This repository includes features that are in active development and may produce unreliable results or have destructive capabilities. These features are gated behind clearly marked constants and configuration settings to prevent accidental use. When working with or testing these features, please review the relevant documentation and code comments to understand the potential risks and limitations.
+
+| Diagnostic Code | Description | Location |
+| --- | --- | --- |
+| KC00101 | Method uses preview features of SQL Server 2025 and has produced unreliable results in some test runs. Cause: VECTOR_DISTANCE - Workaround has not yet been discovered, Exception references score column but documentation states it was removed and Stored Proc does not use it. Suspected reaction to unexpected floats in embeddings either in sql source or generated.| AIContextRAGInjector.cs  |
+| --- | --- | --- |
 
 ## Solution Structure
 
@@ -124,11 +129,7 @@ The repository currently includes the following observable implementation areas:
 
 ## SQL Server 2025 Dependency
 
-The repository's chat history and RAG context management components currently depend on SQL Server 2025 for enhanced retrieval capabilities. This includes the use of vector search features, BM25-based ranking, and full-text search to provide more relevant context to the agent during conversations. The SQL-based implementation allows for persistent chat history storage, advanced retrieval strategies, and the ability to leverage SQL Server's performance optimizations for handling large volumes of conversational data.
-
-SQL Server dependency can be easily removed by removing the SQL-based provider and context injector from the agent configuration, which will cause the agent to fall back to in-memory history and context management. However, this will limit the agent's ability to retrieve relevant historical context across sessions and reduce the overall effectiveness of the RAG strategy. For rapid out of the box operation, the in-memory configuration allows the agent to operate without any external dependencies, but for a more robust and capable implementation, SQL Server 2025 is recommended.
-
-For Data Ingestion SQL Server is mandatory as the ingestion workflows are built around SQL-based storage and retrieval of documents and related metadata. The ingestion processes rely on SQL Server's capabilities to manage and query the ingested data effectively, making it a critical component of the overall solution.
+Out of the Box (OOB) this repository includes a defined constant 'SQL' that gates features with SQL Server dependencies. REMOVE this constant from the UI project and the DataIngestionLib project to allow the solution to build and run without SQL Server, using in-memory implementations for chat history and retrieval instead. For the full experience including chat history and RAG context management, SQL Server 2025 is required.
 
 ## Prerequisites
 
@@ -138,16 +139,6 @@ For Data Ingestion SQL Server is mandatory as the ingestion workflows are built 
 - Ollama if you want to exercise the local chat model settings in the app
 - SQL Server if you want to exercise chat history or related database-backed features
 - local Windows access for the Windows diagnostics tools and integration tests
-
-Optional external dependency:
-
-- `LANGAPI_KEY` to enable the web-search tool surface
-
-Example Ollama setup:
-
-```bash
-ollama pull <model-name>
-```
 
 ## Getting Started
 
@@ -203,7 +194,7 @@ The repository does not currently expose an `appsettings.json`-based configurati
 
 Run the full MSTest project with:
 
-```bash
+```cmd
 dotnet test tests/RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj
 ```
 
@@ -215,6 +206,15 @@ The test project currently includes:
 
 Run only the integration-tagged tests with:
 
-```bash
+```cmd
 
 dotnet test tests/RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj --filter "TestCategory=Integration"
+```
+
+## Changelog
+
+See [ChangeLog](CHANGELOG.md) for a detailed list of changes and updates to the project.
+
+## Feedback
+
+Bugs and feature requests should be filed at [Issues · KyleC69/RAGDataIngestionWPF](https://github.com/KyleC69/RAGDataIngestionWPF/issues)

@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/03/30
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         AgentFactory.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 233117
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -39,11 +43,11 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     //keep track of created agents to prevent duplicate IDs, and to manage their lifecycle if needed
     private readonly Dictionary<string, string> _agents = [];
 
-        private readonly string _ollamaHost;
-        private readonly int _ollamaPort;
-
     private readonly SqlChatHistoryProvider _chatHistoryProvider;
     private readonly ChatHistoryContextInjector _historyContextInjector;
+
+    private readonly string _ollamaHost;
+    private readonly int _ollamaPort;
 
     private readonly AIContextRAGInjector _ragContextInjector;
 
@@ -136,7 +140,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         }
 
         _agents.Add(agentId, model);
-            Uri ollamaUri = new UriBuilder(_ollamaHost) { Port = _ollamaPort }.Uri;
+        Uri ollamaUri = new UriBuilder(_ollamaHost) { Port = _ollamaPort }.Uri;
         _innerClient = new OllamaApiClient(ollamaUri, model);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
         _innerClient = new TokenAccountingMiddleware(_innerClient);
@@ -155,26 +159,26 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 #else
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-                {
-                        Id = agentId,
-                        Name = agentId,
-                        Description = agentDescription,
-                        ChatOptions = new ChatOptions
-                        {
-                                Instructions = instructions ?? GetModelInstructions(),
-                                Temperature = 0.7f,
-                                MaxOutputTokens = 10000,
-                                AllowMultipleToolCalls = true,
-                                Tools = ToolBuilder.GetReadOnlyAiTools()
-                        },
-                        AIContextProviders =
+        {
+            Id = agentId,
+            Name = agentId,
+            Description = agentDescription,
+            ChatOptions = new ChatOptions
+            {
+                Instructions = instructions ?? GetModelInstructions(),
+                Temperature = 0.7f,
+                MaxOutputTokens = 10000,
+                AllowMultipleToolCalls = true,
+                Tools = ToolBuilder.GetReadOnlyAiTools()
+            },
+            AIContextProviders =
                         [
-                                _historyContextInjector,
+
                                 _ragContextInjector
                         ],
-                        ThrowOnChatHistoryProviderConflict = true,
-                        ChatHistoryProvider = _chatHistoryProvider
-                }, loggerFactory: _factory).AsBuilder()
+            ThrowOnChatHistoryProviderConflict = true,
+            ChatHistoryProvider = _chatHistoryProvider
+        }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
                 .Build();
 
@@ -193,7 +197,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
+        this.Dispose(disposing: true);
     }
 
 

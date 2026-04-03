@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/31
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         HistoryIdentityService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 232104
 
 
 
@@ -98,12 +94,6 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
 
 
 
-
-
-
-
-
-
     public void ApplyToSession(AgentSession session)
     {
         Guard.IsNotNull(session);
@@ -127,6 +117,7 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
 
 
 
+
     /// <summary>
     ///     Retrieves the conversation ID from a local file.
     /// </summary>
@@ -135,7 +126,7 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
     ///     The file is expected to be named "conversationid.txt".
     /// </remarks>
     /// <returns>
-    ///     The conversation ID as a <see cref="string"/> read from the file.
+    ///     The conversation ID as a <see cref="string" /> read from the file.
     /// </returns>
     /// <exception cref="IOException">
     ///     Thrown if an I/O error occurs while accessing the file.
@@ -147,21 +138,14 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
     {
         var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var filePath = Path.Combine(path, "conversationid.txt");
-        try
+        if (!new FileInfo(filePath).Exists)
         {
-            if (!new FileInfo(filePath).Exists)
-            {
-                var id = Guid.NewGuid().ToString("N");
-                File.WriteAllText(filePath, id);
-                return id;
-            }
+            var id = Guid.NewGuid().ToString("D");
+            File.WriteAllText(filePath, id);
+            return id;
+        }
 
-            return File.ReadAllText(filePath);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        return File.ReadAllText(filePath);
     }
 
 
@@ -175,10 +159,12 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
     ///     Saves the specified conversation ID to a local file for persistence.
     /// </summary>
     /// <param name="conversationId">
-    ///     The conversation ID to be saved. If <c>null</c>, a new conversation ID will be generated if <paramref name="createNew"/> is <c>true</c>.
+    ///     The conversation ID to be saved. If <c>null</c>, a new conversation ID will be generated if
+    ///     <paramref name="createNew" /> is <c>true</c>.
     /// </param>
     /// <param name="createNew">
-    ///     A boolean value indicating whether to generate a new conversation ID if <paramref name="conversationId"/> is <c>null</c>.
+    ///     A boolean value indicating whether to generate a new conversation ID if <paramref name="conversationId" /> is
+    ///     <c>null</c>.
     ///     Defaults to <c>false</c>.
     /// </param>
     /// <remarks>
@@ -194,7 +180,7 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
     {
         if (createNew)
         {
-            conversationId = Guid.NewGuid().ToString("N");
+            conversationId = Guid.NewGuid().ToString("D");
         }
 
         var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

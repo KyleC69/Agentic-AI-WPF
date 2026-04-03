@@ -17,18 +17,18 @@ namespace DataIngestionLib.EFModels
         public static async Task<List<T>> SqlQueryAsync<T>(this DbContext db, string sql, object[] parameters = null, CancellationToken? cancellationToken = default)
            where T : class
         {
-            using var dbs = new AIRemoteRagContext();
             parameters ??= Array.Empty<object>();
             cancellationToken ??= CancellationToken.None;
+            
             if (typeof(T).GetProperties().Any())
             {
-                return await dbs.Database
+                return await db.Database
                     .SqlQueryRaw<T>(sql, parameters)
                     .ToListAsync(cancellationToken.Value);
             }
             else
             {
-                await dbs.Database.ExecuteSqlRawAsync(sql, parameters, cancellationToken.Value);
+                await db.Database.ExecuteSqlRawAsync(sql, parameters, cancellationToken.Value);
                 return default;
             }
         }

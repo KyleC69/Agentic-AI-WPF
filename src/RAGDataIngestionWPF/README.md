@@ -1,15 +1,17 @@
-﻿*Recommended Markdown Viewer: [Markdown Editor](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.MarkdownEditor2)*
+﻿---
+name : UI portion of RAGDataIngestionWPF README
+description : This README provides information directly related to the UI portion of the repository
+date : 4/1/2026
+---
 
 ## Getting Started
 
-Browse and address `TODO:` comments in `View -> Task List` to learn the codebase and understand next steps for turning the generated code into production code.
-
-Relaunch Template Studio to modify the project by right-clicking on the project in `View -> Solution Explorer` then selecting `Add -> New Item (Template Studio)`.
+These instructions will help you set up the UI portion of the RAGDataIngestionWPF project on your local machine for development and testing purposes.
 
 ## Changelog
 
-See [releases](https://github.com/microsoft/TemplateStudio/releases) and [milestones](https://github.com/microsoft/TemplateStudio/milestones).
+See [ChangeLog](CHANGELOG.md) for a detailed list of changes and updates to the project.
 
 ## Feedback
 
-Bugs and feature requests should be filed at https://aka.ms/templatestudio.
+Bugs and feature requests should be filed at [Issues · KyleC69/RAGDataIngestionWPF](https://github.com/KyleC69/RAGDataIngestionWPF/issues)

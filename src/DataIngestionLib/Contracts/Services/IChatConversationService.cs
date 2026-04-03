@@ -52,13 +52,11 @@ public interface IChatConversationService
     event EventHandler<bool> BusyStateChanged;
 
 
-    ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token);
+    ValueTask<IEnumerable<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token);
 
 
     ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
 
 
     Task StartNewConversationAsync(CancellationToken cancellationToken);
-
-
 }

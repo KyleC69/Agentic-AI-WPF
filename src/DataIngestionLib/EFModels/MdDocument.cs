@@ -19,7 +19,7 @@ public partial class MdDocument
 
     public string Author { get; set; }
 
-    public DateOnly? MsDate { get; set; }
+    public DateTime? MsDate { get; set; }
 
     public string MsTopic { get; set; }
 

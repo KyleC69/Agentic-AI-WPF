@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/30
+﻿// Build Date: 2026/03/31
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         MainPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 233208
+// Build Num: 232132
 
 
 
@@ -50,7 +50,16 @@ public sealed partial class MainPage
 
 
 
-    public MainViewModel ViewModel { get; private set; }
+
+
+
+
+
+    public MainViewModel ViewModel { get; }
+
+
+
+
 
 
 

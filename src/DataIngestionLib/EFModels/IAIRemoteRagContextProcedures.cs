@@ -19,8 +19,9 @@ namespace DataIngestionLib.EFModels
         Task<List<Search_SemanticKeyPhrasesResult>> Search_SemanticKeyPhrasesAsync(int? documentId, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<List<sp_Generate_EmbeddingsResult>> sp_Generate_EmbeddingsAsync(string query, OutputParameter<byte[]> embedding, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<List<sp_GenerateKeywordsResult>> sp_GenerateKeywordsAsync(Guid? chunkId, string content, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
-        Task<List<sp_LearnDocs_Search_VectorResult>> sp_LearnDocs_Search_VectorAsync(string queryText, int? topN, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
+        Task<List<sp_LearnDocs_Search_VectorResult>> sp_LearnDocs_Search_VectorAsync(string queryText, int? top, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<List<sp_Remote_Search_VectorResult>> sp_Remote_Search_VectorAsync(string queryText, int? topN, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
         Task<List<sp_Update_md_EmbeddingsResult>> sp_Update_md_EmbeddingsAsync(OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
+        Task<List<usp_MDVectorSearchResult>> usp_MDVectorSearchAsync(string queryText, int? topN, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default);
     }
 }

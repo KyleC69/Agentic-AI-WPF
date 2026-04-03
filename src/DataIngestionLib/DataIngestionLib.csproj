@@ -9,6 +9,7 @@
     <LangVersion>preview</LangVersion>
 	  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	  <DefineConstants>$(DefineConstants);SQL</DefineConstants>
+	  <NoWarn>KC00101;</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -43,6 +44,7 @@
 	  <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.4.0">
 	    <TreatAsUsed>true</TreatAsUsed>
 	  </PackageReference>
+	  <PackageReference Include="Dapper" Version="2.1.66" />
 	  <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
 	  <PackageReference Include="MdXaml" Version="2.0.0-pre202603081301" />
 	  <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-rc4" />

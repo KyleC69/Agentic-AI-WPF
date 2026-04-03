@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/30
+﻿// Build Date: 2026/03/31
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         ApplicationInfoService.cs
 // Author: Kyle L. Crowder
-// Build Num: 233158
+// Build Num: 232123
 
 
 

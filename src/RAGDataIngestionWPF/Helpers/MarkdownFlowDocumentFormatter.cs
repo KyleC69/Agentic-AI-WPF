@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/30
+﻿// Build Date: 2026/03/31
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         MarkdownFlowDocumentFormatter.cs
 // Author: Kyle L. Crowder
-// Build Num: 233156
+// Build Num: 232121
 
 
 

@@ -11,6 +11,8 @@
 
 
 
+using System.Diagnostics.CodeAnalysis;
+
 using DataIngestionLib.Data;
 using DataIngestionLib.EFModels;
 using DataIngestionLib.HistoryModels;
@@ -48,13 +50,14 @@ public class RagDataService(ILogger<RagDataService> logger)
         AIChatHistoryDb db = new();
 
 
-
+        //Get previous history messages from DB
         IReadOnlyList<ChatHistoryMessage> chm = await db.ChatHistoryMessages.Where(m => m.ConversationId == convoId.ToString()).ToListAsync();
-
+        //Convert to ChatMessages
         IReadOnlyList<ChatMessage> cm = chm.ToChatMessages();
-        IEnumerable<ChatMessage> unused = cm.Select(cd => cd.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory));
+        //Tag messages with source for agent request
+        IReadOnlyList<ChatMessage> tagged = cm.Select(cd => cd.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory)).ToList();
 
-        return cm;
+        return (IReadOnlyList<ChatMessage>?)tagged;
     }
 
 
@@ -63,44 +66,52 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
 
+
     /// <summary>
-    /// Retrieves a list of RAG (Retrieval-Augmented Generation) data entries based on the provided query.
+    ///     Retrieves a list of RAG (Retrieval-Augmented Generation) data entries based on the provided query.
+    ///     This instance targets a local index of remote documents and their location, in this case URL.
+    ///     This is extremely useful for scenarios where the kb is either too large to ingest or is frequently updated.
+    ///     This ingestion source was specifically focused on MS Learn documentation of Agent Framework API and related technologies
+    ///     for the purpose of creating this very application, and providing agents with up-to-date documentation for use in answering
+    ///     user questions about the Agent Framework and related technologies.
+    ///     
     /// </summary>
-    /// <param name="query">The search query used to retrieve RAG data entries.</param>
+    /// <param name="query">The search query used to retrieve documents related to the provided vector.</param>
     /// <returns>
-    /// A task that represents the asynchronous operation. The task result contains a list of 
-    /// <see cref="ChatMessage"/> objects representing the RAG data entries.
+    ///     A task that represents the asynchronous operation. The task result contains a list of
+    ///     <see cref="ChatMessage" /> objects representing the RAG data entries.
     /// </returns>
     /// <remarks>
-    /// This method interacts with a remote database to perform a vector-based search using the provided query.
-    /// It logs an error message if an exception occurs during the operation.
+    ///     This method calls a stored procedure in the database and utilizes preview SQL query features VECTOR_DISTANCE and AI_GENERATE_EMBEDDINGS
+    ///     The VECTOR_DISTANCE feature calculates the distance between vectors, and can throw in an undetermined manner, indicating a missing column score,
+    ///     which is removed in current SQL versions (4/1/26) but may still be present in some environments, so error handling is implemented to catch this and log it without crashing the application.
+    ///     The AI_GENERATE_EMBEDDINGS feature generates embeddings for the provided query.
+    ///     It logs an error message if an exception occurs during the operation.
     /// </remarks>
     /// <exception cref="Exception">Thrown when an error occurs while fetching RAG data entries.</exception>
-    public async Task<List<ChatMessage>> GetRagDataEntries(string query)
+    [Experimental("KC00101")]
+    public async Task<IEnumerable<ChatMessage>> GetRagDataEntries(string query)
     {
         List<ChatMessage> rags = new();
+        using AIRemoteRagContext db = new();
 
-        try
+        List<sp_LearnDocs_Search_VectorResult> results = await db.Procedures.sp_LearnDocs_Search_VectorAsync(query, 10);
+
+        if (results.Count > 0 && string.IsNullOrEmpty(results[0].FailureInfo))
         {
-            using AIRemoteRagContext context = new();
-            List<sp_LearnDocs_Search_VectorResult> results = await context.Procedures.sp_LearnDocs_Search_VectorAsync(query, 10);
-
-
-
-            foreach (sp_LearnDocs_Search_VectorResult result in results)
+            foreach (var result in results)
             {
                 rags.Add(new ChatMessage(ChatRole.Tool, result.Content));
             }
+
         }
-        catch (Exception ex)
+        else
         {
-
-            _logger.LogErrorFetchingRAGDataEntriesMessage(ex.Message);
+            _logger.LogError("sp_LearnDocs_Search_VectorAsync failed: {FailureInfo}", results[0].FailureInfo);
         }
-
-
-        IEnumerable<ChatMessage> unused = rags.Select(ms => ms.WithAgentRequestMessageSource(AgentRequestMessageSourceType.AIContextProvider));
-        return rags;
+        //Tag messages with source for agent request - this allows the agent to know that these messages came from a RAG data source, and can be used for things like tool use decisions, or source attribution in responses.
+        IEnumerable<ChatMessage> tagged = rags.Select(ms => ms.WithAgentRequestMessageSource(AgentRequestMessageSourceType.AIContextProvider));
+        return tagged;
     }
 
 

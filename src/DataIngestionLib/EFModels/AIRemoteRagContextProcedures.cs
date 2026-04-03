@@ -9,11 +9,6 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.Logging;
-
-
-
-
 namespace DataIngestionLib.EFModels
 {
     public partial class AIRemoteRagContext
@@ -41,21 +36,15 @@ namespace DataIngestionLib.EFModels
 
     public partial class AIRemoteRagContextProcedures : IAIRemoteRagContextProcedures
     {
-        private AIRemoteRagContext _context;
+        private readonly AIRemoteRagContext _context;
 
         public AIRemoteRagContextProcedures(AIRemoteRagContext context)
         {
-            _context = context ?? new AIRemoteRagContext();
-      
-            // This is a workaround to ensure the LoggerFactory is used by EF Core.
-            // In a real-world scenario, you might want to inject ILoggerFactory or ILogger directly
-            // if this context is managed by a DI container.
+            _context = context;
         }
 
         public virtual async Task<List<Search_FullTextResult>> Search_FullTextAsync(string query, int? topN, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
-            
-            using var _context = new AIRemoteRagContext();
             var parameterreturnValue = new SqlParameter
             {
                 ParameterName = "returnValue",
@@ -290,7 +279,7 @@ namespace DataIngestionLib.EFModels
             return _;
         }
 
-        public virtual async Task<List<sp_LearnDocs_Search_VectorResult>> sp_LearnDocs_Search_VectorAsync(string queryText, int? topN, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        public virtual async Task<List<sp_LearnDocs_Search_VectorResult>> sp_LearnDocs_Search_VectorAsync(string queryText, int? top, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
             {
@@ -310,13 +299,13 @@ namespace DataIngestionLib.EFModels
                 },
                 new SqlParameter
                 {
-                    ParameterName = "TopN",
-                    Value = topN ?? Convert.DBNull,
+                    ParameterName = "Top",
+                    Value = top ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.Int,
                 },
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<sp_LearnDocs_Search_VectorResult>("EXEC @returnValue = [dbo].[sp_LearnDocs_Search_Vector] @QueryText = @QueryText, @TopN = @TopN", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<sp_LearnDocs_Search_VectorResult>("EXEC @returnValue = [dbo].[sp_LearnDocs_Search_Vector] @QueryText = @QueryText, @Top = @Top", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 
@@ -370,6 +359,39 @@ namespace DataIngestionLib.EFModels
                 parameterreturnValue,
             };
             var _ = await _context.SqlQueryAsync<sp_Update_md_EmbeddingsResult>("EXEC @returnValue = [dbo].[sp_Update_md_Embeddings]", sqlParameters, cancellationToken);
+
+            returnValue?.SetValue(parameterreturnValue.Value);
+
+            return _;
+        }
+
+        public virtual async Task<List<usp_MDVectorSearchResult>> usp_MDVectorSearchAsync(string queryText, int? topN, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        {
+            var parameterreturnValue = new SqlParameter
+            {
+                ParameterName = "returnValue",
+                Direction = System.Data.ParameterDirection.Output,
+                SqlDbType = System.Data.SqlDbType.Int,
+            };
+
+            var sqlParameters = new []
+            {
+                new SqlParameter
+                {
+                    ParameterName = "QueryText",
+                    Size = -1,
+                    Value = queryText ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "TopN",
+                    Value = topN ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
+                parameterreturnValue,
+            };
+            var _ = await _context.SqlQueryAsync<usp_MDVectorSearchResult>("EXEC @returnValue = [dbo].[usp_MDVectorSearch] @QueryText = @QueryText, @TopN = @TopN", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 

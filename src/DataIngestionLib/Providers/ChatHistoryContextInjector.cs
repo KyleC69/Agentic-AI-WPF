@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/31
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChatHistoryContextInjector.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 232058
 
 
 
@@ -35,10 +31,16 @@ namespace DataIngestionLib.Providers;
 
 public sealed class ChatHistoryContextInjector : AIContextProvider
 {
-    private readonly ILogger<ChatHistoryContextInjector> _logger;
-    private readonly IHistoryIdentityService _historyIdentityService;
-    private readonly ProviderSessionState<HistoryIdentity> _sessionStateHelper;
     private readonly AIChatHistoryDb _dbcontext;
+    private readonly IHistoryIdentityService _historyIdentityService;
+    private readonly ILogger<ChatHistoryContextInjector> _logger;
+    private readonly ProviderSessionState<HistoryIdentity> _sessionStateHelper;
+
+    private static readonly HashSet<AgentRequestMessageSourceType> IgnoredRequestSourceTypes =
+    [
+            AgentRequestMessageSourceType.AIContextProvider
+    ];
+
     private static readonly Func<IEnumerable<ChatMessage>, IEnumerable<ChatMessage>> providerInputFilter = msgs => msgs.Where(msg => msg.Text != string.Empty);
     private static readonly Func<IEnumerable<ChatMessage>, IEnumerable<ChatMessage>> storeInputRequestFilter = msgs => msgs.Where(msg => msg.Text != string.Empty);
     private static readonly Func<IEnumerable<ChatMessage>, IEnumerable<ChatMessage>> storeInputResponseFilter = msgs => msgs.Where(msg => msg.Text != string.Empty);
@@ -64,63 +66,6 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
     }
 
 
-
-
-
-
-    /// <summary>
-    ///     Determines whether the specified chat message represents an errored tool result.
-    /// </summary>
-    /// <param name="msg">The chat message to evaluate.</param>
-    /// <returns>
-    ///     <c>true</c> if the chat message is from a tool and contains an error; otherwise, <c>false</c>.
-    /// </returns>
-    private static bool IsErroredToolResult(ChatMessage msg)
-    {
-        if (msg.Role != ChatRole.Tool)
-        {
-            return false;
-        }
-
-        _ = msg.ToJsonElements();
-
-        foreach (AIContent content in msg.Contents)
-        {
-            if (content is FunctionResultContent rc)
-            {
-                if (rc.Result is not null && rc.Result is JsonElement resultElement && resultElement.TryGetProperty("error", out _))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-
-
-
-
-
-
-
-
-    private static IEnumerable<ChatMessage> FilterMessages(IEnumerable<ChatMessage> allMessages)
-    {
-
-
-        //REmoves messages that are tagged with ignored source types or that have empty/whitespace content,
-        //as these are not useful to keep in the chat history and can cause issues with some LLM providers if included in the prompt.
-        ChatMessage[] clean = allMessages.Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType())).Where(message => !string.IsNullOrWhiteSpace(message.Text)).ToArray();
-        IEnumerable<ChatMessage> good = clean.Where(msg => !IsErroredToolResult(msg)).ToList();
-        return good;
-    }
-
-    private static readonly HashSet<AgentRequestMessageSourceType> IgnoredRequestSourceTypes =
-    [
-            AgentRequestMessageSourceType.AIContextProvider
-    ];
 
 
 
@@ -177,7 +122,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
     /// <remarks>
     ///     This method is responsible for initializing and returning the AI context required for the AI operation.
     /// </remarks>
-    protected override ValueTask<AIContext> InvokingCoreAsync(InvokingContext context, CancellationToken cancellationToken = new())
+    protected override ValueTask<AIContext> InvokingCoreAsync(InvokingContext context, CancellationToken cancellationToken = new CancellationToken())
     {
         var messageId = context.AIContext?.Messages?.LastOrDefault()?.MessageId ?? string.Empty;
         var conversationId = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? string.Empty;
@@ -215,7 +160,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
     /// <remarks>
     ///     This method is responsible for preparing and returning the AI context required for the AI operation.
     /// </remarks>
-    protected override ValueTask<AIContext> ProvideAIContextAsync(InvokingContext context, CancellationToken cancellationToken = new())
+    protected override ValueTask<AIContext> ProvideAIContextAsync(InvokingContext context, CancellationToken cancellationToken = new CancellationToken())
     {
         var messageId = context.Session?.StateBag?.GetValue<string>("MessageId") ?? string.Empty;
         var conversationId = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? string.Empty;
@@ -247,7 +192,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
     /// <remarks>
     ///     This method is invoked to persist any relevant AI context after the operation has been processed.
     /// </remarks>
-    protected override ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = new())
+    protected override ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = new CancellationToken())
     {
         _ = context.Session?.StateBag?.GetValue<string>("MessageId") ?? string.Empty;
         _ = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? string.Empty;
@@ -255,11 +200,11 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
         try
         {
             HistoryIdentity state = _sessionStateHelper.GetOrInitializeState(context.Session);
-            List<ChatMessage> cm = this.GetContextMessages(context);
+            var cm = GetContextMessages(context);
 
             //Need to filter out bad tool results and empty messages before saving to the session state and database,
             //but we want to keep the full set of messages in the session state for any providers that run after this one in the pipeline and may need access to the unfiltered messages.
-            IEnumerable<ChatMessage> filtered = FilterMessages(cm);
+            var filtered = FilterMessages(cm);
 
             state.Messages.AddRange(filtered);
             _sessionStateHelper.SaveState(context.Session, state);
@@ -282,22 +227,67 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
 
 
 
-    private List<ChatMessage> GetContextMessages(AIContextProvider.InvokedContext context)
+    private static IEnumerable<ChatMessage> FilterMessages(IEnumerable<ChatMessage> allMessages)
+    {
+
+
+        //REmoves messages that are tagged with ignored source types or that have empty/whitespace content,
+        //as these are not useful to keep in the chat history and can cause issues with some LLM providers if included in the prompt.
+        var clean = allMessages.Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType())).Where(message => !string.IsNullOrWhiteSpace(message.Text)).ToArray();
+        IEnumerable<ChatMessage> good = clean.Where(msg => !IsErroredToolResult(msg)).ToList();
+        return good;
+    }
+
+
+
+
+
+
+
+
+    private List<ChatMessage> GetContextMessages(InvokedContext context)
     {
         List<ChatMessage> msgs = [];
-        Debug.Assert(context.ResponseMessages != null, "context.ResponseMessages != null");
-        foreach (ChatMessage m in context.ResponseMessages)
-        {
-            msgs.Add(m);
-        }
+        Debug.Assert(context.ResponseMessages != null);
+        foreach (ChatMessage m in context.ResponseMessages) msgs.Add(m);
 
-        foreach (ChatMessage m in context.RequestMessages)
-        {
-            msgs.Add(m);
-        }
+        foreach (ChatMessage m in context.RequestMessages) msgs.Add(m);
 
         return msgs;
     }
 
 
+
+
+
+
+
+
+    /// <summary>
+    ///     Determines whether the specified chat message represents an errored tool result.
+    /// </summary>
+    /// <param name="msg">The chat message to evaluate.</param>
+    /// <returns>
+    ///     <c>true</c> if the chat message is from a tool and contains an error; otherwise, <c>false</c>.
+    /// </returns>
+    private static bool IsErroredToolResult(ChatMessage msg)
+    {
+        if (msg.Role != ChatRole.Tool)
+        {
+            return false;
+        }
+
+        _ = msg.ToJsonElements();
+
+        foreach (AIContent content in msg.Contents)
+            if (content is FunctionResultContent rc)
+            {
+                if (rc.Result is not null && rc.Result is JsonElement resultElement && resultElement.TryGetProperty("error", out _))
+                {
+                    return true;
+                }
+            }
+
+        return false;
+    }
 }

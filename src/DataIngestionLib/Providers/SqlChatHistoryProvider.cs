@@ -43,7 +43,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
     private readonly ILogger<SqlChatHistoryProvider> _logger;
-    private readonly ProviderSessionState<HistoryIdentity> _sessionStateHelper;
+    private readonly ProviderSessionState<HistoryIdentity> _sessionState;
     private AIChatHistoryDb? _dbcontext;
 
     private static readonly HashSet<AgentRequestMessageSourceType> IgnoredRequestSourceTypes =
@@ -58,22 +58,18 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
-    public SqlChatHistoryProvider(ILogger<SqlChatHistoryProvider> logger, IHistoryIdentityService historyIdentityService, IDbContextFactory<AIChatHistoryDb>? dbContextFactory = null)
+    public SqlChatHistoryProvider(ILogger<SqlChatHistoryProvider> logger, IHistoryIdentityService historyIdentityService,Func<AgentSession,HistoryIdentity>? stateInitializer=null,string? stateKey=null)
     {
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(historyIdentityService);
 
         _logger = logger;
         _historyIdentityService = historyIdentityService;
-        _dbcontext = dbContextFactory?.CreateDbContext();
+      
 
         // Database keys are stored in the state bag of the session for easy access by the providers and context injectors,
         // and to keep them in sync with the history identity service which is the source of truth for these identifiers.
-        _sessionStateHelper = new ProviderSessionState<HistoryIdentity>(
-                // stateInitializer is called when there is no state in the session for this ChatHistoryProvider yet
-                currentSession => _historyIdentityService.Current,
-                // The key under which to store state in the session for this provider. Make sure it does not clash with the keys of other providers.
-                this.GetType().Name);
+        _sessionState = new ProviderSessionState<HistoryIdentity>(stateInitializer ?? (_ => new HistoryIdentity()), stateKey ?? this.GetType().Name);
 
 
     }
@@ -82,7 +78,27 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
+    protected override ValueTask InvokedCoreAsync(InvokedContext context, CancellationToken cancellationToken = default)
+    {
+        if (context.InvokeException is not null)
+        {
+            return default;
+        }
 
+        // Since we are receiving all messages that were contributed earlier, including those from chat history, we need to filter out the messages that came from chat history
+        // so that we don't store message we already have in storage.
+        var filteredRequestMessages = context.RequestMessages.Where(m => m.GetAgentRequestMessageSourceType() != AgentRequestMessageSourceType.ChatHistory);
+
+        var state = this._sessionState.GetOrInitializeState(context.Session);
+
+        // Add both request and response messages to the state.
+        var allNewMessages = filteredRequestMessages.Concat(context.ResponseMessages ?? []);
+        state.Messages.AddRange(allNewMessages);
+
+        this._sessionState.SaveState(context.Session, state);
+
+        return default;
+    }
 
 
     /// <summary>
@@ -139,7 +155,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     /// </returns>
     protected override ValueTask<IEnumerable<ChatMessage>> ProvideChatHistoryAsync(InvokingContext context, CancellationToken cancellationToken = new CancellationToken())
     {
-        return new(_sessionStateHelper.GetOrInitializeState(context.Session).Messages);
+        return new(_sessionState.GetOrInitializeState(context.Session).Messages);
     }
 
 
@@ -221,16 +237,24 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     {
         try
         {
-            HistoryIdentity state = _sessionStateHelper.GetOrInitializeState(context.Session);
-            List<ChatMessage> cm = this.GetContextMessages(context);
-
-            //Need to filter out bad tool results and empty messages before saving to the session state and database,
-            //but we want to keep the full set of messages in the session state for any providers that run after this one in the pipeline and may need access to the unfiltered messages.
-            IEnumerable<ChatMessage> filtered = FilterMessages(cm);
-
-            state.Messages.AddRange(filtered);
-            _sessionStateHelper.SaveState(context.Session, state);
+            HistoryIdentity state = _sessionState.GetOrInitializeState(context.Session);
             _logger.LogTrace("Beginning to save chat messages for conversation {0}", state.ConversationId);
+            
+            List<ChatMessage> cm = this.GetContextMessages(context);
+            IEnumerable<ChatMessage> filtered = null!;
+         
+                //Need to filter out bad tool results and empty messages before saving to the session state and database,
+                //but we want to keep the full set of messages in the session state for any providers that run after this one in the pipeline and may need access to the unfiltered messages.
+                filtered = FilterMessages(cm);
+                state.Messages.AddRange(filtered);
+
+                _sessionState.SaveState(context.Session, state);
+   
+            
+                _logger.LogTrace("Error occurred while filtering messages. Conversation Id: {0}", state.ConversationId);
+
+            
+            //Save to database
             await this.PersistInteractionAsync(state, filtered, cancellationToken);
 
         }
@@ -241,7 +265,21 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     }
 
 
+    public string StateKey => this._sessionState.StateKey;
+    
+    
 
+    protected override ValueTask<IEnumerable<ChatMessage>> InvokingCoreAsync(InvokingContext context, CancellationToken cancellationToken = default)
+    {
+        // Retrieve the chat history from the session state.
+        var chatHistory = this._sessionState.GetOrInitializeState(context.Session).Messages;
+
+        // Stamp the messages with this class as the source, so that they can be filtered out later if needed when storing the agent input/output.
+        var stampedChatHistory = chatHistory.Select(message => message.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, this.GetType().FullName!));
+
+        // Merge the original input with the chat history to produce a combined agent input.
+        return new(stampedChatHistory.Concat(context.RequestMessages));
+    }
 
 
 
@@ -258,7 +296,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     ///     instances of the same provider type are used in the same session, or when a provider
     ///     stores state under more than one key.
     /// </remarks>
-    public override IReadOnlyList<string> StateKeys => new[] { _sessionStateHelper.StateKey };
+    public override IReadOnlyList<string> StateKeys => new[] { _sessionState.StateKey };
 
 
 
@@ -329,7 +367,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     private List<ChatMessage> GetContextMessages(InvokedContext context)
     {
         List<ChatMessage> msgs = [];
-        Debug.Assert(context.ResponseMessages != null, "context.ResponseMessages != null");
+        Debug.Assert(context.ResponseMessages != null);
         foreach (ChatMessage m in context.ResponseMessages)
         {
             msgs.Add(m);
@@ -366,21 +404,21 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
     //TODO: Refactor
-    public async ValueTask<IReadOnlyList<PersistedChatMessage>> GetMessagesAsync(string conversationId, CancellationToken cancellationToken = default)
+    public async ValueTask<IEnumerable<ChatMessage>> GetMessagesAsync(string conversationId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         _dbcontext = new();
         _logger.LogTrace("Fetching chat history messages for conversation {ConversationId}", conversationId);
-        var ordered = _dbcontext.ChatHistoryMessages.Where(message => message.ConversationId == conversationId).ToList();
+        List<ChatHistoryMessage> ordered = _dbcontext.ChatHistoryMessages.Where(message => message.ConversationId == conversationId).ToList();
 
         IReadOnlyList<ChatMessage> chatMessages = ordered.ToChatMessages();
 
         IEnumerable<ChatMessage> tagged = chatMessages.Select(m => m.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory));
 
 
-        var messages = ordered.Select(this.ToPersisted).ToList();
 
-        return messages;
+
+        return tagged;
     }
 
 
@@ -486,8 +524,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
     private async ValueTask PersistInteractionAsync(HistoryIdentity identity, IEnumerable<ChatMessage> messages, CancellationToken cancellationToken)
     {
-        await using AIChatHistoryDb dbContext = await this.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        Guard.IsNotNull(dbContext);
+        using AIChatHistoryDb dbContext = new();
 
         List<ChatHistoryMessage> entities = [];
         entities.AddRange(this.ToEntities(messages, identity));
@@ -501,8 +538,8 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
         try
         {
             _logger.LogTrace("Persisting chat history messages.For conversation {ConversationId}", identity.ConversationId);
-            await dbContext.ChatHistoryMessages.AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
-            var unused = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await dbContext.ChatHistoryMessages.AddRangeAsync(entities, cancellationToken).ConfigureAwait(false); 
+            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {

@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/31
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ListFolderContentsTool.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 232108
 
 
 
@@ -42,7 +38,7 @@ public sealed class ListFolderContentsTool
                 return ToolResult<List<string>>.Fail($"Directory not found: {relativePath}");
             }
 
-            List<string?> content = Directory.GetFileSystemEntries(fullPath).Select(Path.GetFileName).Where(name => !string.IsNullOrWhiteSpace(name)).ToList()!;
+            var content = Directory.GetFileSystemEntries(fullPath).Select(Path.GetFileName).Where(name => !string.IsNullOrWhiteSpace(name)).ToList()!;
 
             return ToolResult<List<string>>.Ok(content!);
         }
@@ -73,7 +69,7 @@ internal static class PathResolver
         {
             if (Directory.Exists(resolvedPath))
             {
-                using IEnumerator<string> enumerator = Directory.EnumerateFileSystemEntries(resolvedPath).GetEnumerator();
+                using var enumerator = Directory.EnumerateFileSystemEntries(resolvedPath).GetEnumerator();
                 _ = enumerator.MoveNext();
                 return true;
             }

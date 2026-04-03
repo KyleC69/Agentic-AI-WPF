@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/30
+﻿// Build Date: 2026/03/31
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 233211
+// Build Num: 232135
 
 
 
@@ -42,7 +42,6 @@ using RAGDataIngestionWPF.Views;
 
 
 
-
 namespace RAGDataIngestionWPF;
 
 
@@ -54,10 +53,11 @@ public sealed partial class App : Application
     private IHost? _host;
     private bool _isHostStarted;
 
-    private LogLevel _loglevel;
+    public static App CurrentApp
+    {
+        get { return (App)Current; }
+    }
 
-
-    public static App CurrentApp => (App)System.Windows.Application.Current;
 
 
 
@@ -84,8 +84,8 @@ public sealed partial class App : Application
                     // effective minimum at runtime and is user-configurable from the
                     // Settings page.
                     logging.AddJsonConsole(options => { options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions { Indented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }; });
-                    ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
-                    ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
+                    ILoggingBuilder unused1 = logging.SetMinimumLevel(LogLevel.Trace);
+                    ILoggingBuilder unused = logging.AddFilter((_, level) => level >= LogLevel.Trace);
                 })
                 .Build();
     }
@@ -312,13 +312,7 @@ public sealed partial class App : Application
         {
             Settings settings = Settings.Default;
 
-            return new AgentFactory(
-                provider.GetRequiredService<ILoggerFactory>(),
-                settings.OllamaHost,
-                settings.OllamaPort,
-                provider.GetRequiredService<SqlChatHistoryProvider>(),
-                provider.GetRequiredService<ChatHistoryContextInjector>(),
-                provider.GetRequiredService<AIContextRAGInjector>());
+            return new AgentFactory(provider.GetRequiredService<ILoggerFactory>(), settings.OllamaHost, settings.OllamaPort, provider.GetRequiredService<SqlChatHistoryProvider>(), provider.GetRequiredService<ChatHistoryContextInjector>(), provider.GetRequiredService<AIContextRAGInjector>());
         });
 
         _ = services.AddSingleton<ChatHistoryContextInjector>();
@@ -342,15 +336,8 @@ public sealed partial class App : Application
         {
             Settings settings = Settings.Default;
 
-            return new ChatConversationService(
-                provider.GetRequiredService<ILoggerFactory>(),
-                provider.GetRequiredService<IAgentFactory>(),
-                settings.ApplicationId,
-                settings.ResumeLast,
-                settings.UserName,
-                string.Empty,
-                new TokenBudget
-                {
+            return new ChatConversationService(provider.GetRequiredService<ILoggerFactory>(), provider.GetRequiredService<IAgentFactory>(), settings.ApplicationId, settings.ResumeLast, settings.UserName, string.Empty, new TokenBudget
+            {
                     MaximumContext = settings.MaximumContext,
                     MetaBudget = settings.MetaBudget,
                     RAGBudget = settings.RAGBudget,
@@ -358,9 +345,7 @@ public sealed partial class App : Application
                     SystemBudget = settings.SystemBudget,
                     ToolBudget = settings.ToolBudget,
                     BudgetTotal = settings.SystemBudget + settings.SessionBudget + settings.RAGBudget + settings.ToolBudget + settings.MetaBudget
-                },
-                provider.GetRequiredService<IHistoryIdentityService>(),
-                provider.GetRequiredService<SqlChatHistoryProvider>());
+            }, provider.GetRequiredService<IHistoryIdentityService>(), provider.GetRequiredService<SqlChatHistoryProvider>());
         });
         _ = services.AddSingleton<IPageService, PageService>();
         _ = services.AddSingleton<INavigationService, NavigationService>();
@@ -421,5 +406,4 @@ public sealed partial class App : Application
         _ = services.AddTransient<ILogInWindow, LogInWindow>();
         _ = services.AddTransient<LogInViewModel>();
     }
-
 }
