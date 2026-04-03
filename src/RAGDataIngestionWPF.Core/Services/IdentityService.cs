@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Core
 // File:         IdentityService.cs
 // Author: Kyle L. Crowder
-// Build Num: 232117
+// Build Num: 095209
 
 
 
@@ -24,9 +24,6 @@ public sealed class IdentityService : IIdentityService
     private string _accountUserName = string.Empty;
     private bool _isLoggedIn;
 
-    public event EventHandler LoggedIn;
-
-    public event EventHandler LoggedOut;
 
 
 
@@ -34,10 +31,9 @@ public sealed class IdentityService : IIdentityService
 
 
 
-
-    public void InitializeWithAadAndPersonalMsAccounts(string clientId, string redirectUri = null)
+    public async Task<bool> AcquireTokenSilentAsync()
     {
-        // No-op: identity client removed
+        return await AcquireTokenSilentAsync(Array.Empty<string>());
     }
 
 
@@ -47,7 +43,32 @@ public sealed class IdentityService : IIdentityService
 
 
 
-    public void InitializeWithPersonalMsAccounts(string clientId, string redirectUri = null)
+    public async Task<string> GetAccessTokenAsync(string[] scopes)
+    {
+        await Task.CompletedTask;
+        return string.Empty;
+    }
+
+
+
+
+
+
+
+
+    public string GetAccountUserName()
+    {
+        return _accountUserName;
+    }
+
+
+
+
+
+
+
+
+    public void InitializeWithAadAndPersonalMsAccounts(string clientId, string redirectUri = null)
     {
         // No-op: identity client removed
     }
@@ -83,10 +104,45 @@ public sealed class IdentityService : IIdentityService
 
 
 
+    public void InitializeWithPersonalMsAccounts(string clientId, string redirectUri = null)
+    {
+        // No-op: identity client removed
+    }
+
+
+
+
+
+
+
+
+    public bool IsAuthorized()
+    {
+        return true;
+    }
+
+
+
+
+
+
+
+
     public bool IsLoggedIn()
     {
         return _isLoggedIn;
     }
+
+
+
+
+
+
+
+
+    public event EventHandler LoggedIn;
+
+    public event EventHandler LoggedOut;
 
 
 
@@ -110,30 +166,6 @@ public sealed class IdentityService : IIdentityService
 
 
 
-    public bool IsAuthorized()
-    {
-        return true;
-    }
-
-
-
-
-
-
-
-
-    public string GetAccountUserName()
-    {
-        return _accountUserName;
-    }
-
-
-
-
-
-
-
-
     public async Task LogoutAsync()
     {
         if (_isLoggedIn)
@@ -143,31 +175,6 @@ public sealed class IdentityService : IIdentityService
         }
 
         await Task.CompletedTask;
-    }
-
-
-
-
-
-
-
-
-    public async Task<string> GetAccessTokenAsync(string[] scopes)
-    {
-        await Task.CompletedTask;
-        return string.Empty;
-    }
-
-
-
-
-
-
-
-
-    public async Task<bool> AcquireTokenSilentAsync()
-    {
-        return await AcquireTokenSilentAsync(Array.Empty<string>());
     }
 
 

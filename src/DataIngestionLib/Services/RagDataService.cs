@@ -1,19 +1,14 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/04/03
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         RagDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 095157
 
 
 
 using System.Diagnostics.CodeAnalysis;
 
-using DataIngestionLib.Data;
 using DataIngestionLib.EFModels;
 using DataIngestionLib.HistoryModels;
 
@@ -53,7 +48,7 @@ public class RagDataService(ILogger<RagDataService> logger)
         //Get previous history messages from DB
         IReadOnlyList<ChatHistoryMessage> chm = await db.ChatHistoryMessages.Where(m => m.ConversationId == convoId.ToString()).ToListAsync();
         //Convert to ChatMessages
-        IReadOnlyList<ChatMessage> cm = chm.ToChatMessages();
+        var cm = chm.ToChatMessages();
         //Tag messages with source for agent request
         IReadOnlyList<ChatMessage> tagged = cm.Select(cd => cd.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory)).ToList();
 
@@ -71,10 +66,11 @@ public class RagDataService(ILogger<RagDataService> logger)
     ///     Retrieves a list of RAG (Retrieval-Augmented Generation) data entries based on the provided query.
     ///     This instance targets a local index of remote documents and their location, in this case URL.
     ///     This is extremely useful for scenarios where the kb is either too large to ingest or is frequently updated.
-    ///     This ingestion source was specifically focused on MS Learn documentation of Agent Framework API and related technologies
-    ///     for the purpose of creating this very application, and providing agents with up-to-date documentation for use in answering
+    ///     This ingestion source was specifically focused on MS Learn documentation of Agent Framework API and related
+    ///     technologies
+    ///     for the purpose of creating this very application, and providing agents with up-to-date documentation for use in
+    ///     answering
     ///     user questions about the Agent Framework and related technologies.
-    ///     
     /// </summary>
     /// <param name="query">The search query used to retrieve documents related to the provided vector.</param>
     /// <returns>
@@ -82,9 +78,12 @@ public class RagDataService(ILogger<RagDataService> logger)
     ///     <see cref="ChatMessage" /> objects representing the RAG data entries.
     /// </returns>
     /// <remarks>
-    ///     This method calls a stored procedure in the database and utilizes preview SQL query features VECTOR_DISTANCE and AI_GENERATE_EMBEDDINGS
-    ///     The VECTOR_DISTANCE feature calculates the distance between vectors, and can throw in an undetermined manner, indicating a missing column score,
-    ///     which is removed in current SQL versions (4/1/26) but may still be present in some environments, so error handling is implemented to catch this and log it without crashing the application.
+    ///     This method calls a stored procedure in the database and utilizes preview SQL query features VECTOR_DISTANCE and
+    ///     AI_GENERATE_EMBEDDINGS
+    ///     The VECTOR_DISTANCE feature calculates the distance between vectors, and can throw in an undetermined manner,
+    ///     indicating a missing column score,
+    ///     which is removed in current SQL versions (4/1/26) but may still be present in some environments, so error handling
+    ///     is implemented to catch this and log it without crashing the application.
     ///     The AI_GENERATE_EMBEDDINGS feature generates embeddings for the provided query.
     ///     It logs an error message if an exception occurs during the operation.
     /// </remarks>
@@ -95,22 +94,20 @@ public class RagDataService(ILogger<RagDataService> logger)
         List<ChatMessage> rags = new();
         using AIRemoteRagContext db = new();
 
-        List<sp_LearnDocs_Search_VectorResult> results = await db.Procedures.sp_LearnDocs_Search_VectorAsync(query, 10);
+        List<sp_LearnDocs_Search_VectorResult>? results = await db.Procedures.sp_LearnDocs_Search_VectorAsync(query, null);
 
-        if (results.Count > 0 && string.IsNullOrEmpty(results[0].FailureInfo))
+        if (results != null)
         {
-            foreach (var result in results)
-            {
-                rags.Add(new ChatMessage(ChatRole.Tool, result.Content));
-            }
+            foreach (sp_LearnDocs_Search_VectorResult? result in results) rags.Add(new ChatMessage(ChatRole.Tool, result.Content));
 
         }
         else
         {
             _logger.LogError("sp_LearnDocs_Search_VectorAsync failed: {FailureInfo}", results[0].FailureInfo);
         }
+
         //Tag messages with source for agent request - this allows the agent to know that these messages came from a RAG data source, and can be used for things like tool use decisions, or source attribution in responses.
-        IEnumerable<ChatMessage> tagged = rags.Select(ms => ms.WithAgentRequestMessageSource(AgentRequestMessageSourceType.AIContextProvider));
+        var tagged = rags.Select(ms => ms.WithAgentRequestMessageSource(AgentRequestMessageSourceType.AIContextProvider));
         return tagged;
     }
 
@@ -136,16 +133,14 @@ public class RagDataService(ILogger<RagDataService> logger)
         conn.Open();
         using SqlDataReader reader = cmd.ExecuteReader();
         while (reader.Read())
-        {
             results.Add(new FullTextResults
             {
-                Id = reader.GetInt32(0),
-                Title = reader.GetString(1),
-                Summary = reader.GetString(2),
-                Keywords = reader.GetString(3).Split(','),
-                Score = reader.GetDouble(4)
+                    Id = reader.GetInt32(0),
+                    Title = reader.GetString(1),
+                    Summary = reader.GetString(2),
+                    Keywords = reader.GetString(3).Split(','),
+                    Score = reader.GetDouble(4)
             });
-        }
 
         return JsonConvert.SerializeObject(results);
 

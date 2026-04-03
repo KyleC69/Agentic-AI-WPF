@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         NavigationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 232124
+// Build Num: 095215
 
 
 
@@ -25,9 +25,9 @@ namespace RAGDataIngestionWPF.Services;
 
 public sealed class NavigationService : INavigationService
 {
-    private readonly IPageService _pageService;
     private Frame _frame;
     private object _lastParameterUsed;
+    private readonly IPageService _pageService;
 
 
 
@@ -48,11 +48,41 @@ public sealed class NavigationService : INavigationService
 
 
 
-    public event EventHandler<string> Navigated;
-
     public bool CanGoBack
     {
         get { return _frame.CanGoBack; }
+    }
+
+
+
+
+
+
+
+
+    public void CleanNavigation()
+    {
+        _frame.CleanNavigation();
+    }
+
+
+
+
+
+
+
+
+    public void GoBack()
+    {
+        if (_frame.CanGoBack)
+        {
+            var vmBeforeNavigation = _frame.GetDataContext();
+            _frame.GoBack();
+            if (vmBeforeNavigation is INavigationAware navigationAware)
+            {
+                navigationAware.OnNavigatedFrom();
+            }
+        }
     }
 
 
@@ -78,31 +108,7 @@ public sealed class NavigationService : INavigationService
 
 
 
-    public void UnsubscribeNavigation()
-    {
-        _frame.Navigated -= OnNavigated;
-        _frame = null;
-    }
-
-
-
-
-
-
-
-
-    public void GoBack()
-    {
-        if (_frame.CanGoBack)
-        {
-            var vmBeforeNavigation = _frame.GetDataContext();
-            _frame.GoBack();
-            if (vmBeforeNavigation is INavigationAware navigationAware)
-            {
-                navigationAware.OnNavigatedFrom();
-            }
-        }
-    }
+    public event EventHandler<string> Navigated;
 
 
 
@@ -143,9 +149,10 @@ public sealed class NavigationService : INavigationService
 
 
 
-    public void CleanNavigation()
+    public void UnsubscribeNavigation()
     {
-        _frame.CleanNavigation();
+        _frame.Navigated -= OnNavigated;
+        _frame = null;
     }
 
 

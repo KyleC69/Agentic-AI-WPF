@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         ListDetailsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 232127
+// Build Num: 095218
 
 
 
@@ -58,15 +58,8 @@ public sealed partial class ListDetailsViewModel : ObservableObject, INavigation
 
 
 
-    public async void OnNavigatedTo(object parameter)
+    public void OnNavigatedFrom()
     {
-        SampleItems.Clear();
-
-        var data = await _sampleDataService.GetListDetailsDataAsync();
-
-        foreach (SampleOrder item in data) SampleItems.Add(item);
-
-        Selected = SampleItems.First();
     }
 
 
@@ -76,7 +69,14 @@ public sealed partial class ListDetailsViewModel : ObservableObject, INavigation
 
 
 
-    public void OnNavigatedFrom()
+    public async void OnNavigatedTo(object parameter)
     {
+        SampleItems.Clear();
+
+        var data = await _sampleDataService.GetListDetailsDataAsync();
+
+        foreach (SampleOrder item in data) SampleItems.Add(item);
+
+        Selected = SampleItems.First();
     }
 }

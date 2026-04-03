@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         SettingsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 232129
+// Build Num: 095220
 
 
 
@@ -164,6 +164,18 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
 
 
 
+    public void OnNavigatedFrom()
+    {
+        UnregisterEvents();
+    }
+
+
+
+
+
+
+
+
     public void OnNavigatedTo(object parameter)
     {
         VersionDescription = $"{Properties.Resources.AppDisplayName} - {_applicationInfoService.GetVersion()}";
@@ -189,18 +201,6 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
         ChatHistorySettingsStatus = string.Empty;
 
         MinimumLogLevel = Enum.TryParse(GetAppSetting("MinimumLogLevel", LogLevel.Trace.ToString()), true, out LogLevel level) ? level : LogLevel.Trace;
-    }
-
-
-
-
-
-
-
-
-    public void OnNavigatedFrom()
-    {
-        UnregisterEvents();
     }
 
 

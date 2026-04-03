@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIChatHistoryDb.cs
 // Author: Kyle L. Crowder
-// Build Num: 232049
+// Build Num: 095145
 
 
 
@@ -16,7 +16,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 
 
-namespace DataIngestionLib.Data;
+namespace DataIngestionLib.EFModels;
 
 
 

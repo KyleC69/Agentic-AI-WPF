@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         LogInWindow.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 232132
+// Build Num: 095223
 
 
 
@@ -34,9 +34,9 @@ public sealed partial class LogInWindow : ILogInWindow
 
 
 
-    public void ShowWindow()
+    public void CloseWindow()
     {
-        this.Show();
+        this.Close();
     }
 
 
@@ -46,8 +46,8 @@ public sealed partial class LogInWindow : ILogInWindow
 
 
 
-    public void CloseWindow()
+    public void ShowWindow()
     {
-        this.Close();
+        this.Show();
     }
 }

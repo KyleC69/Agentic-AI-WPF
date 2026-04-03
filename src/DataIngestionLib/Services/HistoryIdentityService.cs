@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         HistoryIdentityService.cs
 // Author: Kyle L. Crowder
-// Build Num: 232104
+// Build Num: 095156
 
 
 
@@ -30,9 +30,10 @@ namespace DataIngestionLib.Services;
 /// </summary>
 public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIdentityProvider
 {
-    private readonly HistoryIdentity _current = new();
+    private readonly HistoryIdentity _current = new(GetConversationId());
     private readonly object _syncLock = new();
 
+    private readonly AppSettings settings = new();
 
 
 
@@ -40,10 +41,18 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
 
 
 
-    public string GetAgentId()
+
+    public void ApplyToSession(AgentSession session)
     {
+        Guard.IsNotNull(session);
+
         HistoryIdentity snapshot = Current;
-        return string.IsNullOrWhiteSpace(snapshot.AgentId) ? "unknown-agent" : snapshot.AgentId;
+
+        session.StateBag.SetValue("ApplicationId", snapshot.ApplicationId);
+        session.StateBag.SetValue("AgentId", snapshot.AgentId);
+        session.StateBag.SetValue("UserId", snapshot.UserId);
+        session.StateBag.SetValue("UserName", snapshot.UserId);
+        session.StateBag.SetValue("ConversationId", snapshot.ConversationId);
     }
 
 
@@ -62,6 +71,19 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
                 return new HistoryIdentity { AgentId = _current.AgentId, ApplicationId = _current.ApplicationId, ConversationId = _current.ConversationId, UserId = _current.UserId };
             }
         }
+    }
+
+
+
+
+
+
+
+
+    public string GetAgentId()
+    {
+        HistoryIdentity snapshot = Current;
+        return string.IsNullOrWhiteSpace(snapshot.AgentId) ? "unknown-agent" : snapshot.AgentId;
     }
 
 
@@ -94,32 +116,8 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
 
 
 
-    public void ApplyToSession(AgentSession session)
-    {
-        Guard.IsNotNull(session);
-
-        HistoryIdentity snapshot = Current;
-
-        session.StateBag.SetValue("ApplicationId", snapshot.ApplicationId);
-        session.StateBag.SetValue("AgentId", snapshot.AgentId);
-        session.StateBag.SetValue("UserId", snapshot.UserId);
-        session.StateBag.SetValue("UserName", snapshot.UserId);
-
-        if (!string.IsNullOrWhiteSpace(snapshot.ConversationId))
-        {
-            session.StateBag.SetValue("ConversationId", snapshot.ConversationId);
-        }
-    }
-
-
-
-
-
-
-
-
     /// <summary>
-    ///     Retrieves the conversation ID from a local file.
+    ///     Gets or sets the conversation ID from a local file.
     /// </summary>
     /// <remarks>
     ///     This method reads the conversation ID stored in a file located in the local application data folder.

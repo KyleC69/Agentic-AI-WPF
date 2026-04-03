@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         DataGridViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 232126
+// Build Num: 095218
 
 
 
@@ -76,10 +76,8 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    public void OnNavigatedTo(object parameter)
+    public void OnNavigatedFrom()
     {
-        Source.Clear();
-
     }
 
 
@@ -89,8 +87,10 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    public void OnNavigatedFrom()
+    public void OnNavigatedTo(object parameter)
     {
+        Source.Clear();
+
     }
 
 

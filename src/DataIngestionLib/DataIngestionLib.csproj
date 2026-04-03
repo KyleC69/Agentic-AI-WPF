@@ -1,97 +1,90 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <AnalysisLevel>preview</AnalysisLevel>
-    <LangVersion>preview</LangVersion>
-	  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-	  <DefineConstants>$(DefineConstants);SQL</DefineConstants>
-	  <NoWarn>KC00101;</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<AnalysisLevel>preview</AnalysisLevel>
+		<LangVersion>preview</LangVersion>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningLevel>8</WarningLevel>
-    <IsPublishable>False</IsPublishable>
-	  
-    
-  </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <WarningLevel>8</WarningLevel>
-    <IsPublishable>False</IsPublishable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<DefineConstants>$(DefineConstants);SQL</DefineConstants>
+		<NoWarn>KC00101;</NoWarn>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="DocIngestion\DocumentationModelProcessor.cs" />
-    <Compile Remove="DocIngestion\FileHarvestPipeline.cs" />
-    <Compile Remove="DocIngestion\IngestQualityControl.cs" />
-    <Compile Remove="DocIngestion\LearningRunner.cs" />
-    <Compile Remove="DocIngestion\LearnPageParser.cs" />
-    <Compile Remove="DocIngestion\LocalFileParser.cs" />
-    <Compile Remove="Models\AIChatHistory.cs" />
-    <Compile Remove="Models\ChatHistory.cs" />
-    <Compile Remove="Models\Extensions\ChatMessageExtensions.cs" />
-		<Compile Remove="Providers\ExampleUsage.cs" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<WarningLevel>8</WarningLevel>
+		<IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<WarningLevel>8</WarningLevel>
+		<IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+
+	<ItemGroup>
+
+		<Compile Remove="DocIngestion\IngestQualityControl.cs" />
+	</ItemGroup>
 
 
 
 
-  <ItemGroup>
-	  <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.4.0">
-	    <TreatAsUsed>true</TreatAsUsed>
-	  </PackageReference>
-	  <PackageReference Include="Dapper" Version="2.1.66" />
-	  <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-	  <PackageReference Include="MdXaml" Version="2.0.0-pre202603081301" />
-	  <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-rc4" />
-	  <PackageReference Include="Microsoft.Agents.Builder" Version="1.5.60-beta" />
-	  
-	  <PackageReference Include="Microsoft.Extensions.AI" Version="10.4.1">
-	    <TreatAsUsed>true</TreatAsUsed>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.4.1" />
-	  <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
-	  <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
-	  <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5">
-	    <TreatAsUsed>true</TreatAsUsed>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.5" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5">
-	    <TreatAsUsed>true</TreatAsUsed>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.5">
-	    <TreatAsUsed>true</TreatAsUsed>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.73.0" />
-	  <PackageReference Include="Microsoft.Agents.AI.Abstractions" Version="1.0.0-rc4">
-	    <TreatAsUsed>true</TreatAsUsed>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.Agents.AI.Workflows.Generators" Version="1.0.0-rc4">
-	    <PrivateAssets>all</PrivateAssets>
-	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
-	  <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
-	  <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
-	  <PackageReference Include="OllamaSharp" Version="5.4.24" />
-	  <PackageReference Include="PuppeteerSharp" Version="24.39.1" />
-	  <PackageReference Include="MarkDig" Version="1.0.0" />
-	  <PackageReference Include="System.Management" Version="10.0.5" />
-	  <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.5" />
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Diagnostics" Version="8.4.0">
+			<TreatAsUsed>true</TreatAsUsed>
+		</PackageReference>
+		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+		<PackageReference Include="MdXaml" Version="2.0.0-pre202603081301" />
+		<PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-rc4" />
+		<PackageReference Include="Microsoft.Agents.Builder" Version="1.5.60-beta" />
 
-  </ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.AI" Version="10.4.1">
+			<TreatAsUsed>true</TreatAsUsed>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.4.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5">
+			<TreatAsUsed>true</TreatAsUsed>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5">
+			<TreatAsUsed>true</TreatAsUsed>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.5">
+			<TreatAsUsed>true</TreatAsUsed>
+		</PackageReference>
+		<PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.73.0" />
+		<PackageReference Include="Microsoft.Agents.AI.Abstractions" Version="1.0.0-rc4">
+			<TreatAsUsed>true</TreatAsUsed>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Agents.AI.Workflows.Generators" Version="1.0.0-rc4">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
+		<PackageReference Include="OllamaSharp" Version="5.4.24" />
+		<PackageReference Include="PuppeteerSharp" Version="24.39.1" />
+		<PackageReference Include="MarkDig" Version="1.0.0" />
+		<PackageReference Include="System.Management" Version="10.0.5" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.5" />
 
+	</ItemGroup>
 
 
 
-  <ItemGroup>
-    <Folder Include="Models\Extensions\" />
-  </ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Models\Extensions\" />
+	</ItemGroup>
 
 
 

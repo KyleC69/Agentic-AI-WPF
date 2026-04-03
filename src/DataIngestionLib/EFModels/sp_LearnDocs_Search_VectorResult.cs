@@ -1,21 +1,35 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/04/03
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         sp_LearnDocs_Search_VectorResult.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 095145
+
+
 
 namespace DataIngestionLib.EFModels;
 
-public partial class sp_LearnDocs_Search_VectorResult
-{
-    public int Id { get; set; }
-    public string? Content { get; set; } = string.Empty;
-    public string? FailureInfo { get; set; } = string.Empty;
-    public double Distance { get; set; }
 
+
+
+
+public class sp_LearnDocs_Search_VectorResult
+{
+
+    public sp_LearnDocs_Search_VectorResult(string failureInfo)
+    {
+        FailureInfo = failureInfo;
+    }
+
+
+
+
+
+
+
+
+    public string? Content { get; set; } = string.Empty;
+    public double? Distance { get; set; }
+    public string? FailureInfo { get; set; } = string.Empty;
+    public int Id { get; set; }
 }

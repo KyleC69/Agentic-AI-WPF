@@ -305,11 +305,15 @@ namespace DataIngestionLib.EFModels
                 },
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<sp_LearnDocs_Search_VectorResult>("EXEC @returnValue = [dbo].[sp_LearnDocs_Search_Vector] @QueryText = @QueryText, @Top = @Top", sqlParameters, cancellationToken);
+      var results = await _context.SqlQueryAsync<sp_LearnDocs_Search_VectorResult>("EXEC @returnValue = [dbo].[sp_LearnDocs_Search_Vector] @QueryText = @QueryText, @Top = @Top", sqlParameters, cancellationToken);
 
-            returnValue?.SetValue(parameterreturnValue.Value);
-
-            return _;
+      if (results is null)
+      {
+          results = [];
+        var  res = new sp_LearnDocs_Search_VectorResult("Procedure returned null results - Uncaptured fatal error");
+        results.Add(res);
+      }
+            return results;
         }
 
         public virtual async Task<List<sp_Remote_Search_VectorResult>> sp_Remote_Search_VectorAsync(string queryText, int? topN, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)

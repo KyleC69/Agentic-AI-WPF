@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIModels.cs
 // Author: Kyle L. Crowder
-// Build Num: 232056
+// Build Num: 095148
 
 
 

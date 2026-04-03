@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         UserDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: 232126
+// Build Num: 095217
 
 
 
@@ -25,8 +25,6 @@ namespace RAGDataIngestionWPF.Services;
 public sealed class UserDataService : IUserDataService
 {
     private UserViewModel _currentUser = new();
-
-    public event EventHandler<UserViewModel> UserDataUpdated;
 
 
 
@@ -53,4 +51,13 @@ public sealed class UserDataService : IUserDataService
 
         UserDataUpdated?.Invoke(this, _currentUser);
     }
+
+
+
+
+
+
+
+
+    public event EventHandler<UserViewModel> UserDataUpdated;
 }

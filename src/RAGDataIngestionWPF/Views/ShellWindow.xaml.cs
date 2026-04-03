@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         ShellWindow.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 232133
+// Build Num: 095224
 
 
 
@@ -36,6 +36,18 @@ public sealed partial class ShellWindow : IShellWindow
 
 
 
+    public void CloseWindow()
+    {
+        this.Close();
+    }
+
+
+
+
+
+
+
+
     public Frame GetNavigationFrame()
     {
         return ShellFrame;
@@ -51,17 +63,5 @@ public sealed partial class ShellWindow : IShellWindow
     public void ShowWindow()
     {
         this.Show();
-    }
-
-
-
-
-
-
-
-
-    public void CloseWindow()
-    {
-        this.Close();
     }
 }

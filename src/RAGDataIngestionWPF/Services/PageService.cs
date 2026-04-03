@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         PageService.cs
 // Author: Kyle L. Crowder
-// Build Num: 232124
+// Build Num: 095215
 
 
 
@@ -54,6 +54,20 @@ public sealed class PageService : IPageService
 
 
 
+    public Page GetPage(string key)
+    {
+        Type pageType = GetPageType(key);
+        Page page = _serviceProvider.GetService(pageType) as Page;
+        return page ?? throw new InvalidOperationException($"Page service could not resolve page type {pageType.FullName}.");
+    }
+
+
+
+
+
+
+
+
     public Type GetPageType(string key)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -67,20 +81,6 @@ public sealed class PageService : IPageService
         }
 
         return pageType;
-    }
-
-
-
-
-
-
-
-
-    public Page GetPage(string key)
-    {
-        Type pageType = GetPageType(key);
-        Page page = _serviceProvider.GetService(pageType) as Page;
-        return page ?? throw new InvalidOperationException($"Page service could not resolve page type {pageType.FullName}.");
     }
 
 

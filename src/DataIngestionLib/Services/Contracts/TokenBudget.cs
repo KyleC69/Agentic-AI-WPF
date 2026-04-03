@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         TokenBudget.cs
 // Author: Kyle L. Crowder
-// Build Num: 232103
+// Build Num: 095155
 
 
 
@@ -15,11 +15,11 @@ namespace DataIngestionLib.Services.Contracts;
 
 public class TokenBudget
 {
-    public int BudgetTotal { get; set; }
-    public int MaximumContext { get; set; }
-    public int MetaBudget { get; set; }
-    public int RAGBudget { get; set; }
-    public int SessionBudget { get; set; }
-    public int SystemBudget { get; set; }
-    public int ToolBudget { get; set; }
+    public int BudgetTotal { get; set; } = 130000;
+    public int MaximumContext { get; set; } = 100000;
+    public int MetaBudget { get; set; } = 5000;
+    public int RAGBudget { get; set; } = 10000;
+    public int SessionBudget { get; set; } = 5000;
+    public int SystemBudget { get; set; } = 5000;
+    public int ToolBudget { get; set; } = 5000;
 }

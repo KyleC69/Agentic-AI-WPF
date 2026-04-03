@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 232135
+// Build Num: 095225
 
 
 
@@ -20,7 +20,6 @@ using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -332,21 +331,7 @@ public sealed partial class App : Application
         _ = services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
         _ = services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
         _ = services.AddSingleton<ISystemService, SystemService>();
-        _ = services.AddSingleton<IChatConversationService>(provider =>
-        {
-            Settings settings = Settings.Default;
-
-            return new ChatConversationService(provider.GetRequiredService<ILoggerFactory>(), provider.GetRequiredService<IAgentFactory>(), settings.ApplicationId, settings.ResumeLast, settings.UserName, string.Empty, new TokenBudget
-            {
-                    MaximumContext = settings.MaximumContext,
-                    MetaBudget = settings.MetaBudget,
-                    RAGBudget = settings.RAGBudget,
-                    SessionBudget = settings.SessionBudget,
-                    SystemBudget = settings.SystemBudget,
-                    ToolBudget = settings.ToolBudget,
-                    BudgetTotal = settings.SystemBudget + settings.SessionBudget + settings.RAGBudget + settings.ToolBudget + settings.MetaBudget
-            }, provider.GetRequiredService<IHistoryIdentityService>(), provider.GetRequiredService<SqlChatHistoryProvider>());
-        });
+        _ = services.AddSingleton<IChatConversationService, ChatConversationService>();
         _ = services.AddSingleton<IPageService, PageService>();
         _ = services.AddSingleton<INavigationService, NavigationService>();
         _ = services.AddSingleton<IUserDataService, UserDataService>();

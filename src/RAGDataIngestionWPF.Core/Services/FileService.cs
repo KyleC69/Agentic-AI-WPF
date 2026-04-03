@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Core
 // File:         FileService.cs
 // Author: Kyle L. Crowder
-// Build Num: 232116
+// Build Num: 095208
 
 
 
@@ -24,6 +24,22 @@ namespace RAGDataIngestionWPF.Core.Services;
 
 public sealed class FileService : IFileService
 {
+
+    public void Delete(string folderPath, string fileName)
+    {
+        if (fileName != null && File.Exists(Path.Combine(folderPath, fileName)))
+        {
+            File.Delete(Path.Combine(folderPath, fileName));
+        }
+    }
+
+
+
+
+
+
+
+
     public T Read<T>(string folderPath, string fileName)
     {
         var path = Path.Combine(folderPath, fileName);
@@ -52,20 +68,5 @@ public sealed class FileService : IFileService
 
         var fileContent = JsonConvert.SerializeObject(content);
         File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
-    }
-
-
-
-
-
-
-
-
-    public void Delete(string folderPath, string fileName)
-    {
-        if (fileName != null && File.Exists(Path.Combine(folderPath, fileName)))
-        {
-            File.Delete(Path.Combine(folderPath, fileName));
-        }
     }
 }

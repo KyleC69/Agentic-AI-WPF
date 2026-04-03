@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         MainViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 232128
+// Build Num: 095219
 
 
 
@@ -34,6 +34,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 public sealed partial class MainViewModel : ObservableObject, IDisposable, INavigationAware
 {
     private readonly IChatConversationService _chatConversationService;
+    private readonly IHistoryIdentityService _historyIdentity;
     private bool _historyLoaded;
     private CancellationTokenSource _tokenSource;
     [ObservableProperty] private int cachedInputTokenCount;
@@ -47,7 +48,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     [ObservableProperty] private int systemTokenCount;
     [ObservableProperty] private int toolTokenCount;
     [ObservableProperty] private int totalTokenCount;
-    private readonly IHistoryIdentityService _historyIdentity;
 
 
 
@@ -186,20 +186,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     /// </remarks>
     public async void OnNavigatedTo(object parameter)
     {
-        //  IReadOnlyList<ChatMessage> historyMessages = new List<ChatMessage>();
-        //We need to check the appsettings to see if we are supposed to start
-        //from the last used ConversationId We cannot access that service from here so we will wait until in  chat service 
+
         if (_historyLoaded)
         {
             return;
         }
 
-        //set loaded = true;
         try
         {
             Messages.Clear();
 
-            //if we are not supposed to load history this will return null
             var historyMessages = await _chatConversationService.LoadConversationHistoryAsync(_tokenSource.Token).ConfigureAwait(true);
 
             //Add the history messages to the UI collection
@@ -215,12 +211,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             Messages.Clear();
         }
     }
-
-
-
-
-
-
 
 
 
@@ -283,11 +273,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     {
         IsBusy = e;
     }
-
-
-
-
-
 
 
 

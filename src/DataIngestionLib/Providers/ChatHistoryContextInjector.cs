@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatHistoryContextInjector.cs
 // Author: Kyle L. Crowder
-// Build Num: 232058
+// Build Num: 095150
 
 
 
@@ -11,7 +11,7 @@ using System.Diagnostics;
 using System.Text.Json;
 
 using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.Data;
+using DataIngestionLib.EFModels;
 using DataIngestionLib.Services;
 using DataIngestionLib.Services.Contracts;
 

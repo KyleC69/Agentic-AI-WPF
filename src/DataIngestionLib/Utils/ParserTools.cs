@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ParserTools.cs
 // Author: Kyle L. Crowder
-// Build Num: 232115
+// Build Num: 095207
 
 
 

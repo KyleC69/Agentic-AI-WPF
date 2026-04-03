@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/31
+﻿// Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         ApplicationHostService.cs
 // Author: Kyle L. Crowder
-// Build Num: 232122
+// Build Num: 095214
 
 
 
@@ -37,12 +37,12 @@ public sealed class ApplicationHostService : IHostedService
 {
 
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
+    private bool _isInitialized;
     private readonly INavigationService _navigationService;
     private readonly IServiceProvider _serviceProvider;
+    private IShellWindow _shellWindow;
     private readonly IToastNotificationsService _toastNotificationsService;
     private readonly IUserDataService _userDataService;
-    private bool _isInitialized;
-    private IShellWindow _shellWindow;
     private const string HcDarkTheme = "pack://application:,,,/Styles/Themes/HC.Dark.Blue.xaml";
     private const string HcLightTheme = "pack://application:,,,/Styles/Themes/HC.Light.Blue.xaml";
 

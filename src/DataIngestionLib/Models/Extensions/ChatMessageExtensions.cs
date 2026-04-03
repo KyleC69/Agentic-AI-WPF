@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/29
-// Solution: File
+﻿// Build Date: 2026/04/03
+// Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatMessageExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: 051928
+// Build Num: 095147
 
 
 
@@ -116,9 +116,9 @@ public static class ChatMessageExtensions
     /// </remarks>
     public static ChatMessage WithAgentRequestMessageSource(this ChatMessage message, AgentRequestMessageSourceType sourceType, string? sourceId = null)
     {
-    
-        
-        
+
+
+
 
 
         message = message.Clone();
