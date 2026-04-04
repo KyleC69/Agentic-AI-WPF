@@ -14,10 +14,8 @@
 using CommunityToolkit.Diagnostics;
 
 using DataIngestionLib.Contracts;
-using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Providers;
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -36,19 +34,9 @@ namespace DataIngestionLib.Services;
 ///     Class is responsible for managing the chat conversation round with LLM, self-contained and keeps viewmodel clean.
 ///     Encapsulates the management of the agent operations.
 /// </summary>
-public sealed class ChatConversationService : IChatConversationService
+public sealed class ChatConversationService : ChatConversationBase, IChatConversationService
 {
-    private AIAgent? _agent;
-    private readonly IAgentFactory _agentFactory;
-    private AgentSession? _agentSession;
-    private readonly IHistoryIdentityService _historyIdentityService;
-    private readonly SemaphoreSlim _initializeGate = new(1, 1);
-    private readonly string _initialUserId;
-    private readonly ILogger<ChatConversationService> _logger;
-    private readonly RagDataService _ragDataService;
-    private ProviderSessionState<HistoryIdentity> _sessionStateHelper = null!;
     private readonly SqlChatHistoryProvider? _sqlChatHistoryProvider;
-    private const string DefaultAgentId = "Agentic-Max";
 
 
 
@@ -83,25 +71,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    /// <summary>
-    ///     This is to provide an identifier in enterprise scenarios running multiple applications.
-    /// </summary>
-    public string ApplicationId { get; }
-
-    /// <summary>
-    ///     A collection of settings to provide the token budget allocated for the model.
-    /// </summary>
-    private TokenBudget ConversationTokenBudget { get; }
-
     public bool Initialized { get; set; }
-
-    /// <summary>
-    ///     The last conversation ID that was set. The WPF layer should read this property
-    ///     and persist it to Settings. Default.LastConversationId.
-    /// </summary>
-    public string LastConversationIdValue { get; private set; } = string.Empty;
-
-    private AppSettings Settings { get; } = new AppSettings();
 
     /// <summary>
     ///     Internal tracking history of the conversation with the LLM.
@@ -268,18 +238,6 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private static int ClampToInt(long value)
-    {
-        return value <= 0 ? 0 : value >= int.MaxValue ? int.MaxValue : (int)value;
-    }
-
-
-
-
-
-
-
-
     /// <summary>
     ///     Initializes the chat conversation service, setting up necessary components such as the agent session
     ///     and conversation identifiers. Ensures the service is ready for use.
@@ -337,15 +295,4 @@ public sealed class ChatConversationService : IChatConversationService
     /// <inheritdoc />
     public event EventHandler<int>? MaximumContextWarning;
 
-
-
-
-
-
-
-
-    private static int ReadInt(IReadOnlyDictionary<string, long> values, string key, int fallback)
-    {
-        return values.TryGetValue(key, out var value) ? ClampToInt(value) : fallback;
-    }
 }

@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         DocIngestionPipeline.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095142
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -223,7 +227,7 @@ public sealed class DocIngestionPipeline
 
 
 
-    public async Task DoIngestionAsync(CancellationToken cancellationToken = default)
+    public async Task DoIngestionAsync(string defaultLearnBaseUrl, CancellationToken cancellationToken = default)
     {
         if (!Directory.Exists(StartFolder))
         {
@@ -238,10 +242,10 @@ public sealed class DocIngestionPipeline
         foreach (var filePath in markdownFiles)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var existingDocumentHash = await GetExistingDocumentHashAsync(filePath, cancellationToken).ConfigureAwait(false);
+            var existingDocumentHash = await this.GetExistingDocumentHashAsync(filePath, cancellationToken).ConfigureAwait(false);
             try
             {
-                ParsedDocumentPayload parsedDocument = await ParseMarkdownDocumentAsync(filePath, cancellationToken).ConfigureAwait(false);
+                ParsedDocumentPayload parsedDocument = await this.ParseMarkdownDocumentAsync(filePath, cancellationToken).ConfigureAwait(false);
 
                 if (ComputeSha256Hex(parsedDocument.NormalizedMarkdown) == existingDocumentHash)
                 {
@@ -249,8 +253,8 @@ public sealed class DocIngestionPipeline
                     continue;
                 }
 
-                Guid documentId = await SaveDocumentSqlStubAsync(parsedDocument, cancellationToken).ConfigureAwait(false);
-                await SaveChunksSqlStubAsync(documentId, parsedDocument.Chunks, cancellationToken).ConfigureAwait(false);
+                Guid documentId = await this.SaveDocumentSqlStubAsync(parsedDocument, cancellationToken).ConfigureAwait(false);
+                await this.SaveChunksSqlStubAsync(documentId, parsedDocument.Chunks, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -267,15 +271,6 @@ public sealed class DocIngestionPipeline
 
 
 
-
-
-
-
-
-    public Task DoIngestionsAsync()
-    {
-        return DoIngestionAsync();
-    }
 
 
 
@@ -519,14 +514,14 @@ public sealed class DocIngestionPipeline
     {
         var rawFileContent = await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
         var normalizedMarkdown = ParserTools.CleanRawText(rawFileContent);
-        var (yamlFrontMatter, markdownBody) = ExtractYamlFrontMatter(normalizedMarkdown);
+        (string? yamlFrontMatter, string? markdownBody) = ExtractYamlFrontMatter(normalizedMarkdown);
 
         HashSet<string> includeStack = new(StringComparer.OrdinalIgnoreCase);
-        var resolvedMarkdown = await ResolveDocFxDirectivesAsync(filePath, markdownBody, includeStack, 0, cancellationToken).ConfigureAwait(false);
+        var resolvedMarkdown = await this.ResolveDocFxDirectivesAsync(filePath, markdownBody, includeStack, 0, cancellationToken).ConfigureAwait(false);
         var normalizedMarkdownBody = NormalizeMarkdownForIngestion(resolvedMarkdown);
         var normalizedDocument = string.IsNullOrWhiteSpace(yamlFrontMatter) ? normalizedMarkdownBody : $"{yamlFrontMatter}{Environment.NewLine}{Environment.NewLine}{normalizedMarkdownBody}";
 
-        var chunks = BuildChunks(normalizedMarkdownBody);
+        IReadOnlyList<ChunkPayload> chunks = BuildChunks(normalizedMarkdownBody);
 
         var relativePath = Path.GetRelativePath(StartFolder, filePath);
 
@@ -726,7 +721,7 @@ public sealed class DocIngestionPipeline
                 if (trimmed.StartsWith(":::code", StringComparison.OrdinalIgnoreCase))
                 {
                     var directiveText = CollectDirectiveText(lines, ref index);
-                    var codeBlock = await ResolveCodeDirectiveAsync(owningFilePath, directiveText, cancellationToken).ConfigureAwait(false);
+                    var codeBlock = await this.ResolveCodeDirectiveAsync(owningFilePath, directiveText, cancellationToken).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(codeBlock))
                     {
                         _ = output.AppendLine(codeBlock);
@@ -738,7 +733,7 @@ public sealed class DocIngestionPipeline
                 if (trimmed.StartsWith(":::include", StringComparison.OrdinalIgnoreCase))
                 {
                     var directiveText = CollectDirectiveText(lines, ref index);
-                    var includeContent = await ResolveIncludeDirectiveAsync(owningFilePath, directiveText, includeStack, depth + 1, cancellationToken).ConfigureAwait(false);
+                    var includeContent = await this.ResolveIncludeDirectiveAsync(owningFilePath, directiveText, includeStack, depth + 1, cancellationToken).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(includeContent))
                     {
                         _ = output.AppendLine(includeContent);
@@ -768,7 +763,7 @@ public sealed class DocIngestionPipeline
 
     internal async Task<string> ResolveIncludeDirectiveAsync(string owningFilePath, string directiveText, HashSet<string> includeStack, int depth, CancellationToken cancellationToken)
     {
-        var attributes = ParseDirectiveAttributes(directiveText);
+        Dictionary<string, string> attributes = ParseDirectiveAttributes(directiveText);
         if (!attributes.TryGetValue("file", out var includePath) && !attributes.TryGetValue("path", out includePath) && !attributes.TryGetValue("source", out includePath))
         {
             _logger.LogDebug(":::include directive in {FilePath} does not declare file/path/source.", owningFilePath);
@@ -783,7 +778,7 @@ public sealed class DocIngestionPipeline
         }
 
         var includeMarkdown = await File.ReadAllTextAsync(includeAbsolutePath, cancellationToken).ConfigureAwait(false);
-        return await ResolveDocFxDirectivesAsync(includeAbsolutePath, includeMarkdown, includeStack, depth, cancellationToken).ConfigureAwait(false);
+        return await this.ResolveDocFxDirectivesAsync(includeAbsolutePath, includeMarkdown, includeStack, depth, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -912,7 +907,7 @@ CAST(@embeddings AS vector(1024))
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var (title, description, author, msDate, msTopic) = ParseYamlFields(document.YamlFrontMatter);
+        (string? title, string? description, string? author, DateTime? msDate, string? msTopic) = ParseYamlFields(document.YamlFrontMatter);
         var contentHash = ComputeSha256Hex(document.NormalizedMarkdown);
         var wordCount = CountWords(document.NormalizedMarkdown);
 

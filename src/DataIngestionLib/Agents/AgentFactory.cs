@@ -57,6 +57,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     private readonly int _ollamaPort;
 
     private readonly AIContextRAGInjector _ragContextInjector;
+    private readonly ToolBuilder _toolBuilder;
 
     private static ILoggerFactory _factory = NullLoggerFactory.Instance;
 
@@ -85,18 +86,20 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     /// <exception cref="ArgumentNullException">
     ///     Thrown when any of the provided parameters is <c>null</c>.
     /// </exception>
-    public AgentFactory(ILoggerFactory factory, string ollamaHost, int ollamaPort, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector)
+    public AgentFactory(ILoggerFactory factory, string ollamaHost, int ollamaPort, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector, ToolBuilder toolBuilder)
     {
         Guard.IsNotNull(factory);
         Guard.IsNotNullOrEmpty(ollamaHost);
         Guard.IsNotNull(chatHistoryProvider);
         Guard.IsNotNull(ragContextInjector);
+        Guard.IsNotNull(toolBuilder);
 
         _factory = factory;
         _chatHistoryProvider = chatHistoryProvider;
         _ollamaHost = ollamaHost;
         _ollamaPort = ollamaPort;
         _ragContextInjector = ragContextInjector;
+        _toolBuilder = toolBuilder;
     }
 
 
@@ -162,7 +165,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                         Id = agentId,
                         Name = agentId,
                         Description = agentDescription,
-                        ChatOptions = new ChatOptions { Instructions = instructions ?? GetModelInstructions(), Temperature = 0.7f, MaxOutputTokens = 10000, Tools = ToolBuilder.GetReadOnlyAiTools() },
+                        ChatOptions = new ChatOptions { Instructions = instructions ?? GetModelInstructions(), Temperature = 0.7f, MaxOutputTokens = 10000, Tools = _toolBuilder.GetReadOnlyAiTools() },
                         ThrowOnChatHistoryProviderConflict = true
                 }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
@@ -180,7 +183,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                 Temperature = 0.7f,
                 MaxOutputTokens = 10000,
                 AllowMultipleToolCalls = true,
-                Tools = ToolBuilder.GetReadOnlyAiTools()
+                Tools = _toolBuilder.GetReadOnlyAiTools()
             },
             AIContextProviders =
                         [

@@ -16,12 +16,11 @@ using System.Text.Json;
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Contracts;
 using DataIngestionLib.EFModels;
 using DataIngestionLib.HistoryModels;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services;
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Agents.AI;
 using Microsoft.Agents.Core.Serialization;

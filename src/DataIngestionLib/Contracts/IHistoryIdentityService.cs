@@ -7,14 +7,14 @@
 
 
 
-using DataIngestionLib.Services.Contracts;
+using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
 
 
 
 
-namespace DataIngestionLib.Contracts.Services;
+namespace DataIngestionLib.Contracts;
 
 
 

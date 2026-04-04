@@ -13,9 +13,8 @@
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Services;
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Agents.AI;
 using Microsoft.Agents.Builder.State;

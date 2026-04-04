@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using DataIngestionLib.DocIngestion;
 using DataIngestionLib.EFModels;
 
 using Microsoft.Extensions.Logging;
@@ -31,16 +32,18 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 {
     private readonly ILogger<DataGridViewModel> _logger;
     private AsyncRelayCommand _startIngestionCommand;
+    private readonly DocIngestionPipeline _docIngest;
+
+    private CancellationTokenSource cts = new();
 
 
 
 
 
 
-
-
-    public DataGridViewModel()
+    public DataGridViewModel(DataIngestionLib.DocIngestion.DocIngestionPipeline docIngestionPipeline)
     {
+        _docIngest = docIngestionPipeline;
     }
 
 
@@ -104,7 +107,7 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
     {
 
 
-
+        await _docIngest.DoIngestionAsync(Properties.Settings.Default.LearnBaseUrl, cts.Token);
 
 
 

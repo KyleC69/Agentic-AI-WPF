@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         AppSettings.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095207
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -18,4 +22,7 @@ public class AppSettings
 {
 
     public Guid ApplicationId { get; set; } = Guid.Parse("15A53D0F-041D-44DD-A150-DFB8D0F133FF");
+
+
+
 }

@@ -15,8 +15,7 @@ using System.IO;
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.Services.Contracts;
+using DataIngestionLib.Contracts;
 
 using Microsoft.Agents.AI;
 

@@ -11,7 +11,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Contracts;
 
 using Microsoft.Extensions.AI;
 

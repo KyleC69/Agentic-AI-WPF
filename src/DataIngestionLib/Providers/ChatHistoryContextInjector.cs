@@ -14,10 +14,9 @@
 using System.Diagnostics;
 using System.Text.Json;
 
-using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Contracts;
 using DataIngestionLib.EFModels;
 using DataIngestionLib.Services;
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Agents.AI;
 using Microsoft.Agents.Core.Serialization;

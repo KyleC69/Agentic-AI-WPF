@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 
 
-namespace DataIngestionLib.Contracts.Services;
+namespace DataIngestionLib.Contracts;
 
 
 

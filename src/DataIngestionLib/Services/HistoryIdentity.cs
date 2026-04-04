@@ -18,7 +18,7 @@ using Microsoft.Extensions.AI;
 
 
 
-namespace DataIngestionLib.Services.Contracts;
+namespace DataIngestionLib.Services;
 
 
 

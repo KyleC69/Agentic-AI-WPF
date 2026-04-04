@@ -7,12 +7,42 @@
 
 
 
+
+// Build Date: 2026/04/03
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IChatHistoryProvider.cs
+// Author: Kyle L. Crowder
+// Build Num: 095140
+
+
+
+
+// Build Date: 2026/04/03
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IChatHistoryProvider.cs
+// Author: Kyle L. Crowder
+// Build Num: 095140
+
+
+
+
+// Build Date: 2026/04/03
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IChatHistoryProvider.cs
+// Author: Kyle L. Crowder
+// Build Num: 095140
+
+
+
 using DataIngestionLib.Models;
 
 
 
 
-namespace DataIngestionLib.Contracts.Services;
+namespace DataIngestionLib.Contracts;
 
 
 

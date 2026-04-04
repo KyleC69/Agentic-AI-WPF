@@ -39,11 +39,12 @@ public sealed class WebSearchPlugin
 
 
 
-    public WebSearchPlugin(HttpClient client)
+    public WebSearchPlugin(IHttpClientFactory client)
     {
         ArgumentNullException.ThrowIfNull(client);
-        _httpClient = client;
+        _httpClient = client.CreateClient(nameof(WebSearchPlugin));
         _httpClient.BaseAddress = new Uri("https://api.langsearch.com/");
+        _httpClient.Timeout = TimeSpan.FromMinutes(3);
     }
 
 

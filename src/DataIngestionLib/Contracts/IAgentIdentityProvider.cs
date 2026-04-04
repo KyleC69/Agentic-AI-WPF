@@ -5,9 +5,7 @@
 // Author: Kyle L. Crowder
 // Build Num: 095139
 
-
-
-namespace DataIngestionLib.Contracts.Services;
+namespace DataIngestionLib.Contracts;
 
 
 

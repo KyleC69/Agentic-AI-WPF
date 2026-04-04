@@ -12,7 +12,7 @@ using Microsoft.Extensions.AI;
 
 
 
-namespace DataIngestionLib.Contracts.Services;
+namespace DataIngestionLib.Contracts;
 
 
 

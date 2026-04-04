@@ -11,16 +11,17 @@
 
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 
 using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
-using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.EFModels;
 using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
+using DataIngestionLib.ToolFunctions;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -309,6 +310,21 @@ public sealed partial class App : Application
 
         _ = services.AddSingleton<HistoryIdentityService>();
         _ = services.AddSingleton<IHistoryIdentityService>(provider => provider.GetRequiredService<HistoryIdentityService>());
+        _ = services.AddSingleton<WebSearchPlugin>();
+        _ = services.AddSingleton<SandboxEventLogReader>();
+        _ = services.AddSingleton<InstalledUpdatesTool>();
+        _ = services.AddSingleton<NetworkConfigurationTool>();
+        _ = services.AddSingleton<PerformanceCounterTool>();
+        _ = services.AddSingleton<ProcessSnapshotTool>();
+        _ = services.AddSingleton<RegistryReaderTool>();
+        _ = services.AddSingleton<ReliabilityHistoryTool>();
+        _ = services.AddSingleton<SafeCommandRunner>(_ => new SafeCommandRunner(Environment.CurrentDirectory));
+        _ = services.AddSingleton<ServiceHealthTool>();
+        _ = services.AddSingleton<StartupInventoryTool>();
+        _ = services.AddSingleton<StorageHealthTool>();
+        _ = services.AddSingleton<WindowsEventChannelReaderTool>();
+        _ = services.AddSingleton<WindowsWmiReaderTool>();
+        _ = services.AddSingleton<ToolBuilder>();
         _ = services.AddSingleton<RagDataService>();
         _ = services.AddSingleton<SqlChatHistoryProvider>();
         _ = services.AddSingleton<AIContextRAGInjector>();
@@ -316,7 +332,7 @@ public sealed partial class App : Application
         {
             Settings settings = Settings.Default;
 
-            return new AgentFactory(provider.GetRequiredService<ILoggerFactory>(), settings.OllamaHost, settings.OllamaPort, provider.GetRequiredService<SqlChatHistoryProvider>(), provider.GetRequiredService<AIContextRAGInjector>());
+            return new AgentFactory(provider.GetRequiredService<ILoggerFactory>(), settings.OllamaHost, settings.OllamaPort, provider.GetRequiredService<SqlChatHistoryProvider>(), provider.GetRequiredService<AIContextRAGInjector>(), provider.GetRequiredService<ToolBuilder>());
         });
 
         _ = services.AddSingleton<ChatHistoryContextInjector>();
