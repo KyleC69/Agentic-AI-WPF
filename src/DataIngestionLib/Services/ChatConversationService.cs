@@ -1,32 +1,21 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
-// Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
-
+// Build Date: 2026/04/04
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChatConversationService.cs
+// Author: GitHub Copilot
 
 
 using CommunityToolkit.Diagnostics;
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Models;
-using DataIngestionLib.Providers;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
 
-
-
 namespace DataIngestionLib.Services;
-
-
 
 
 
@@ -36,36 +25,34 @@ namespace DataIngestionLib.Services;
 /// </summary>
 public sealed class ChatConversationService : ChatConversationBase, IChatConversationService
 {
-    private readonly SqlChatHistoryProvider? _sqlChatHistoryProvider;
+    private readonly IAgentFactory _agentFactory;
+    private readonly IHistoryIdentityService _historyIdentityService;
+    private readonly SemaphoreSlim _initializeGate = new(1, 1);
+    private readonly string _initialUserId;
+    private readonly ILogger<ChatConversationService> _logger;
+    private readonly IRagDataService _ragDataService;
+
+    private AIAgent? _agent;
+    private AgentSession? _agentSession;
+    private ProviderSessionState<HistoryIdentity>? _sessionStateHelper;
 
 
 
 
 
-
-
-
-    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IHistoryIdentityService historyIdentityService, SqlChatHistoryProvider? sqlChatHistoryProvider, RagDataService ragDataService)
+    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IHistoryIdentityService historyIdentityService, IRagDataService ragDataService)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(agentFactory);
         ArgumentNullException.ThrowIfNull(historyIdentityService);
         ArgumentNullException.ThrowIfNull(ragDataService);
-        Guard.IsNotNull(sqlChatHistoryProvider);
-        ApplicationId = historyIdentityService.Current.ApplicationId;
-        _initialUserId = historyIdentityService.Current.UserId;
+
         _agentFactory = agentFactory;
         _historyIdentityService = historyIdentityService;
         _ragDataService = ragDataService;
-        _sqlChatHistoryProvider = sqlChatHistoryProvider;
+        _initialUserId = historyIdentityService.Current.UserId;
         _logger = factory.CreateLogger<ChatConversationService>();
-
-
-
     }
-
-
-
 
 
 
@@ -93,36 +80,26 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
 
 
-
-
-
     async ValueTask<IEnumerable<ChatMessage>> IChatConversationService.LoadConversationHistoryAsync(CancellationToken token)
     {
-
         token.ThrowIfCancellationRequested();
-        await this.InitializeAsync().ConfigureAwait(false);
+        await this.InitializeAsync(token).ConfigureAwait(false);
 
-        if (_sqlChatHistoryProvider is null || _agentSession is null)
-        {
-            AIHistory.Clear();
-
-            return [];
-        }
+        AgentSession session = GetRequiredSession();
 
         ConversationId = HistoryIdentityService.GetConversationId();
 
-        IReadOnlyList<ChatMessage> historyMessages = [.. await _ragDataService.GetChatHistoryByConversationId(Guid.Parse(ConversationId), token)];
+        IReadOnlyList<ChatMessage> historyMessages = [.. await _ragDataService.GetChatHistoryByConversationId(Guid.Parse(ConversationId), token).ConfigureAwait(false) ?? []];
 
         //Tag messages to identify source as history load vs new conversation.
         IEnumerable<ChatMessage> tagged = historyMessages.Select(m => m.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, this.GetType().Name));
 
         //Load the state and attach the history messages to it.
-        HistoryIdentity state = _sessionStateHelper.GetOrInitializeState(_agentSession);
+        ProviderSessionState<HistoryIdentity> sessionState = GetRequiredSessionState();
+        HistoryIdentity state = sessionState.GetOrInitializeState(session);
         state.Messages.AddRange(tagged);
         // Update the session to reflect the loaded conversation history.
-        _sessionStateHelper.SaveState(_agentSession, state);
-
-
+        sessionState.SaveState(session, state);
 
         return tagged;
     }
@@ -131,14 +108,8 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
 
 
-
-
-
     /// <inheritdoc />
     public int RagTokenCount { get; private set; }
-
-
-
 
 
 
@@ -153,7 +124,7 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
     /// <exception cref="ArgumentException"></exception>
     public async ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
     {
-        await this.InitializeAsync().ConfigureAwait(false);
+        await this.InitializeAsync(token).ConfigureAwait(false);
         BusyStateChanged?.Invoke(this, true);
         try
         {
@@ -184,9 +155,6 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
 
 
-
-
-
     /// <inheritdoc />
     public int SessionTokenCount { get; private set; }
 
@@ -194,32 +162,30 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
 
 
-
-
-
     public async Task StartNewConversationAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        await this.InitializeAsync(cancellationToken).ConfigureAwait(false);
+
+        AgentSession session = GetRequiredSession();
+        ProviderSessionState<HistoryIdentity> sessionState = GetRequiredSessionState();
+
         //Initiates a new conversation by clearing the current history and generating a new conversation ID.
         HistoryIdentityService.SaveConversationId(null, true);
         ConversationId = HistoryIdentityService.GetConversationId();
 
         _logger.LogWarning("A new conversation has been started at users request.");
-        HistoryIdentity State = _sessionStateHelper.GetOrInitializeState(_agentSession);
-        State.ApplicationId = _historyIdentityService.Current.ApplicationId;
-        State.AgentId = _historyIdentityService.Current.AgentId;
-        State.ConversationId = ConversationId;
-        State.Messages.Clear();
+        HistoryIdentity state = sessionState.GetOrInitializeState(session);
+        state.ApplicationId = _historyIdentityService.Current.ApplicationId;
+        state.AgentId = _historyIdentityService.Current.AgentId;
+        state.ConversationId = ConversationId;
+        state.Messages.Clear();
         AIHistory.Clear();
 
-        _agentSession?.StateBag.SetValue("ConversationId", ConversationId);
-        _historyIdentityService.ApplyToSession(_agentSession);
-        _sessionStateHelper.SaveState(_agentSession, State);
-
-
+        session.StateBag.SetValue("ConversationId", ConversationId);
+        _historyIdentityService.ApplyToSession(session);
+        sessionState.SaveState(session, state);
     }
-
-
-
 
 
 
@@ -230,9 +196,6 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
     /// <inheritdoc />
     public int ToolTokenCount { get; private set; }
-
-
-
 
 
 
@@ -250,38 +213,37 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
     /// <exception cref="InvalidOperationException">
     ///     Thrown if the initialization process encounters an unexpected state or configuration issue.
     /// </exception>
-    internal async Task InitializeAsync()
+    internal async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-
         if (Initialized)
         {
             return;
         }
 
-        await _initializeGate.WaitAsync().ConfigureAwait(false);
+        await _initializeGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            if (Initialized)
+            {
+                return;
+            }
+
             ConversationId = HistoryIdentityService.GetConversationId();
 
             _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GLM5, "Agentic-Max Description");
-
             _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
 
-
             _historyIdentityService.Initialize(Settings.ApplicationId.ToString("D"), DefaultAgentId, _initialUserId);
-
             _historyIdentityService.ApplyToSession(_agentSession);
 
-
             _sessionStateHelper = new ProviderSessionState<HistoryIdentity>(currentSession => _historyIdentityService.Current, this.GetType().Name);
-
             _sessionStateHelper.SaveState(_agentSession, _historyIdentityService.Current);
 
             Initialized = true;
         }
         finally
         {
-            var unused = _initializeGate.Release();
+            _ = _initializeGate.Release();
         }
     }
 
@@ -289,10 +251,17 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
 
 
+    private AgentSession GetRequiredSession()
+    {
+        return _agentSession ?? throw new InvalidOperationException("Agent session is not initialized.");
+    }
 
 
 
-    /// <inheritdoc />
-    public event EventHandler<int>? MaximumContextWarning;
 
+
+    private ProviderSessionState<HistoryIdentity> GetRequiredSessionState()
+    {
+        return _sessionStateHelper ?? throw new InvalidOperationException("Session state helper is not initialized.");
+    }
 }

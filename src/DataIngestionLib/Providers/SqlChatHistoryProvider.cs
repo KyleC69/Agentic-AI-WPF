@@ -37,7 +37,7 @@ namespace DataIngestionLib.Providers;
 
 
 
-public sealed class SqlChatHistoryProvider : ChatHistoryProvider
+public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISqlChatHistoryProvider
 {
     private readonly IDbContextFactory<AIChatHistoryDb> _dbcontextFactory;
     private readonly IHistoryIdentityService _historyIdentityService;

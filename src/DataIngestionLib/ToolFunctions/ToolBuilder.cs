@@ -7,6 +7,8 @@
 
 
 
+using DataIngestionLib.Contracts;
+
 using Microsoft.Extensions.AI;
 
 
@@ -18,22 +20,25 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-public sealed class ToolBuilder
+public sealed class ToolBuilder : IAIToolCatalog
 {
-    private readonly WebSearchPlugin _webSearchPlugin;
-    private readonly SandboxEventLogReader _eventLogReader;
-    private readonly InstalledUpdatesTool _installedUpdatesTool;
-    private readonly NetworkConfigurationTool _networkConfigurationTool;
-    private readonly PerformanceCounterTool _performanceCounterTool;
-    private readonly ProcessSnapshotTool _processSnapshotTool;
-    private readonly RegistryReaderTool _registryReaderTool;
-    private readonly ReliabilityHistoryTool _reliabilityHistoryTool;
-    private readonly SafeCommandRunner _safeCommandRunner;
-    private readonly ServiceHealthTool _serviceHealthTool;
-    private readonly StartupInventoryTool _startupInventoryTool;
-    private readonly StorageHealthTool _storageHealthTool;
-    private readonly WindowsEventChannelReaderTool _windowsEventChannelReaderTool;
-    private readonly WindowsWmiReaderTool _windowsWmiReaderTool;
+    private readonly Lazy<AITool> _webSearchTool;
+    private readonly Lazy<AITool> _systemInfoTool;
+    private readonly Lazy<AITool> _eventLogTool;
+    private readonly Lazy<AITool> _installedUpdatesReadTool;
+    private readonly Lazy<AITool> _networkConfigurationReadTool;
+    private readonly Lazy<AITool> _performanceCounterReadTool;
+    private readonly Lazy<AITool> _processSnapshotReadTool;
+    private readonly Lazy<AITool> _windowsEventChannelReadTool;
+    private readonly Lazy<AITool> _registryReadTool;
+    private readonly Lazy<AITool> _reliabilityHistoryReadTool;
+    private readonly Lazy<AITool> _serviceHealthReadTool;
+    private readonly Lazy<AITool> _startupInventoryReadTool;
+    private readonly Lazy<AITool> _storageHealthReadTool;
+    private readonly Lazy<AITool> _windowsWmiReadTool;
+    private readonly Lazy<AITool> _safeCommandRunTool;
+    private readonly Lazy<AITool> _listFolderContentsTool;
+    private readonly Lazy<AITool> _fileSystemWriterTool;
 
 
 
@@ -42,20 +47,23 @@ public sealed class ToolBuilder
 
     public ToolBuilder(WebSearchPlugin webSearchPlugin, SandboxEventLogReader eventLogReader, InstalledUpdatesTool installedUpdatesTool, NetworkConfigurationTool networkConfigurationTool, PerformanceCounterTool performanceCounterTool, ProcessSnapshotTool processSnapshotTool, RegistryReaderTool registryReaderTool, ReliabilityHistoryTool reliabilityHistoryTool, SafeCommandRunner safeCommandRunner, ServiceHealthTool serviceHealthTool, StartupInventoryTool startupInventoryTool, StorageHealthTool storageHealthTool, WindowsEventChannelReaderTool windowsEventChannelReaderTool, WindowsWmiReaderTool windowsWmiReaderTool)
     {
-        _webSearchPlugin = webSearchPlugin;
-        _eventLogReader = eventLogReader;
-        _installedUpdatesTool = installedUpdatesTool;
-        _networkConfigurationTool = networkConfigurationTool;
-        _performanceCounterTool = performanceCounterTool;
-        _processSnapshotTool = processSnapshotTool;
-        _registryReaderTool = registryReaderTool;
-        _reliabilityHistoryTool = reliabilityHistoryTool;
-        _safeCommandRunner = safeCommandRunner;
-        _serviceHealthTool = serviceHealthTool;
-        _startupInventoryTool = startupInventoryTool;
-        _storageHealthTool = storageHealthTool;
-        _windowsEventChannelReaderTool = windowsEventChannelReaderTool;
-        _windowsWmiReaderTool = windowsWmiReaderTool;
+        _webSearchTool = new(() => AIFunctionFactory.Create(webSearchPlugin.WebSearch));
+        _systemInfoTool = new(() => AIFunctionFactory.Create(SystemInfoTool.GetInfo));
+        _eventLogTool = new(() => AIFunctionFactory.Create(eventLogReader.ReadLog));
+        _installedUpdatesReadTool = new(() => AIFunctionFactory.Create(installedUpdatesTool.ReadInstalledUpdates));
+        _networkConfigurationReadTool = new(() => AIFunctionFactory.Create(networkConfigurationTool.ReadActiveAdapters));
+        _performanceCounterReadTool = new(() => AIFunctionFactory.Create(performanceCounterTool.ReadSnapshot));
+        _processSnapshotReadTool = new(() => AIFunctionFactory.Create(processSnapshotTool.ReadTopProcesses));
+        _windowsEventChannelReadTool = new(() => AIFunctionFactory.Create(windowsEventChannelReaderTool.ReadChannel));
+        _registryReadTool = new(() => AIFunctionFactory.Create(registryReaderTool.ReadValue));
+        _reliabilityHistoryReadTool = new(() => AIFunctionFactory.Create(reliabilityHistoryTool.ReadRecent));
+        _serviceHealthReadTool = new(() => AIFunctionFactory.Create(serviceHealthTool.ReadServices));
+        _startupInventoryReadTool = new(() => AIFunctionFactory.Create(startupInventoryTool.ReadStartupItems));
+        _storageHealthReadTool = new(() => AIFunctionFactory.Create(storageHealthTool.ReadLogicalDisks));
+        _windowsWmiReadTool = new(() => AIFunctionFactory.Create(windowsWmiReaderTool.ReadClass));
+        _safeCommandRunTool = new(() => AIFunctionFactory.Create(safeCommandRunner.Run));
+        _listFolderContentsTool = new(() => AIFunctionFactory.Create(ListFolderContentsTool.ListFolderContents));
+        _fileSystemWriterTool = new(() => AIFunctionFactory.Create(FileSystemWriterTool.WriteText));
     }
 
     public IList<AITool> GetAiTools()
@@ -70,26 +78,26 @@ public sealed class ToolBuilder
 
 
 
-    internal IList<AITool> GetReadOnlyAiTools()
+    public IList<AITool> GetReadOnlyAiTools()
     {
         return
         [
-                AIFunctionFactory.Create(_webSearchPlugin.WebSearch),
-                AIFunctionFactory.Create(SystemInfoTool.GetInfo),
-                AIFunctionFactory.Create(_eventLogReader.ReadLog),
-                AIFunctionFactory.Create(_installedUpdatesTool.ReadInstalledUpdates),
-                AIFunctionFactory.Create(_networkConfigurationTool.ReadActiveAdapters),
-                AIFunctionFactory.Create(_performanceCounterTool.ReadSnapshot),
-                AIFunctionFactory.Create(_processSnapshotTool.ReadTopProcesses),
-                AIFunctionFactory.Create(_windowsEventChannelReaderTool.ReadChannel),
-                AIFunctionFactory.Create(_registryReaderTool.ReadValue),
-                AIFunctionFactory.Create(_reliabilityHistoryTool.ReadRecent),
-                AIFunctionFactory.Create(_serviceHealthTool.ReadServices),
-                AIFunctionFactory.Create(_startupInventoryTool.ReadStartupItems),
-                AIFunctionFactory.Create(_storageHealthTool.ReadLogicalDisks),
-                AIFunctionFactory.Create(_windowsWmiReaderTool.ReadClass),
-                AIFunctionFactory.Create(_safeCommandRunner.Run),
-                AIFunctionFactory.Create(ListFolderContentsTool.ListFolderContents)
+                _webSearchTool.Value,
+                _systemInfoTool.Value,
+                _eventLogTool.Value,
+                _installedUpdatesReadTool.Value,
+                _networkConfigurationReadTool.Value,
+                _performanceCounterReadTool.Value,
+                _processSnapshotReadTool.Value,
+                _windowsEventChannelReadTool.Value,
+                _registryReadTool.Value,
+                _reliabilityHistoryReadTool.Value,
+                _serviceHealthReadTool.Value,
+                _startupInventoryReadTool.Value,
+                _storageHealthReadTool.Value,
+                _windowsWmiReadTool.Value,
+                _safeCommandRunTool.Value,
+                _listFolderContentsTool.Value
 
         ];
     }
@@ -101,11 +109,11 @@ public sealed class ToolBuilder
 
 
 
-    internal IList<AITool> GetWritingAiTools()
+    public IList<AITool> GetWritingAiTools()
     {
         return
         [
-                AIFunctionFactory.Create(FileSystemWriterTool.WriteText)
+                _fileSystemWriterTool.Value
         ];
     }
 }

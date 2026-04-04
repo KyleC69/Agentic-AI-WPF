@@ -310,7 +310,7 @@ public sealed partial class App : Application
 
         _ = services.AddSingleton<HistoryIdentityService>();
         _ = services.AddSingleton<IHistoryIdentityService>(provider => provider.GetRequiredService<HistoryIdentityService>());
-        _ = services.AddSingleton<WebSearchPlugin>();
+        _ = services.AddHttpClient<WebSearchPlugin>();
         _ = services.AddSingleton<SandboxEventLogReader>();
         _ = services.AddSingleton<InstalledUpdatesTool>();
         _ = services.AddSingleton<NetworkConfigurationTool>();
@@ -325,14 +325,17 @@ public sealed partial class App : Application
         _ = services.AddSingleton<WindowsEventChannelReaderTool>();
         _ = services.AddSingleton<WindowsWmiReaderTool>();
         _ = services.AddSingleton<ToolBuilder>();
-        _ = services.AddSingleton<RagDataService>();
+        _ = services.AddSingleton<IAIToolCatalog>(provider => provider.GetRequiredService<ToolBuilder>());
+        _ = services.AddSingleton<IRagDataService, RagDataService>();
+        _ = services.AddSingleton<RagDataService>(provider => (RagDataService)provider.GetRequiredService<IRagDataService>());
         _ = services.AddSingleton<SqlChatHistoryProvider>();
+        _ = services.AddSingleton<ISqlChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
         _ = services.AddSingleton<AIContextRAGInjector>();
         _ = services.AddSingleton<IAgentFactory>(provider =>
         {
             Settings settings = Settings.Default;
 
-            return new AgentFactory(provider.GetRequiredService<ILoggerFactory>(), settings.OllamaHost, settings.OllamaPort, provider.GetRequiredService<SqlChatHistoryProvider>(), provider.GetRequiredService<AIContextRAGInjector>(), provider.GetRequiredService<ToolBuilder>());
+            return new AgentFactory(provider.GetRequiredService<ILoggerFactory>(), settings.OllamaHost, settings.OllamaPort, provider.GetRequiredService<SqlChatHistoryProvider>(), provider.GetRequiredService<AIContextRAGInjector>(), provider.GetRequiredService<IAIToolCatalog>());
         });
 
         _ = services.AddSingleton<ChatHistoryContextInjector>();

@@ -65,9 +65,9 @@ public sealed partial class MainPage
         }
     }
 
-    private static ScrollViewer? FindParentScrollViewer(DependencyObject child)
+    private static ScrollViewer FindParentScrollViewer(DependencyObject child)
     {
-        DependencyObject? parent = VisualTreeHelper.GetParent(child);
+        DependencyObject parent = VisualTreeHelper.GetParent(child);
 
         while (parent != null)
         {

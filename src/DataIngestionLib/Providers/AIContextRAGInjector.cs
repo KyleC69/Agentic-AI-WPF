@@ -34,7 +34,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 {
     private readonly IHistoryIdentityService _historyIdentityService;
     private readonly ILogger<AIContextRAGInjector> _logger;
-    private readonly RagDataService _ragData;
+    private readonly IRagDataService _ragData;
     private readonly ProviderSessionState<HistoryIdentity> _sessionState;
     private static readonly AsyncLocal<TurnState?> CurrentTurnState = new();
 
@@ -44,7 +44,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
 
-    public AIContextRAGInjector(RagDataService ragData, ILogger<AIContextRAGInjector> logger, IHistoryIdentityService historyIdentityService)
+    public AIContextRAGInjector(IRagDataService ragData, ILogger<AIContextRAGInjector> logger, IHistoryIdentityService historyIdentityService)
     {
         Guard.IsNotNull(ragData);
         _ragData = ragData;

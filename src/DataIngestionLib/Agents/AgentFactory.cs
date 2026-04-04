@@ -46,7 +46,6 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     private readonly SqlChatHistoryProvider _chatHistoryProvider;
 
     private bool _disposedValue;
-    private readonly ChatHistoryContextInjector _historyContextInjector;
 
     /// <summary>
     ///     Base client that will be decorated with additional functionality using the builder pattern.
@@ -57,7 +56,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     private readonly int _ollamaPort;
 
     private readonly AIContextRAGInjector _ragContextInjector;
-    private readonly ToolBuilder _toolBuilder;
+    private readonly IAIToolCatalog _toolCatalog;
 
     private static ILoggerFactory _factory = NullLoggerFactory.Instance;
 
@@ -86,20 +85,20 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     /// <exception cref="ArgumentNullException">
     ///     Thrown when any of the provided parameters is <c>null</c>.
     /// </exception>
-    public AgentFactory(ILoggerFactory factory, string ollamaHost, int ollamaPort, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector, ToolBuilder toolBuilder)
+    public AgentFactory(ILoggerFactory factory, string ollamaHost, int ollamaPort, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector, IAIToolCatalog toolCatalog)
     {
         Guard.IsNotNull(factory);
         Guard.IsNotNullOrEmpty(ollamaHost);
         Guard.IsNotNull(chatHistoryProvider);
         Guard.IsNotNull(ragContextInjector);
-        Guard.IsNotNull(toolBuilder);
+        Guard.IsNotNull(toolCatalog);
 
         _factory = factory;
         _chatHistoryProvider = chatHistoryProvider;
         _ollamaHost = ollamaHost;
         _ollamaPort = ollamaPort;
         _ragContextInjector = ragContextInjector;
-        _toolBuilder = toolBuilder;
+        _toolCatalog = toolCatalog;
     }
 
 
@@ -165,7 +164,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                         Id = agentId,
                         Name = agentId,
                         Description = agentDescription,
-                        ChatOptions = new ChatOptions { Instructions = instructions ?? GetModelInstructions(), Temperature = 0.7f, MaxOutputTokens = 10000, Tools = _toolBuilder.GetReadOnlyAiTools() },
+                        ChatOptions = new ChatOptions { Instructions = instructions ?? GetModelInstructions(), Temperature = 0.7f, MaxOutputTokens = 10000, Tools = _toolCatalog.GetReadOnlyAiTools() },
                         ThrowOnChatHistoryProviderConflict = true
                 }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
@@ -183,7 +182,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                 Temperature = 0.7f,
                 MaxOutputTokens = 10000,
                 AllowMultipleToolCalls = true,
-                Tools = _toolBuilder.GetReadOnlyAiTools()
+                Tools = _toolCatalog.GetReadOnlyAiTools()
             },
             AIContextProviders =
                         [

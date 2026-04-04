@@ -13,6 +13,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+using DataIngestionLib.Contracts;
 using DataIngestionLib.EFModels;
 using DataIngestionLib.HistoryModels;
 
@@ -33,7 +34,7 @@ namespace DataIngestionLib.Services;
 
 
 
-public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AIChatHistoryDb> chatHistoryDbFactory, IDbContextFactory<AIRemoteRagContext> remoteRagDbFactory)
+public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AIChatHistoryDb> chatHistoryDbFactory, IDbContextFactory<AIRemoteRagContext> remoteRagDbFactory) : IRagDataService
 {
     private readonly ILogger<RagDataService> _logger = logger;
     private readonly IDbContextFactory<AIChatHistoryDb> _chatHistoryDbFactory = chatHistoryDbFactory;
