@@ -30,7 +30,7 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
     private readonly SemaphoreSlim _initializeGate = new(1, 1);
     private readonly string _initialUserId;
     private readonly ILogger<ChatConversationService> _logger;
-    private readonly IRagDataService _ragDataService;
+    private readonly ISqlChatHistoryProvider _sqlChatHistoryProvider;
 
     private AIAgent? _agent;
     private AgentSession? _agentSession;
@@ -40,16 +40,16 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
 
 
-    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IHistoryIdentityService historyIdentityService, IRagDataService ragDataService)
+    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IHistoryIdentityService historyIdentityService, ISqlChatHistoryProvider sqlChatHistoryProvider)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(agentFactory);
         ArgumentNullException.ThrowIfNull(historyIdentityService);
-        ArgumentNullException.ThrowIfNull(ragDataService);
+        ArgumentNullException.ThrowIfNull(sqlChatHistoryProvider);
 
         _agentFactory = agentFactory;
         _historyIdentityService = historyIdentityService;
-        _ragDataService = ragDataService;
+        _sqlChatHistoryProvider = sqlChatHistoryProvider;
         _initialUserId = historyIdentityService.Current.UserId;
         _logger = factory.CreateLogger<ChatConversationService>();
     }
@@ -89,19 +89,16 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
         ConversationId = HistoryIdentityService.GetConversationId();
 
-        IReadOnlyList<ChatMessage> historyMessages = [.. await _ragDataService.GetChatHistoryByConversationId(Guid.Parse(ConversationId), token).ConfigureAwait(false) ?? []];
-
-        //Tag messages to identify source as history load vs new conversation.
-        IEnumerable<ChatMessage> tagged = historyMessages.Select(m => m.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, this.GetType().Name));
+        IReadOnlyList<ChatMessage> historyMessages = [.. await _sqlChatHistoryProvider.GetMessagesAsync(ConversationId, token).ConfigureAwait(false) ?? []];
 
         //Load the state and attach the history messages to it.
         ProviderSessionState<HistoryIdentity> sessionState = GetRequiredSessionState();
         HistoryIdentity state = sessionState.GetOrInitializeState(session);
-        state.Messages.AddRange(tagged);
+        state.Messages.AddRange(historyMessages);
         // Update the session to reflect the loaded conversation history.
         sessionState.SaveState(session, state);
 
-        return tagged;
+        return historyMessages;
     }
 
 

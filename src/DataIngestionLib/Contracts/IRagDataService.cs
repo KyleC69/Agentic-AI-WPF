@@ -14,11 +14,5 @@ namespace DataIngestionLib.Contracts;
 
 public interface IRagDataService
 {
-    Task<IReadOnlyList<ChatMessage>?> GetChatHistoryByConversationId(Guid conversationId, CancellationToken cancellationToken = default);
-
-
-
-
-
     Task<IEnumerable<ChatMessage>> GetRagDataEntries(string query, CancellationToken cancellationToken = default);
 }

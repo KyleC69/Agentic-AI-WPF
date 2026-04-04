@@ -1,4 +1,4 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
 // Solution: ${File.SolutionName}
 // Project:   ${File.ProjectName}
 // File:         ${File.FileName}
@@ -15,7 +15,6 @@ using System.Diagnostics.CodeAnalysis;
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.EFModels;
-using DataIngestionLib.HistoryModels;
 
 using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
@@ -33,37 +32,10 @@ namespace DataIngestionLib.Services;
 
 
 
-
-public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AIChatHistoryDb> chatHistoryDbFactory, IDbContextFactory<AIRemoteRagContext> remoteRagDbFactory) : IRagDataService
+public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AIRemoteRagContext> remoteRagDbFactory) : IRagDataService
 {
     private readonly ILogger<RagDataService> _logger = logger;
-    private readonly IDbContextFactory<AIChatHistoryDb> _chatHistoryDbFactory = chatHistoryDbFactory;
     private readonly IDbContextFactory<AIRemoteRagContext> _remoteRagDbFactory = remoteRagDbFactory;
-
-
-
-
-
-
-
-
-    public async Task<IReadOnlyList<ChatMessage>?> GetChatHistoryByConversationId(Guid convoId, CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        await using AIChatHistoryDb db = await _chatHistoryDbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-
-
-        //Get previous history messages from DB
-        IReadOnlyList<ChatHistoryMessage> chm = await db.ChatHistoryMessages.Where(m => m.ConversationId == convoId.ToString()).ToListAsync(cancellationToken);
-        //Convert to ChatMessages
-        IReadOnlyList<ChatMessage> cm = chm.ToChatMessages();
-        //Tag messages with source for agent request
-        IReadOnlyList<ChatMessage> tagged = cm.Select(cd => cd.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory)).ToList();
-
-        return (IReadOnlyList<ChatMessage>?)tagged;
-    }
-
-
 
 
 
@@ -130,8 +102,6 @@ public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AI
 
 
 
-
-
     //TODO: move to data service change to EF
     public static string HybridSearch(string query, int topK = 5)
     {
@@ -161,8 +131,6 @@ public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AI
         return JsonConvert.SerializeObject(results);
 
     }
-
-
 
 
 

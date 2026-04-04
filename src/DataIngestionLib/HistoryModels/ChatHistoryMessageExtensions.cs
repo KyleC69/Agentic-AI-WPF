@@ -27,7 +27,7 @@ public static class ChatHistoryMessageExtensions
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        return new ChatMessage(ToChatRole(message.Role), message.Content.Trim()) { MessageId = message.MessageId.ToString("D"), CreatedAt = message.TimestampUtc };
+        return new ChatMessage(ToChatRole(message.Role), message.Content.Trim()) { MessageId = message.MessageId.ToString("D"), CreatedAt = message.CreatedAt };
     }
 
 
@@ -40,7 +40,7 @@ public static class ChatHistoryMessageExtensions
     public static ChatMessage ToChatMessage(this PersistedChatMessage message)
     {
         ArgumentNullException.ThrowIfNull(message);
-        return new ChatMessage(ToChatRole(message.Role), message.Content.Trim()) { MessageId = message.MessageId.ToString("D"), CreatedAt = message.TimestampUtc };
+        return new ChatMessage(ToChatRole(message.Role), message.Content.Trim()) { MessageId = message.MessageId.ToString("D"), CreatedAt = message.CreatedAt };
     }
 
 
@@ -52,7 +52,7 @@ public static class ChatHistoryMessageExtensions
 
     public static IReadOnlyList<ChatMessage> ToChatMessages(this IEnumerable<ChatHistoryMessage>? messages)
     {
-        return messages is null ? [] : (IReadOnlyList<ChatMessage>)messages.Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Content)).OrderBy(m => m.TimestampUtc).ThenBy(m => m.CreatedAt).Select(m => m.ToChatMessage()).ToList();
+        return messages is null ? [] : (IReadOnlyList<ChatMessage>)messages.Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Content)).OrderBy(m => m.CreatedAt).ThenBy(m => m.MessageId).Select(m => m.ToChatMessage()).ToList();
     }
 
 

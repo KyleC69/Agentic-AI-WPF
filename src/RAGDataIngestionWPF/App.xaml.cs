@@ -327,7 +327,6 @@ public sealed partial class App : Application
         _ = services.AddSingleton<ToolBuilder>();
         _ = services.AddSingleton<IAIToolCatalog>(provider => provider.GetRequiredService<ToolBuilder>());
         _ = services.AddSingleton<IRagDataService, RagDataService>();
-        _ = services.AddSingleton<RagDataService>(provider => (RagDataService)provider.GetRequiredService<IRagDataService>());
         _ = services.AddSingleton<SqlChatHistoryProvider>();
         _ = services.AddSingleton<ISqlChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
         _ = services.AddSingleton<AIContextRAGInjector>();
