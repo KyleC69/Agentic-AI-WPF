@@ -18,9 +18,11 @@ using System.Windows.Threading;
 using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.EFModels;
 using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -301,6 +303,9 @@ public sealed partial class App : Application
     private static void RegisterAgentServices(IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+
+        _ = services.AddDbContextFactory<AIChatHistoryDb>();
+        _ = services.AddDbContextFactory<AIRemoteRagContext>();
 
         _ = services.AddSingleton<HistoryIdentityService>();
         _ = services.AddSingleton<IHistoryIdentityService>(provider => provider.GetRequiredService<HistoryIdentityService>());

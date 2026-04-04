@@ -21,6 +21,7 @@ using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Agents.AI;
 using Microsoft.Agents.Core.Serialization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -35,7 +36,7 @@ namespace DataIngestionLib.Providers;
 
 public sealed class ChatHistoryContextInjector : AIContextProvider
 {
-    private readonly AIChatHistoryDb _dbcontext;
+    private readonly IDbContextFactory<AIChatHistoryDb> _dbcontextFactory;
     private readonly IHistoryIdentityService _historyIdentityService;
     private readonly ILogger<ChatHistoryContextInjector> _logger;
     private readonly ProviderSessionState<HistoryIdentity> _sessionStateHelper;
@@ -56,11 +57,11 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
 
 
 
-    public ChatHistoryContextInjector(ILogger<ChatHistoryContextInjector> logger, HistoryIdentityService historyIdentityService) : base(providerInputFilter, storeInputRequestFilter, storeInputResponseFilter)
+    public ChatHistoryContextInjector(ILogger<ChatHistoryContextInjector> logger, HistoryIdentityService historyIdentityService, IDbContextFactory<AIChatHistoryDb> dbcontextFactory) : base(providerInputFilter, storeInputRequestFilter, storeInputResponseFilter)
     {
         _logger = logger;
         _historyIdentityService = historyIdentityService;
-        _dbcontext = new AIChatHistoryDb();
+        _dbcontextFactory = dbcontextFactory;
 
         // Database keys are stored in the state bag of the session for easy access by the providers and context injectors,
         _sessionStateHelper = new ProviderSessionState<HistoryIdentity>(currentSession => _historyIdentityService.Current, this.GetType().Name);

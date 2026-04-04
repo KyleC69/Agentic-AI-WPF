@@ -5,15 +5,12 @@
 // Author: Kyle L. Crowder
 // Build Num: 095219
 
-
-
 using System.Collections.ObjectModel;
 using System.Windows;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts.Services;
 
 using Microsoft.Extensions.AI;
@@ -23,14 +20,7 @@ using RAGDataIngestionWPF.Models;
 
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
-
-
-
 namespace RAGDataIngestionWPF.ViewModels;
-
-
-
-
 
 public sealed partial class MainViewModel : ObservableObject, IDisposable, INavigationAware
 {
@@ -38,6 +28,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     private readonly IHistoryIdentityService _historyIdentity;
     private bool _historyLoaded;
     private CancellationTokenSource _tokenSource;
+
     [ObservableProperty] private int cachedInputTokenCount;
     [ObservableProperty] private int inputTokenCount;
     [ObservableProperty] private int outputTokenCount;
@@ -49,13 +40,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     [ObservableProperty] private int systemTokenCount;
     [ObservableProperty] private int toolTokenCount;
     [ObservableProperty] private int totalTokenCount;
-
-
-
-
-
-
-
 
     public MainViewModel(IChatConversationService chatConversationService, IHistoryIdentityService historyIdentityService)
     {
@@ -73,25 +57,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
         // Need to link this back to applicaion lifecycle
         _tokenSource = new CancellationTokenSource();
-        TokenAccountingMiddleware.SystemTokensChanged += (_, e) => UpdateSystemTokenCount(e);
-        TokenAccountingMiddleware.CachedInputTokensChanged += (_, e) => UpdateCachedInputTokenCount(e);
-        TokenAccountingMiddleware.InputTokensChanged += (_, e) => UpdateInputTokenCount(e);
-        TokenAccountingMiddleware.OutputTokensChanged += (_, e) => UpdateOutputTokenCount(e);
-        TokenAccountingMiddleware.RagTokensChanged += (_, e) => UpdateRagTokenCount(e);
-        TokenAccountingMiddleware.ReasoningTokensChanged += (_, e) => UpdateReasoningTokenCount(e);
-        TokenAccountingMiddleware.SessionTokensChanged += (_, e) => UpdateSessionTokenCount(e);
-        TokenAccountingMiddleware.ToolTokensChanged += (_, e) => UpdateToolTokenCount(e);
-        TokenAccountingMiddleware.TotalTokensChanged += (_, e) => UpdateTotalTokenCount(e);
-
-
     }
-
-
-
-
-
-
-
 
     public IRelayCommand CancelMessageCommand { get; }
 
@@ -133,26 +99,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     public IAsyncRelayCommand SendMessageCommand { get; }
 
-
-
-
-
-
-
-
     public void Dispose()
     {
         _tokenSource?.Dispose();
         _chatConversationService.BusyStateChanged -= OnBusyStateChange;
-
     }
-
-
-
-
-
-
-
 
     /// <summary>
     ///     Called when the view model is navigated away from.
@@ -164,13 +115,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     public void OnNavigatedFrom()
     {
     }
-
-
-
-
-
-
-
 
     /// <summary>
     ///     Called when the view model is navigated to.
@@ -186,7 +130,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     /// </remarks>
     public async void OnNavigatedTo(object parameter)
     {
-
         if (_historyLoaded)
         {
             return;
@@ -199,7 +142,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             var historyMessages = await _chatConversationService.LoadConversationHistoryAsync(_tokenSource.Token).ConfigureAwait(true);
 
             //Add the history messages to the UI collection
-            foreach (ChatMessage historyMessage in historyMessages) Messages.Add(CreateUiMessage(historyMessage));
+            foreach (ChatMessage historyMessage in historyMessages)
+            {
+                Messages.Add(CreateUiMessage(historyMessage));
+            }
 
             //Add old messages to the context so agent can pick up where it left off.
             _historyIdentity.Current.Messages.AddRange(historyMessages);
@@ -212,48 +158,20 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
     }
 
-
-
-
-
-
-
-
     private bool CanCancelMessage()
     {
         return IsBusy;
     }
-
-
-
-
-
-
-
 
     private void CancelMessage()
     {
         _tokenSource?.Cancel();
     }
 
-
-
-
-
-
-
-
     private bool CanSendMessage()
     {
         return !IsBusy && !string.IsNullOrWhiteSpace(MessageInput);
     }
-
-
-
-
-
-
-
 
     private static ChatMessageDisplayItem CreateUiMessage(ChatMessage message)
     {
@@ -262,24 +180,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         return ChatMessageDisplayItem.Create(message.Role, message.Text);
     }
 
-
-
-
-
-
-
-
     private void OnBusyStateChange(object sender, bool e)
     {
         RunOnUiThread(() => IsBusy = e);
     }
-
-
-
-
-
-
-
 
     private async Task SendMessageAsync()
     {
@@ -297,8 +201,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         //Clear UI input
         MessageInput = string.Empty;
 
-
-
         try
         {
             ChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _tokenSource.Token);
@@ -313,17 +215,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             _tokenSource?.Dispose();
             _tokenSource = null;
         }
-
-
-
     }
-
-
-
-
-
-
-
 
     private async Task StartNewConversationAsync(CancellationToken arg)
     {
@@ -333,112 +225,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     }
 
 
-
-
-
-
-
-
-    private void UpdateCachedInputTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
-    {
-        RunOnUiThread(() => CachedInputTokenCount = e.CurrentValue);
-    }
-
-
-
-
-
-
-
-
-    private void UpdateInputTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
-    {
-        RunOnUiThread(() => InputTokenCount = e.CurrentValue);
-    }
-
-
-
-
-
-
-
-
-    private void UpdateOutputTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
-    {
-        RunOnUiThread(() => OutputTokenCount = e.CurrentValue);
-    }
-
-
-
-
-
-
-
-
-    private void UpdateRagTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
-    {
-        RunOnUiThread(() => RagTokenCount = e.CurrentValue);
-    }
-
-
-
-
-
-
-
-
-    private void UpdateReasoningTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
-    {
-        RunOnUiThread(() => ReasoningTokenCount = e.CurrentValue);
-    }
-
-
-
-
-
-
-
-
-    private void UpdateSessionTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
-    {
-        RunOnUiThread(() => SessionTokenCount = e.CurrentValue);
-    }
-
-
-
-
-
-
-
-
-    private void UpdateSystemTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
-    {
-        RunOnUiThread(() => SystemTokenCount = e.CurrentValue);
-    }
-
-
-
-
-
-
-
-
-    private void UpdateToolTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
-    {
-        RunOnUiThread(() => ToolTokenCount = e.CurrentValue);
-    }
-
-
-
-
-
-
-
-
-    private void UpdateTotalTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
-    {
-        RunOnUiThread(() => TotalTokenCount = e.CurrentValue);
-    }
 
     private static void RunOnUiThread(Action updateAction)
     {

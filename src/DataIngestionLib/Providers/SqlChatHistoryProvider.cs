@@ -40,7 +40,7 @@ namespace DataIngestionLib.Providers;
 
 public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 {
-    private readonly AIChatHistoryDb? _dbcontext;
+    private readonly IDbContextFactory<AIChatHistoryDb> _dbcontextFactory;
     private readonly IHistoryIdentityService _historyIdentityService;
 
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -62,13 +62,15 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
-    public SqlChatHistoryProvider(ILogger<SqlChatHistoryProvider> logger, IHistoryIdentityService historyIdentityService, Func<AgentSession, HistoryIdentity>? stateInitializer = null, string? stateKey = null)
+    public SqlChatHistoryProvider(ILogger<SqlChatHistoryProvider> logger, IHistoryIdentityService historyIdentityService, IDbContextFactory<AIChatHistoryDb> dbcontextFactory, Func<AgentSession, HistoryIdentity>? stateInitializer = null, string? stateKey = null)
     {
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(historyIdentityService);
+        ArgumentNullException.ThrowIfNull(dbcontextFactory);
 
         _logger = logger;
         _historyIdentityService = historyIdentityService;
+        _dbcontextFactory = dbcontextFactory;
 
 
         // Database keys are stored in the state bag of the session for easy access by the providers and context injectors,
@@ -408,7 +410,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     public async ValueTask<string?> GetLatestConversationIdAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using AIChatHistoryDb dbContext = new();
+        await using AIChatHistoryDb dbContext = await _dbcontextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var latest = dbContext.ChatHistoryMessages.AsNoTracking().Last().ConversationId;
         return string.IsNullOrWhiteSpace(latest) ? null : latest;
     }
@@ -442,7 +444,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     public async ValueTask<IEnumerable<ChatMessage>?> GetMessagesAsync(string conversationId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using AIChatHistoryDb db = new();
+        await using AIChatHistoryDb db = await _dbcontextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         _logger.LogTrace("Fetching chat history messages for conversation {ConversationId}", conversationId);
         List<ChatHistoryMessage> ordered = db.ChatHistoryMessages.Where(message => message.ConversationId == conversationId).OrderBy(message => message.CreatedAt).ToList();
@@ -563,7 +565,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
     private async ValueTask PersistInteractionAsync(HistoryIdentity identity, IEnumerable<ChatMessage> messages, CancellationToken cancellationToken)
     {
-        using AIChatHistoryDb dbContext = new();
+        await using AIChatHistoryDb dbContext = await _dbcontextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         List<ChatHistoryMessage> entities = [];
         List<ChatMessage> user = messages.Where(m => m.Role == ChatRole.User).ToList();

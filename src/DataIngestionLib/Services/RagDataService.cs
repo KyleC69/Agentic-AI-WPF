@@ -33,9 +33,11 @@ namespace DataIngestionLib.Services;
 
 
 
-public class RagDataService(ILogger<RagDataService> logger)
+public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AIChatHistoryDb> chatHistoryDbFactory, IDbContextFactory<AIRemoteRagContext> remoteRagDbFactory)
 {
     private readonly ILogger<RagDataService> _logger = logger;
+    private readonly IDbContextFactory<AIChatHistoryDb> _chatHistoryDbFactory = chatHistoryDbFactory;
+    private readonly IDbContextFactory<AIRemoteRagContext> _remoteRagDbFactory = remoteRagDbFactory;
 
 
 
@@ -44,13 +46,14 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
 
-    public static async Task<IReadOnlyList<ChatMessage>?> GetChatHistoryByConversationId(Guid convoId)
+    public async Task<IReadOnlyList<ChatMessage>?> GetChatHistoryByConversationId(Guid convoId, CancellationToken cancellationToken = default)
     {
-        AIChatHistoryDb db = new();
+        cancellationToken.ThrowIfCancellationRequested();
+        await using AIChatHistoryDb db = await _chatHistoryDbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
 
         //Get previous history messages from DB
-        IReadOnlyList<ChatHistoryMessage> chm = await db.ChatHistoryMessages.Where(m => m.ConversationId == convoId.ToString()).ToListAsync();
+        IReadOnlyList<ChatHistoryMessage> chm = await db.ChatHistoryMessages.Where(m => m.ConversationId == convoId.ToString()).ToListAsync(cancellationToken);
         //Convert to ChatMessages
         IReadOnlyList<ChatMessage> cm = chm.ToChatMessages();
         //Tag messages with source for agent request
@@ -93,10 +96,11 @@ public class RagDataService(ILogger<RagDataService> logger)
     /// </remarks>
     /// <exception cref="Exception">Thrown when an error occurs while fetching RAG data entries.</exception>
     [Experimental("KC00101")]
-    public async Task<IEnumerable<ChatMessage>> GetRagDataEntries(string query)
+    public async Task<IEnumerable<ChatMessage>> GetRagDataEntries(string query, CancellationToken cancellationToken = default)
     {
         List<ChatMessage> rags = new();
-        using AIRemoteRagContext db = new();
+        cancellationToken.ThrowIfCancellationRequested();
+        await using AIRemoteRagContext db = await _remoteRagDbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         List<sp_LearnDocs_Search_VectorResult>? results = await db.Procedures.sp_LearnDocs_Search_VectorAsync(query, null);
 
