@@ -311,7 +311,7 @@ public sealed partial class App : Application
         {
             Settings settings = Settings.Default;
 
-            return new AgentFactory(provider.GetRequiredService<ILoggerFactory>(), settings.OllamaHost, settings.OllamaPort, provider.GetRequiredService<SqlChatHistoryProvider>(), provider.GetRequiredService<ChatHistoryContextInjector>(), provider.GetRequiredService<AIContextRAGInjector>());
+            return new AgentFactory(provider.GetRequiredService<ILoggerFactory>(), settings.OllamaHost, settings.OllamaPort, provider.GetRequiredService<SqlChatHistoryProvider>(), provider.GetRequiredService<AIContextRAGInjector>());
         });
 
         _ = services.AddSingleton<ChatHistoryContextInjector>();

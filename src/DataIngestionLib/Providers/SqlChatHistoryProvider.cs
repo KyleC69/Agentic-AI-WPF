@@ -47,6 +47,8 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     private readonly ILogger<SqlChatHistoryProvider> _logger;
     private readonly ProviderSessionState<HistoryIdentity> _sessionState;
     private readonly int _charsPerToken = 4;
+    private readonly int _hardTokenCap = 128_000;
+    private readonly int _targetWindowTokens = 100_000;
 
     private static readonly HashSet<AgentRequestMessageSourceType> IgnoredRequestSourceTypes =
     [
@@ -135,7 +137,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     ///     <see cref="T:Microsoft.Extensions.AI.ChatMessage" />
     ///     instances in ascending chronological order (oldest first).
     /// </returns>
-    protected override ValueTask<IEnumerable<ChatMessage>> ProvideChatHistoryAsync(InvokingContext context, CancellationToken cancellationToken = new CancellationToken())
+    protected override async ValueTask<IEnumerable<ChatMessage>?> ProvideChatHistoryAsync(InvokingContext context, CancellationToken cancellationToken = new CancellationToken())
     {
         if (context is null)
         {
@@ -144,13 +146,37 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
         }
 
         HistoryIdentity state = _sessionState.GetOrInitializeState(context.Session);
-
+        List<(ChatMessage Message, int EstimatedTokens)> stored = new();
         try
         {
-            ValueTask<IEnumerable<ChatMessage>> historyMessages = this.GetMessagesAsync(state.ConversationId, cancellationToken);
+            //Get messages from database for this conversation - Previously tagged with source type ChatHistory, so we know these are from the database and not from the current turn's messages
+            IEnumerable<ChatMessage> historyMessages = await this.GetMessagesAsync(state.ConversationId, cancellationToken);
+
+            //Get new messages from this turn
             List<ChatMessage> messages = state.Messages;
+
+            // Tag new messages with source type ChatHistory so we can filter them out on future turns and avoid duplication, and so we can identify them if they need to be merged back into the history on future turns.
             IEnumerable<ChatMessage> tagged = messages.Select(msg => msg.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, nameof(SqlChatHistoryProvider)));
-            return new(tagged);
+
+            //Estimate tokens for new messages and add to list of stored messages to be filtered and windowed together with historical messages from the database
+            foreach (ChatMessage tag in tagged)
+            {
+                stored.Add((tag, this.EstimateTokenCount(tag)));
+            }
+
+            if (historyMessages is not null)//  Only need this one time to catch db up to date with the current turn's messages, after that the current turn's messages will be included in the stored list and filtered/windowed together with any remaining historical messages on future turns, so we can avoid the extra overhead of estimating tokens for all historical messages on every turn.
+            {
+                foreach (ChatMessage old in historyMessages)
+                {
+                    stored.Add((old, this.EstimateTokenCount(old)));
+                }
+            }
+
+            // Filter and window messages to fit within token limits, then publish a context snapshot
+            // so UI token counters reflect the active sliding window before the next model response.
+            //       IReadOnlyList<ChatMessage> contextWindow = BuildSlidingWindow(stored, _targetWindowTokens, _hardTokenCap);
+            //   var unused = TokenAccountingMiddleware.CreateContextSnapshot(contextWindow, "history.provider.sliding_window");
+            return tagged;
         }
         catch (Exception)
         {
@@ -240,7 +266,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
         try
         {
             HistoryIdentity state = _sessionState.GetOrInitializeState(context.Session);
-            var newMessages = context.RequestMessages.Concat(context.ResponseMessages ?? []).ToList();
+            List<ChatMessage> newMessages = context.RequestMessages.Concat(context.ResponseMessages ?? []).ToList();
 
             _logger.LogTrace("Beginning to save chat messages for conversation {0}", state.ConversationId);
             if (newMessages.Count == 0)
@@ -285,52 +311,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
-    private static IReadOnlyList<ChatMessage> BuildSlidingWindow(IReadOnlyList<(ChatMessage Message, int EstimatedTokens)> chronologicalMessages, int targetWindowTokens, int hardTokenCap)
-    {
-        if (chronologicalMessages.Count == 0)
-        {
-            return [];
-        }
-
-        var selected = new List<ChatMessage>(chronologicalMessages.Count);
-        var tokenTotal = 0;
-
-        // Walk backwards so we keep the most recent messages and let older ones fall out first.
-        for (var i = chronologicalMessages.Count - 1; i >= 0; i--)
-        {
-            (ChatMessage Message, int EstimatedTokens) = chronologicalMessages[i];
-
-            if (tokenTotal + EstimatedTokens > targetWindowTokens)
-            {
-                continue;
-            }
-
-            selected.Add(Message);
-            tokenTotal += EstimatedTokens;
-        }
-
-        if (selected.Count == 0)
-        {
-            return [];
-        }
-
-        // Safety guard in case estimates changed over time or legacy rows have invalid values.
-        while (tokenTotal > hardTokenCap && selected.Count > 0)
-        {
-            ChatMessage first = selected[0];
-            tokenTotal -= Math.Max(1, EstimateTokenCount(first, 4));
-            selected.RemoveAt(0);
-        }
-
-        selected.Reverse();
-        return selected;
-    }
-
-
-
-
-
-
 
 
     /// <summary>
@@ -347,16 +327,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     }
 
 
-
-
-
-
-
-
-    private async ValueTask<AIChatHistoryDb> CreateDbContextAsync(CancellationToken cancellationToken)
-    {
-        return new AIChatHistoryDb();
-    }
 
 
 
@@ -475,7 +445,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
         await using AIChatHistoryDb db = new();
 
         _logger.LogTrace("Fetching chat history messages for conversation {ConversationId}", conversationId);
-        var ordered = db.ChatHistoryMessages.Where(message => message.ConversationId == conversationId).OrderBy(message => message.CreatedAt).ToList();
+        List<ChatHistoryMessage> ordered = db.ChatHistoryMessages.Where(message => message.ConversationId == conversationId).OrderBy(message => message.CreatedAt).ToList();
         if (ordered.Count <= 0)
         {
             _logger.LogError("Retrieval of chathistory messages return no messages for conversation {ConversationId}", conversationId);
@@ -596,8 +566,11 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
         using AIChatHistoryDb dbContext = new();
 
         List<ChatHistoryMessage> entities = [];
-        entities.AddRange(this.ToEntities(messages, identity));
-
+        List<ChatMessage> user = messages.Where(m => m.Role == ChatRole.User).ToList();
+        List<ChatMessage> agent = messages.Where(m => m.Role == ChatRole.Assistant).ToList();
+        //Need to add users first to preserve order.
+        entities.AddRange(this.ToEntities(user, identity));
+        entities.AddRange(this.ToEntities(agent, identity));
         if (entities.Count == 0)
         {
             _logger.LogError("No chat history messages to persist. This indicates a potential issue with the message collection or an invalid response from an agent.");
@@ -695,7 +668,8 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
                 TimestampUtc = DateTime.Now,
                 Metadata = this.SerializeMetadata(message.AdditionalProperties),
                 CreatedAt = this.CheckDateStamp(message.CreatedAt),
-                Enabled = true
+                Enabled = true,
+                TokenCnt = this.EstimateTokenCount(message)
             });
         }
 

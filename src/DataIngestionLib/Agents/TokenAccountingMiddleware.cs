@@ -1,17 +1,23 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         TokenAccountingMiddleware.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095138
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
 
 
@@ -24,9 +30,11 @@ namespace DataIngestionLib.Agents;
 
 public sealed class TokenAccountingMiddleware : DelegatingChatClient
 {
+    private const int CHARS_PER_TOKEN = 4;
     private readonly Action<TokenUsageSnapshot>? _tokenSnapshotSink;
+    private readonly ILogger<TokenAccountingMiddleware> _logger;
     private static readonly object CategoryEventsGate = new();
-    private static readonly AsyncLocal<TurnState?> CurrentTurnState = new();
+    private static readonly JsonSerializerOptions JsonOptions = new();
     private static CategoryCounts LastPublishedCounts;
 
 
@@ -36,10 +44,11 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
 
 
-    public TokenAccountingMiddleware(IChatClient innerClient, Action<TokenUsageSnapshot>? tokenSnapshotSink = null) : base(innerClient)
+    public TokenAccountingMiddleware(IChatClient innerClient, ILogger<TokenAccountingMiddleware> logger, Action<TokenUsageSnapshot>? tokenSnapshotSink = null) : base(innerClient)
     {
         ArgumentNullException.ThrowIfNull(innerClient);
-
+        ArgumentNullException.ThrowIfNull(logger);
+        _logger = logger;
         _tokenSnapshotSink = tokenSnapshotSink;
     }
 
@@ -52,10 +61,25 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
     public override async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        MiddlewareRequestContext requestContext = await OnRequestAsync(messages, cancellationToken).ConfigureAwait(false);
-        ChatResponse response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
+        ChatResponse response = null!;
+        try
+        {
+            MiddlewareRequestContext requestContext = await this.OnRequestAsync(messages, cancellationToken).ConfigureAwait(false);
+            response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
 
-        await OnResponseAsync(requestContext, response, cancellationToken).ConfigureAwait(false);
+            return response;
+        }
+        catch (TaskCanceledException)
+        {
+            _logger.LogError("Agent turn was canceled. This may be due to a timeout or an explicit cancellation request. Ensure that the configured timeouts are sufficient for the expected processing time, and check for any cancellation tokens that may be triggered prematurely.");
+            // Log the error and re-throw to maintain original exception behavior.
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred during the agent turn.");
+            throw;
+        }
+
 
         return response;
     }
@@ -69,7 +93,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        MiddlewareRequestContext requestContext = await OnRequestAsync(messages, cancellationToken).ConfigureAwait(false);
+        _ = await this.OnRequestAsync(messages, cancellationToken).ConfigureAwait(false);
         List<ChatResponseUpdate> updates = [];
 
         await foreach (ChatResponseUpdate update in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
@@ -78,8 +102,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
             yield return update;
         }
 
-        ChatResponse response = updates.Count == 0 ? new ChatResponse() : updates.ToChatResponse();
-        await OnResponseAsync(requestContext, response, cancellationToken).ConfigureAwait(false);
+        _ = updates.Count == 0 ? new ChatResponse() : updates.ToChatResponse();
     }
 
 
@@ -119,7 +142,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
         foreach (ChatMessage message in messages)
         {
-            var tokenCount = EstimateTokens([message.Text]);
+            var tokenCount = EstimateMessageTokens(message);
             var role = message.Role.Value;
             if (string.Equals(role, AIChatRole.System.Value, StringComparison.OrdinalIgnoreCase))
             {
@@ -153,21 +176,21 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
     {
         ArgumentNullException.ThrowIfNull(messages);
 
-        var capturedMessages = messages as IReadOnlyList<ChatMessage> ?? [.. messages];
+        IReadOnlyList<ChatMessage> capturedMessages = messages as IReadOnlyList<ChatMessage> ?? [.. messages];
         ContextBuckets buckets = ClassifyContextBuckets(capturedMessages);
         Dictionary<string, long> additionalCounts = new(StringComparer.OrdinalIgnoreCase)
         {
-                ["turn_model_call_count"] = 0,
-                ["turn_nested_model_call_count"] = 0,
-                ["turn_estimated_input_tokens"] = 0,
-                ["context_total_tokens"] = buckets.Total,
-                ["context_session_tokens"] = buckets.Session,
-                ["context_rag_tokens"] = buckets.Rag,
-                ["context_tool_tokens"] = buckets.Tool,
-                ["context_system_tokens"] = buckets.System,
-                ["usage_rag_tokens"] = 0,
-                ["usage_tool_tokens"] = 0,
-                ["usage_system_tokens"] = 0
+            ["turn_model_call_count"] = 0,
+            ["turn_nested_model_call_count"] = 0,
+            ["turn_estimated_input_tokens"] = 0,
+            ["context_total_tokens"] = buckets.Total,
+            ["context_session_tokens"] = buckets.Session,
+            ["context_rag_tokens"] = buckets.Rag,
+            ["context_tool_tokens"] = buckets.Tool,
+            ["context_system_tokens"] = buckets.System,
+            ["usage_rag_tokens"] = 0,
+            ["usage_tool_tokens"] = 0,
+            ["usage_system_tokens"] = 0
         };
 
         TokenUsageSnapshot snapshot = new(TotalTokens: buckets.Total, SessionTokens: buckets.Session, RagTokens: buckets.Rag, ToolTokens: buckets.Tool, SystemTokens: buckets.System, InputTokens: 0, OutputTokens: 0, CachedInputTokens: 0, ReasoningTokens: 0, Source: source, UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
@@ -205,6 +228,33 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
 
 
+    private static int EstimateMessageTokens(ChatMessage message)
+    {
+        var serialized = JsonSerializer.Serialize(message, JsonOptions);
+        return Math.Max(1, (int)Math.Ceiling(serialized.Length / (double)CHARS_PER_TOKEN));
+    }
+
+
+
+
+
+
+    private static int EstimateMessagesTokens(IEnumerable<ChatMessage> messages)
+    {
+        var total = 0;
+        foreach (ChatMessage message in messages)
+        {
+            total += EstimateMessageTokens(message);
+        }
+
+        return total;
+    }
+
+
+
+
+
+
 
 
     private static long GetAdditionalCount(UsageDetails usageDetails, params string[] keys)
@@ -216,11 +266,13 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
         HashSet<string> keySet = new(keys, StringComparer.OrdinalIgnoreCase);
         long total = 0;
-        foreach (var (key, value) in usageDetails.AdditionalCounts)
+        foreach ((var key, var value) in usageDetails.AdditionalCounts)
+        {
             if (keySet.Contains(key))
             {
                 total += value;
             }
+        }
 
         return total;
     }
@@ -257,12 +309,12 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
         return new UsageDetails
         {
-                InputTokenCount = inputTokens,
-                OutputTokenCount = outputTokens,
-                TotalTokenCount = totalTokens,
-                CachedInputTokenCount = usage.CachedInputTokenCount ?? 0,
-                ReasoningTokenCount = usage.ReasoningTokenCount ?? 0,
-                AdditionalCounts = usage.AdditionalCounts is { Count: > 0 } ? new AdditionalPropertiesDictionary<long>(usage.AdditionalCounts) : new AdditionalPropertiesDictionary<long>()
+            InputTokenCount = inputTokens,
+            OutputTokenCount = outputTokens,
+            TotalTokenCount = totalTokens,
+            CachedInputTokenCount = usage.CachedInputTokenCount ?? 0,
+            ReasoningTokenCount = usage.ReasoningTokenCount ?? 0,
+            AdditionalCounts = usage.AdditionalCounts is { Count: > 0 } ? new AdditionalPropertiesDictionary<long>(usage.AdditionalCounts) : new AdditionalPropertiesDictionary<long>()
         };
     }
 
@@ -277,91 +329,17 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var capturedMessages = messages as IReadOnlyList<ChatMessage> ?? [.. messages];
-        var estimatedInputTokens = EstimateTokens(capturedMessages.Select(message => message.Text));
+        IReadOnlyList<ChatMessage> capturedMessages = messages as IReadOnlyList<ChatMessage> ?? [.. messages];
+        var estimatedInputTokens = EstimateMessagesTokens(capturedMessages);
 
         MiddlewareRequestContext requestContext = new(capturedMessages, estimatedInputTokens);
 
-        TurnState state = CurrentTurnState.Value ?? new TurnState();
-        CurrentTurnState.Value = state;
-
-        state.Depth++;
-        state.ModelCallCount++;
-        state.EstimatedInputTokens += estimatedInputTokens;
-
-        if (state.Depth == 1)
-        {
-            state.ContextBuckets = ClassifyContextBuckets(capturedMessages);
-        }
 
         return Task.FromResult(requestContext);
     }
 
 
 
-
-
-
-
-
-    internal Task OnResponseAsync(MiddlewareRequestContext requestContext, ChatResponse response, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        TurnState? state = CurrentTurnState.Value;
-        if (state is null)
-        {
-            return Task.CompletedTask;
-        }
-
-        UsageDetails normalizedUsage = NormalizeUsage(requestContext.Messages, response);
-
-        state.AggregatedUsage.InputTokenCount = (state.AggregatedUsage.InputTokenCount ?? 0) + (normalizedUsage.InputTokenCount ?? 0);
-        state.AggregatedUsage.OutputTokenCount = (state.AggregatedUsage.OutputTokenCount ?? 0) + (normalizedUsage.OutputTokenCount ?? 0);
-        state.AggregatedUsage.TotalTokenCount = (state.AggregatedUsage.TotalTokenCount ?? 0) + (normalizedUsage.TotalTokenCount ?? 0);
-        state.AggregatedUsage.CachedInputTokenCount = (state.AggregatedUsage.CachedInputTokenCount ?? 0) + (normalizedUsage.CachedInputTokenCount ?? 0);
-        state.AggregatedUsage.ReasoningTokenCount = (state.AggregatedUsage.ReasoningTokenCount ?? 0) + (normalizedUsage.ReasoningTokenCount ?? 0);
-
-        if (normalizedUsage.AdditionalCounts is not null)
-        {
-            state.AggregatedUsage.AdditionalCounts ??= new AdditionalPropertiesDictionary<long>();
-            foreach (var (key, value) in normalizedUsage.AdditionalCounts) state.AggregatedUsage.AdditionalCounts[key] = state.AggregatedUsage.AdditionalCounts.TryGetValue(key, out var existingValue) ? existingValue + value : value;
-        }
-
-        state.Depth--;
-        if (state.Depth > 0)
-        {
-            return Task.CompletedTask;
-        }
-
-        ContextBuckets buckets = state.ContextBuckets;
-        UsageDetails aggregatedUsage = state.AggregatedUsage;
-
-        Dictionary<string, long> additionalCounts = new(StringComparer.OrdinalIgnoreCase)
-        {
-                ["turn_model_call_count"] = state.ModelCallCount,
-                ["turn_nested_model_call_count"] = Math.Max(0, state.ModelCallCount - 1),
-                ["turn_estimated_input_tokens"] = state.EstimatedInputTokens,
-                ["context_total_tokens"] = buckets.Total,
-                ["context_session_tokens"] = buckets.Session,
-                ["context_rag_tokens"] = buckets.Rag,
-                ["context_tool_tokens"] = buckets.Tool,
-                ["context_system_tokens"] = buckets.System,
-                ["usage_rag_tokens"] = GetAdditionalCount(aggregatedUsage, "rag", "rag_tokens", "rag_token_count", "rag_context", "retrieval", "retrieval_tokens", "context", "context_tokens"),
-                ["usage_tool_tokens"] = GetAdditionalCount(aggregatedUsage, "tool", "tool_tokens", "tool_token_count", "function", "function_tokens"),
-                ["usage_system_tokens"] = GetAdditionalCount(aggregatedUsage, "system", "system_tokens", "system_token_count", "instruction", "instruction_tokens")
-        };
-
-        foreach (var (key, value) in aggregatedUsage.AdditionalCounts ?? new AdditionalPropertiesDictionary<long>()) additionalCounts[key] = value;
-
-        TokenUsageSnapshot snapshot = new(TotalTokens: ClampToInt(aggregatedUsage.TotalTokenCount ?? 0), SessionTokens: buckets.Session, RagTokens: buckets.Rag, ToolTokens: buckets.Tool, SystemTokens: buckets.System, InputTokens: ClampToInt(aggregatedUsage.InputTokenCount ?? 0), OutputTokens: ClampToInt(aggregatedUsage.OutputTokenCount ?? 0), CachedInputTokens: ClampToInt(aggregatedUsage.CachedInputTokenCount ?? 0), ReasoningTokens: ClampToInt(aggregatedUsage.ReasoningTokenCount ?? 0), Source: "middleware.turn.consolidated", UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
-
-        PublishCategoryEvents(snapshot);
-        _tokenSnapshotSink?.Invoke(snapshot);
-        CurrentTurnState.Value = null;
-
-        return Task.CompletedTask;
-    }
 
 
 
@@ -401,7 +379,10 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
             LastPublishedCounts = currentCounts;
         }
 
-        foreach (PendingCategoryChange pendingChange in pendingChanges) pendingChange.Handler?.Invoke(null, pendingChange.Args);
+        foreach (PendingCategoryChange pendingChange in pendingChanges)
+        {
+            pendingChange.Handler?.Invoke(null, pendingChange.Args);
+        }
     }
 
 
@@ -476,10 +457,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
         public string Category { get; }
         public int CurrentValue { get; }
 
-        public int Delta
-        {
-            get { return CurrentValue - PreviousValue; }
-        }
+        public int Delta => CurrentValue - PreviousValue;
 
         public int PreviousValue { get; }
 

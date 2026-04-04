@@ -31,5 +31,5 @@ public class sp_LearnDocs_Search_VectorResult
     public string? Content { get; set; } = string.Empty;
     public double? Distance { get; set; }
     public string? FailureInfo { get; set; } = string.Empty;
-    public int Id { get; set; }
+    public int? Id { get; set; }
 }

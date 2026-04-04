@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         AgentFactory.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095137
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -81,16 +85,14 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     /// <exception cref="ArgumentNullException">
     ///     Thrown when any of the provided parameters is <c>null</c>.
     /// </exception>
-    public AgentFactory(ILoggerFactory factory, string ollamaHost, int ollamaPort, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector, AIContextRAGInjector ragContextInjector)
+    public AgentFactory(ILoggerFactory factory, string ollamaHost, int ollamaPort, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector)
     {
         Guard.IsNotNull(factory);
         Guard.IsNotNullOrEmpty(ollamaHost);
         Guard.IsNotNull(chatHistoryProvider);
-        Guard.IsNotNull(contextInjector);
         Guard.IsNotNull(ragContextInjector);
 
         _factory = factory;
-        _historyContextInjector = contextInjector;
         _chatHistoryProvider = chatHistoryProvider;
         _ollamaHost = ollamaHost;
         _ollamaPort = ollamaPort;
@@ -107,7 +109,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
+        this.Dispose(disposing: true);
     }
 
 
@@ -152,7 +154,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         Uri ollamaUri = new UriBuilder(_ollamaHost) { Port = _ollamaPort }.Uri;
         _innerClient = new OllamaApiClient(ollamaUri, model);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
-        _innerClient = new TokenAccountingMiddleware(_innerClient);
+        //  _innerClient = new TokenAccountingMiddleware(_innerClient, _factory.CreateLogger<TokenAccountingMiddleware>());
 
 #if !SQL
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
@@ -168,26 +170,26 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 #else
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-                {
-                        Id = agentId,
-                        Name = agentId,
-                        Description = agentDescription,
-                        ChatOptions = new ChatOptions
-                        {
-                                Instructions = instructions ?? GetModelInstructions(),
-                                Temperature = 0.7f,
-                                MaxOutputTokens = 10000,
-                                AllowMultipleToolCalls = true,
-                                Tools = ToolBuilder.GetReadOnlyAiTools()
-                        },
-                        AIContextProviders =
+        {
+            Id = agentId,
+            Name = agentId,
+            Description = agentDescription,
+            ChatOptions = new ChatOptions
+            {
+                Instructions = instructions ?? GetModelInstructions(),
+                Temperature = 0.7f,
+                MaxOutputTokens = 10000,
+                AllowMultipleToolCalls = true,
+                Tools = ToolBuilder.GetReadOnlyAiTools()
+            },
+            AIContextProviders =
                         [
 
                                 _ragContextInjector
                         ],
-                        ThrowOnChatHistoryProviderConflict = true,
-                        ChatHistoryProvider = _chatHistoryProvider
-                }, loggerFactory: _factory).AsBuilder()
+            ThrowOnChatHistoryProviderConflict = true,
+            ChatHistoryProvider = _chatHistoryProvider
+        }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
                 .Build();
 

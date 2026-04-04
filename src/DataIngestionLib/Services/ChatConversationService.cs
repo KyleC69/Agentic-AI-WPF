@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         ChatConversationService.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095155
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -123,7 +127,7 @@ public sealed class ChatConversationService : IChatConversationService
     {
 
         token.ThrowIfCancellationRequested();
-        await InitializeAsync().ConfigureAwait(false);
+        await this.InitializeAsync().ConfigureAwait(false);
 
         if (_sqlChatHistoryProvider is null || _agentSession is null)
         {
@@ -134,16 +138,17 @@ public sealed class ChatConversationService : IChatConversationService
 
         ConversationId = HistoryIdentityService.GetConversationId();
 
-        var historyMessages = await RagDataService.GetChatHistoryByConversationId(Guid.Parse(ConversationId));
+        IReadOnlyList<ChatMessage> historyMessages = [.. await RagDataService.GetChatHistoryByConversationId(Guid.Parse(ConversationId))];
 
         //Tag messages to identify source as history load vs new conversation.
-        var tagged = historyMessages.Select(m => m.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, this.GetType().Name));
+        IEnumerable<ChatMessage> tagged = historyMessages.Select(m => m.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, this.GetType().Name));
 
         //Load the state and attach the history messages to it.
         HistoryIdentity state = _sessionStateHelper.GetOrInitializeState(_agentSession);
         state.Messages.AddRange(tagged);
         // Update the session to reflect the loaded conversation history.
         _sessionStateHelper.SaveState(_agentSession, state);
+
 
 
         return tagged;
@@ -175,7 +180,7 @@ public sealed class ChatConversationService : IChatConversationService
     /// <exception cref="ArgumentException"></exception>
     public async ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
     {
-        await InitializeAsync().ConfigureAwait(false);
+        await this.InitializeAsync().ConfigureAwait(false);
         BusyStateChanged?.Invoke(this, true);
         try
         {
@@ -297,7 +302,7 @@ public sealed class ChatConversationService : IChatConversationService
         {
             ConversationId = HistoryIdentityService.GetConversationId();
 
-            _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GPTOSS, "Agentic-Max Description");
+            _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GLM5, "Agentic-Max Description");
 
             _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
 

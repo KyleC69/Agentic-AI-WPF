@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         ChatHistoryMessage.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095146
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -45,4 +49,5 @@ public class ChatHistoryMessage
     public DateTime TimestampUtc { get; set; }
 
     public string UserId { get; set; } = null!;
+    public int TokenCnt { get; set; } = 0;
 }

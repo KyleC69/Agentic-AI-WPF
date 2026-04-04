@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         RagDataService.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095157
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -48,7 +52,7 @@ public class RagDataService(ILogger<RagDataService> logger)
         //Get previous history messages from DB
         IReadOnlyList<ChatHistoryMessage> chm = await db.ChatHistoryMessages.Where(m => m.ConversationId == convoId.ToString()).ToListAsync();
         //Convert to ChatMessages
-        var cm = chm.ToChatMessages();
+        IReadOnlyList<ChatMessage> cm = chm.ToChatMessages();
         //Tag messages with source for agent request
         IReadOnlyList<ChatMessage> tagged = cm.Select(cd => cd.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory)).ToList();
 
@@ -96,18 +100,23 @@ public class RagDataService(ILogger<RagDataService> logger)
 
         List<sp_LearnDocs_Search_VectorResult>? results = await db.Procedures.sp_LearnDocs_Search_VectorAsync(query, null);
 
-        if (results != null)
+        if (results is not null)
         {
-            foreach (sp_LearnDocs_Search_VectorResult? result in results) rags.Add(new ChatMessage(ChatRole.Tool, result.Content));
-
+            foreach (sp_LearnDocs_Search_VectorResult? result in results)
+            {
+                if (!string.IsNullOrWhiteSpace(result?.Content))
+                {
+                    rags.Add(new ChatMessage(ChatRole.Tool, result.Content));
+                }
+            }
         }
         else
         {
-            _logger.LogError("sp_LearnDocs_Search_VectorAsync failed: {FailureInfo}", results[0].FailureInfo);
+            _logger.LogError("sp_LearnDocs_Search_VectorAsync returned null results for query: {Query}", query);
         }
 
         //Tag messages with source for agent request - this allows the agent to know that these messages came from a RAG data source, and can be used for things like tool use decisions, or source attribution in responses.
-        var tagged = rags.Select(ms => ms.WithAgentRequestMessageSource(AgentRequestMessageSourceType.AIContextProvider));
+        IEnumerable<ChatMessage> tagged = rags.Select(ms => ms.WithAgentRequestMessageSource(AgentRequestMessageSourceType.AIContextProvider, this.GetType().Name));
         return tagged;
     }
 
@@ -133,14 +142,16 @@ public class RagDataService(ILogger<RagDataService> logger)
         conn.Open();
         using SqlDataReader reader = cmd.ExecuteReader();
         while (reader.Read())
+        {
             results.Add(new FullTextResults
             {
-                    Id = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Summary = reader.GetString(2),
-                    Keywords = reader.GetString(3).Split(','),
-                    Score = reader.GetDouble(4)
+                Id = reader.GetInt32(0),
+                Title = reader.GetString(1),
+                Summary = reader.GetString(2),
+                Keywords = reader.GetString(3).Split(','),
+                Score = reader.GetDouble(4)
             });
+        }
 
         return JsonConvert.SerializeObject(results);
 

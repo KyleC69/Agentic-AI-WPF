@@ -19,6 +19,8 @@ A WPF desktop application and supporting libraries demonstrates creating Agentic
 Project is not cross-platform nor intended to be. The focus is Agentic AI diagnostics of Windows systems, Windows 0 and above.
 
 ---
+![Agentic Chat](src/RAGDataIngestionWPF/Assets/AgenticChat.png)
+---
 
 ## Table of Contents
 

@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         AIContextRAGInjector.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095149
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -14,6 +18,7 @@ using DataIngestionLib.Services;
 using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Agents.AI;
+using Microsoft.Agents.Builder.State;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -32,6 +37,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     private readonly ILogger<AIContextRAGInjector> _logger;
     private readonly RagDataService _ragData;
     private readonly ProviderSessionState<HistoryIdentity> _sessionState;
+    private static readonly AsyncLocal<TurnState?> CurrentTurnState = new();
 
 
 
@@ -39,17 +45,13 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
 
-
-    public AIContextRAGInjector(RagDataService ragData, ILogger<AIContextRAGInjector> logger, IHistoryIdentityService historyIdentityService) : base(msgs => msgs, msgs => msgs, msgs => msgs)
+    public AIContextRAGInjector(RagDataService ragData, ILogger<AIContextRAGInjector> logger, IHistoryIdentityService historyIdentityService)
     {
         Guard.IsNotNull(ragData);
         _ragData = ragData;
         Guard.IsNotNull(logger);
         _logger = logger;
 
-
-
-        _logger = logger;
         _historyIdentityService = historyIdentityService;
 
         // Database keys are stored in the state bag of the session for easy access by the providers and context injectors,
@@ -89,29 +91,37 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     {
         cancellationToken.ThrowIfCancellationRequested();
         _logger.LogTrace(" Entering ProvideMessagesAsync in AIContextRAGInjector provider - Context Enhancement");
-        HistoryIdentity state = _sessionState.GetOrInitializeState(context.Session);
+        _ = _sessionState.GetOrInitializeState(context.Session);
         ChatMessage request = context.RequestMessages.Last();
         var searchTxt = request.Text;
+        if (!this.AgentFrameworkKeywordDetector(searchTxt))
+        {
+            _logger.LogTrace("RAG failed gate1");
+            return [];
+        }
+
 
         //Checking for short or long queries that are unlikely to yield useful results and can add unnecessary overhead to the system. This is a common practice in search implementations to improve performance and relevance of results.
-        if (!IsValidQuery(searchTxt))
+        if (!this.IsValidQuery(searchTxt))
         {
-            return default;
+            _logger.LogTrace("RAG failed gate2");
+            return [];
         }
 
         //Relevance gate - only provide messages if the context is relevant for this provider.
         //This allows us to have multiple providers in the pipeline and only execute the ones that are relevant for the current context.
-        if (!IsRelevant(context))
+        if (!this.IsRelevant(context))
         {
-            return default;
+            _logger.LogTrace("RAG failed gate3");
+            return [];
         }
 
 
 
         //Results come back already tagged as External in the RagDataService, so we don't need to do any additional tagging here.
-        var results = await _ragData.GetRagDataEntries(searchTxt);
+        IEnumerable<ChatMessage> results = await _ragData.GetRagDataEntries(searchTxt);
 
-        return results;
+        return results ?? [];
     }
 
 
@@ -136,6 +146,9 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     /// </returns>
     protected override ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = default)
     {
+
+        _logger.LogInformation("Current turn state is: {turnstate}", CurrentTurnState.Value);
+
         _logger.LogTrace("Finished with AIContextRAGInjector.");
         return ValueTask.CompletedTask;
     }
@@ -151,7 +164,15 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     {
         var FrameworkWords = new[] { "agent", "framework", "keyword", "workflow", "IChatClient", "AIAgent", "MAF", "chat", "chat client", "AI", "foundary", "copilot" };
         //base keyword search
-        return FrameworkWords.Any(word => text.Contains(word, StringComparison.OrdinalIgnoreCase));
+        var answer = FrameworkWords.Any(word => text.Contains(word, StringComparison.OrdinalIgnoreCase));
+        if (!answer)
+        {
+            _logger.LogTrace("User text did not pass keyword gate, no context enhancement is injected");
+        }
+
+        return answer;
+
+
     }
 
 
@@ -165,7 +186,13 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     {
         var text = string.Join(" ", context.RequestMessages.Where(m => m.Role == ChatRole.User).Select(m => m.Text));
 
-        return AgentFrameworkKeywordDetector(text);
+        var answer = this.AgentFrameworkKeywordDetector(text);
+        if (!answer)
+        {
+            _logger.LogTrace("User text did not pass relevency test, no context enhancement is injected");
+        }
+
+        return answer;
     }
 
 

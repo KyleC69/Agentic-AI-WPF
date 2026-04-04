@@ -52,6 +52,33 @@ public sealed partial class MainPage
 
 
 
+    private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (sender is DependencyObject source &&
+            FindParentScrollViewer(source) is ScrollViewer scrollViewer)
+        {
+            e.Handled = true; // Prevent the event from being handled by child elements
+
+            // Adjust scroll offset based on wheel delta
+            scrollViewer.ScrollToVerticalOffset(
+                    scrollViewer.VerticalOffset - e.Delta / 3.0);
+        }
+    }
+
+    private static ScrollViewer? FindParentScrollViewer(DependencyObject child)
+    {
+        DependencyObject? parent = VisualTreeHelper.GetParent(child);
+
+        while (parent != null)
+        {
+            if (parent is ScrollViewer scrollViewer)
+                return scrollViewer;
+
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+
+        return null;
+    }
 
 
 

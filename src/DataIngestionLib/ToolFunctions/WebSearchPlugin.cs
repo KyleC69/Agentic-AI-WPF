@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         WebSearchPlugin.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095205
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -11,6 +15,7 @@ using System.ComponentModel;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+
 
 
 
@@ -56,7 +61,7 @@ public sealed class WebSearchPlugin
 
         try
         {
-            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "v1/rerank");
+            using HttpRequestMessage request = new(HttpMethod.Post, "v1/rerank");
 
             request.Headers.UserAgent.ParseAdd("IT-Companion-WebSearchPlugin/1.0-AIAgentAssistant");
             var apiKey = Environment.GetEnvironmentVariable("LANGAPI_KEY");
@@ -150,7 +155,7 @@ public sealed class WebSearchPlugin
         try
         {
 
-            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "v1/web-search");
+            using HttpRequestMessage request = new(HttpMethod.Post, "v1/web-search");
 
             request.Headers.UserAgent.ParseAdd("IT-Companion-WebSearchPlugin/1.0-AIAgentAssistant");
             var apiKey = Environment.GetEnvironmentVariable("LANGAPI_KEY");
@@ -177,9 +182,12 @@ public sealed class WebSearchPlugin
 
             var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-            var rerankedresponse = await ReRankResults(jsonResponse, cancellationToken).ConfigureAwait(false);
+            //  var rerankedresponse = await ReRankResults(jsonResponse, cancellationToken).ConfigureAwait(false);
+            JsonDocument doc;
+            doc = JsonDocument.Parse(jsonResponse);
+            var pretty = JsonSerializer.Serialize(jsonResponse, WriteOptions);
 
-            return rerankedresponse;
+            return ToolResult<string>.Ok(pretty);
 
         }
         catch (HttpRequestException ex)

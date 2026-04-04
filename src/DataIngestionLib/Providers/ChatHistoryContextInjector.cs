@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         ChatHistoryContextInjector.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095150
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -106,39 +110,6 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
 
 
 
-    /// <summary>
-    ///     Asynchronously prepares and provides the AI context for an AI operation before it is invoked.
-    /// </summary>
-    /// <param name="context">
-    ///     The <see cref="InvokingContext" /> containing details about the AI operation being prepared.
-    /// </param>
-    /// <param name="cancellationToken">
-    ///     A <see cref="CancellationToken" /> that can be used to cancel the operation.
-    /// </param>
-    /// <returns>
-    ///     A <see cref="ValueTask{TResult}" /> representing the asynchronous operation, with the result being the prepared
-    ///     <see cref="AIContext" />.
-    /// </returns>
-    /// <remarks>
-    ///     This method is responsible for initializing and returning the AI context required for the AI operation.
-    /// </remarks>
-    protected override ValueTask<AIContext> InvokingCoreAsync(InvokingContext context, CancellationToken cancellationToken = new CancellationToken())
-    {
-        var messageId = context.AIContext?.Messages?.LastOrDefault()?.MessageId ?? string.Empty;
-        var conversationId = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? string.Empty;
-
-        _logger.LogTrace("Call from InvokingCoreAsync in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}", messageId, conversationId);
-
-        if (context.AIContext?.Messages != null)
-        {
-            //      context.AIContext.Messages.Append(new ChatMessage(ChatRole.User, "The following is the conversation history from the previous session, which may be relevant to the current conversation."));
-        }
-
-        return base.InvokingCoreAsync(context, cancellationToken);
-    }
-
-
-
 
 
 
@@ -200,11 +171,11 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
         try
         {
             HistoryIdentity state = _sessionStateHelper.GetOrInitializeState(context.Session);
-            var cm = GetContextMessages(context);
+            List<ChatMessage> cm = this.GetContextMessages(context);
 
             //Need to filter out bad tool results and empty messages before saving to the session state and database,
             //but we want to keep the full set of messages in the session state for any providers that run after this one in the pipeline and may need access to the unfiltered messages.
-            var filtered = FilterMessages(cm);
+            IEnumerable<ChatMessage> filtered = FilterMessages(cm);
 
             state.Messages.AddRange(filtered);
             _sessionStateHelper.SaveState(context.Session, state);
@@ -233,7 +204,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
 
         //REmoves messages that are tagged with ignored source types or that have empty/whitespace content,
         //as these are not useful to keep in the chat history and can cause issues with some LLM providers if included in the prompt.
-        var clean = allMessages.Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType())).Where(message => !string.IsNullOrWhiteSpace(message.Text)).ToArray();
+        ChatMessage[] clean = allMessages.Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType())).Where(message => !string.IsNullOrWhiteSpace(message.Text)).ToArray();
         IEnumerable<ChatMessage> good = clean.Where(msg => !IsErroredToolResult(msg)).ToList();
         return good;
     }
@@ -249,9 +220,15 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
     {
         List<ChatMessage> msgs = [];
         Debug.Assert(context.ResponseMessages != null);
-        foreach (ChatMessage m in context.ResponseMessages) msgs.Add(m);
+        foreach (ChatMessage m in context.ResponseMessages)
+        {
+            msgs.Add(m);
+        }
 
-        foreach (ChatMessage m in context.RequestMessages) msgs.Add(m);
+        foreach (ChatMessage m in context.RequestMessages)
+        {
+            msgs.Add(m);
+        }
 
         return msgs;
     }
@@ -280,6 +257,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
         _ = msg.ToJsonElements();
 
         foreach (AIContent content in msg.Contents)
+        {
             if (content is FunctionResultContent rc)
             {
                 if (rc.Result is not null && rc.Result is JsonElement resultElement && resultElement.TryGetProperty("error", out _))
@@ -287,6 +265,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
                     return true;
                 }
             }
+        }
 
         return false;
     }

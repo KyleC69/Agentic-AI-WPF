@@ -8,6 +8,7 @@
 
 
 using System.Collections.ObjectModel;
+using System.Windows;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -109,9 +110,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         {
             if (this.SetProperty(ref field, value))
             {
-                this.OnPropertyChanged(nameof(CanSendMessage));
-                this.OnPropertyChanged(nameof(CanCancelMessage));
-                OnBusyStateChange(this, value);
+                SendMessageCommand.NotifyCanExecuteChanged();
+                CancelMessageCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -271,7 +271,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private void OnBusyStateChange(object sender, bool e)
     {
-        IsBusy = e;
+        RunOnUiThread(() => IsBusy = e);
     }
 
 
@@ -341,7 +341,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private void UpdateCachedInputTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
     {
-        CachedInputTokenCount = e.CurrentValue;
+        RunOnUiThread(() => CachedInputTokenCount = e.CurrentValue);
     }
 
 
@@ -353,7 +353,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private void UpdateInputTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
     {
-        InputTokenCount = e.CurrentValue;
+        RunOnUiThread(() => InputTokenCount = e.CurrentValue);
     }
 
 
@@ -365,7 +365,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private void UpdateOutputTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
     {
-        OutputTokenCount = e.CurrentValue;
+        RunOnUiThread(() => OutputTokenCount = e.CurrentValue);
     }
 
 
@@ -377,7 +377,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private void UpdateRagTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
     {
-        RagTokenCount = e.CurrentValue;
+        RunOnUiThread(() => RagTokenCount = e.CurrentValue);
     }
 
 
@@ -389,7 +389,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private void UpdateReasoningTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
     {
-        ReasoningTokenCount = e.CurrentValue;
+        RunOnUiThread(() => ReasoningTokenCount = e.CurrentValue);
     }
 
 
@@ -401,7 +401,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private void UpdateSessionTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
     {
-        SessionTokenCount = e.CurrentValue;
+        RunOnUiThread(() => SessionTokenCount = e.CurrentValue);
     }
 
 
@@ -413,7 +413,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private void UpdateSystemTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
     {
-        SystemTokenCount = e.CurrentValue;
+        RunOnUiThread(() => SystemTokenCount = e.CurrentValue);
     }
 
 
@@ -425,7 +425,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private void UpdateToolTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
     {
-        ToolTokenCount = e.CurrentValue;
+        RunOnUiThread(() => ToolTokenCount = e.CurrentValue);
     }
 
 
@@ -437,6 +437,20 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private void UpdateTotalTokenCount(TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
     {
-        TotalTokenCount = e.CurrentValue;
+        RunOnUiThread(() => TotalTokenCount = e.CurrentValue);
+    }
+
+    private static void RunOnUiThread(Action updateAction)
+    {
+        ArgumentNullException.ThrowIfNull(updateAction);
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            updateAction();
+            return;
+        }
+
+        _ = dispatcher.InvokeAsync(updateAction);
     }
 }
