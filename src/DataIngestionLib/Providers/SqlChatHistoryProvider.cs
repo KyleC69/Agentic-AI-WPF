@@ -1,11 +1,17 @@
-// Build Date: 2026/04/04
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         SqlChatHistoryProvider.cs
-// Author: GitHub Copilot
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
+// Author: Kyle L. Crowder
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using CommunityToolkit.Diagnostics;
 
@@ -15,7 +21,6 @@ using DataIngestionLib.HistoryModels;
 using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
-using Microsoft.Agents.Core.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -25,7 +30,7 @@ namespace DataIngestionLib.Providers;
 
 
 
-public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISqlChatHistoryProvider
+public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 {
     private readonly IDbContextFactory<AIChatHistoryDb> _dbcontextFactory;
     private readonly IHistoryIdentityService _historyIdentityService;
@@ -33,7 +38,12 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISqlChatHistor
     private readonly ProviderSessionState<HistoryIdentity> _sessionState;
     private readonly int _charsPerToken = 4;
 
-    private static readonly JsonSerializerOptions JsonOptions = new();
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        MaxDepth = 4,
+        WriteIndented = true,
+        IndentSize = 2
+    };
 
 
 
@@ -63,12 +73,12 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISqlChatHistor
             return [];
         }
 
-        HistoryIdentity state = _sessionState.GetOrInitializeState(context.Session);
 
         try
         {
+            HistoryIdentity state = _sessionState.GetOrInitializeState(context.Session);
             IEnumerable<ChatMessage>? historyMessages = await this.GetMessagesAsync(state.ConversationId, cancellationToken).ConfigureAwait(false);
-            var tagged = historyMessages?.Select(message => message.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, nameof(SqlChatHistoryProvider)));
+            IEnumerable<ChatMessage>? tagged = historyMessages?.Select(message => message.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, nameof(SqlChatHistoryProvider)));
             return tagged ?? [];
         }
         catch (Exception exception)
@@ -77,6 +87,15 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISqlChatHistor
             return [];
         }
     }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -114,47 +133,37 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISqlChatHistor
 
 
 
-    public async ValueTask<string?> GetLatestConversationIdAsync(CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        await using AIChatHistoryDb dbContext = await _dbcontextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-
-        var latest = await dbContext.ChatHistoryMessages.AsNoTracking()
-            .OrderByDescending(message => message.CreatedAt)
-            .ThenByDescending(message => message.MessageId)
-            .Select(message => message.ConversationId)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        return string.IsNullOrWhiteSpace(latest) ? null : latest;
-    }
-
-
-
-
-
     public async ValueTask<IEnumerable<ChatMessage>?> GetMessagesAsync(string conversationId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using AIChatHistoryDb db = await _dbcontextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         _logger.LogTrace("Fetching chat history messages for conversation {ConversationId}", conversationId);
-        List<ChatHistoryMessage> ordered = await db.ChatHistoryMessages
-            .Where(message => message.ConversationId == conversationId)
-            .OrderBy(message => message.CreatedAt)
-            .ThenBy(message => message.MessageId)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        if (ordered.Count == 0)
+        try
         {
-            return [];
+            List<ChatHistoryMessage> ordered = await db.ChatHistoryMessages.Where(message => message.ConversationId == conversationId).OrderBy(message => message.CreatedAt).ToListAsync(cancellationToken).ConfigureAwait(false);
+
+            if (ordered.Count == 0)
+            {
+                return [];
+            }
+
+            IReadOnlyList<ChatMessage> chatMessages = ordered.ToChatMessages();
+            IEnumerable<ChatMessage> tagged = chatMessages.Select(message => message.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, nameof(SqlChatHistoryProvider)));
+
+            return tagged;
+        }
+        catch (InvalidOperationException)
+        {
+
+            _logger.LogTrace("An error was caught during chat history message load");
+        }
+        catch
+        {
+            _logger.LogTrace("Unknown error occurred during chat history message load");
         }
 
-        IReadOnlyList<ChatMessage> chatMessages = ordered.ToChatMessages();
-        IEnumerable<ChatMessage> tagged = chatMessages.Select(message => message.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, nameof(SqlChatHistoryProvider)));
-
-        return tagged;
+        return new List<ChatMessage>();
     }
 
 
@@ -238,7 +247,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISqlChatHistor
                 continue;
             }
 
-            var createdAtLocal = DateTime.Now;
             entities.Add(new ChatHistoryMessage
             {
                 MessageId = messageId,
@@ -248,9 +256,8 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISqlChatHistor
                 ApplicationId = identity.ApplicationId,
                 Role = message.Role.Value,
                 Content = message.Text.Trim(),
-                TimestampUtc = createdAtLocal,
                 Metadata = this.SerializeMetadata(message.AdditionalProperties),
-                CreatedAt = createdAtLocal,
+                CreatedAt = message.CreatedAt.Value.LocalDateTime,
                 Enabled = true,
                 TokenCnt = this.EstimateTokenCount(message)
             });
@@ -274,17 +281,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISqlChatHistor
 
     private static bool HasExplicitSourceType(ChatMessage message, AgentRequestMessageSourceType sourceType)
     {
-        if (message.AdditionalProperties is null)
-        {
-            return false;
-        }
-
-        if (!message.AdditionalProperties.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out object? value))
-        {
-            return false;
-        }
-
-        return value is AgentRequestMessageSourceAttribution attribution && attribution.SourceType == sourceType;
+        return message.AdditionalProperties is not null && message.AdditionalProperties.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out var value) && value is AgentRequestMessageSourceAttribution attribution && attribution.SourceType == sourceType;
     }
 
 
@@ -311,16 +308,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISqlChatHistor
         }
 
         // Do not persist explicitly tagged external/provider-context messages.
-        if (HasExplicitSourceType(message, AgentRequestMessageSourceType.External))
-        {
-            return false;
-        }
-
-        if (HasExplicitSourceType(message, AgentRequestMessageSourceType.AIContextProvider))
-        {
-            return false;
-        }
-
-        return true;
+        return !HasExplicitSourceType(message, AgentRequestMessageSourceType.External) && !HasExplicitSourceType(message, AgentRequestMessageSourceType.AIContextProvider);
     }
 }

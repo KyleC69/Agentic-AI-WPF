@@ -50,7 +50,7 @@ public class AIChatHistoryDb : DbContext
 
             EntityTypeBuilder<ChatHistoryMessage> unused18 = entity.ToTable(tb => tb.HasTrigger("tr_generate_embeddings"));
 
-            IndexBuilder<ChatHistoryMessage> unused17 = entity.HasIndex(e => new { e.ConversationId, e.TimestampUtc }, "IX_ChatHistoryMessages_Conversation_Timestamp");
+            IndexBuilder<ChatHistoryMessage> unused17 = entity.HasIndex(e => new { e.ConversationId, e.CreatedAt }, "IX_ChatHistoryMessages_Conversation_CreatedAt");
 
             PropertyBuilder<Guid> unused16 = entity.Property(e => e.MessageId).ValueGeneratedNever();
             PropertyBuilder<string> unused15 = entity.Property(e => e.AgentId).HasMaxLength(128);
@@ -61,7 +61,7 @@ public class AIChatHistoryDb : DbContext
             PropertyBuilder<string> unused10 = entity.Property(e => e.Role).HasMaxLength(32);
             PropertyBuilder<string?> unused9 = entity.Property(e => e.Summary).HasMaxLength(2000);
             PropertyBuilder<string> unused8 = entity.Property(e => e.UserId).HasMaxLength(128);
-            var unused = entity.Property(e => e.TokenCnt).HasMaxLength(4);
+            PropertyBuilder<int> unused = entity.Property(e => e.TokenCnt).HasMaxLength(4);
         });
 
         ModelBuilder unused7 = modelBuilder.Entity<ChatHistoryTextChunk>(entity =>
@@ -72,7 +72,7 @@ public class AIChatHistoryDb : DbContext
 
             PropertyBuilder<int> unused4 = entity.Property(e => e.ChunkRecordId).HasColumnName("ChunkRecordID");
             PropertyBuilder<long> unused3 = entity.Property(e => e.ChunkSetId).HasColumnName("ChunkSetID");
-            PropertyBuilder<DateTime> unused2 = entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysdatetime())", "DF__tmp_ms_xx__Creat__2FCF1A8A");
+            PropertyBuilder<DateTime> unused2 = entity.Property(e => e.CreatedAt).HasDefaultValueSql("(datetime())", "DF__tmp_ms_xx__Creat__2FCF1A8A");
             PropertyBuilder<SqlVector<float>?> unused1 = entity.Property(e => e.Embedding).HasMaxLength(1024);
             PropertyBuilder<Guid> unused = entity.Property(e => e.MessageId).HasColumnName("MessageID");
         });

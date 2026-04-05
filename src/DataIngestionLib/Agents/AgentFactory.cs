@@ -16,7 +16,7 @@ using CommunityToolkit.Diagnostics;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Models;
 using DataIngestionLib.Providers;
-using DataIngestionLib.ToolFunctions;
+using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -52,15 +52,13 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     /// </summary>
     private IChatClient? _innerClient;
 
-    private readonly string _ollamaHost;
-    private readonly int _ollamaPort;
 
     private readonly AIContextRAGInjector _ragContextInjector;
     private readonly IAIToolCatalog _toolCatalog;
 
     private static ILoggerFactory _factory = NullLoggerFactory.Instance;
-
-
+    private readonly AppSettings settings = new();
+    private readonly ILogger<AgentFactory> _logger = NullLogger<AgentFactory>.Instance;
 
 
 
@@ -85,20 +83,18 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     /// <exception cref="ArgumentNullException">
     ///     Thrown when any of the provided parameters is <c>null</c>.
     /// </exception>
-    public AgentFactory(ILoggerFactory factory, string ollamaHost, int ollamaPort, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector, IAIToolCatalog toolCatalog)
+    public AgentFactory(ILoggerFactory factory, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector, IAIToolCatalog toolCatalog)
     {
         Guard.IsNotNull(factory);
-        Guard.IsNotNullOrEmpty(ollamaHost);
         Guard.IsNotNull(chatHistoryProvider);
         Guard.IsNotNull(ragContextInjector);
         Guard.IsNotNull(toolCatalog);
 
         _factory = factory;
         _chatHistoryProvider = chatHistoryProvider;
-        _ollamaHost = ollamaHost;
-        _ollamaPort = ollamaPort;
         _ragContextInjector = ragContextInjector;
         _toolCatalog = toolCatalog;
+        _logger = factory.CreateLogger<AgentFactory>();
     }
 
 
@@ -115,6 +111,36 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     }
 
 
+
+
+
+
+    private async Task<AgentResponse> CustomAgentRunMiddleware(
+    IEnumerable<ChatMessage> messages,
+    AgentSession? session,
+    AgentRunOptions? options,
+    AIAgent innerAgent,
+    CancellationToken cancellationToken)
+    {
+        Console.WriteLine(messages.Count());
+
+        foreach (ChatMessage message in messages)
+        {
+            _logger.LogInformation("BEFORE agent run response message: {Message}", message.Text);
+        }
+
+        _logger.LogInformation("Custom middleware before agent run. Messages count: {Count}", messages.Count());
+
+        AgentResponse response = await innerAgent.RunAsync(messages, session, options, cancellationToken).ConfigureAwait(false);
+
+        foreach (ChatMessage message in response.Messages)
+        {
+            _logger.LogInformation("Post agent run response message: {Message}", message.Text);
+        }
+
+        _logger.LogInformation("Custom middleware after agent run. Messages count: {Count}", response.Messages.Count);
+        return response;
+    }
 
 
 
@@ -153,10 +179,9 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         }
 
         _agents.Add(agentId, model);
-        Uri ollamaUri = new UriBuilder(_ollamaHost) { Port = _ollamaPort }.Uri;
-        _innerClient = new OllamaApiClient(ollamaUri, model);
+
+        _innerClient = new OllamaApiClient(new Uri(settings.RestEndpoint), model);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
-        //  _innerClient = new TokenAccountingMiddleware(_innerClient, _factory.CreateLogger<TokenAccountingMiddleware>());
 
 #if !SQL
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
@@ -168,9 +193,13 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                         ThrowOnChatHistoryProviderConflict = true
                 }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
+                .Use(CustomAgentRunMiddleware)
                 .Build();
 
 #else
+
+        HistoryMemoryProvider _memoryProvider = new(new HistoryIdentityService());
+
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
         {
             Id = agentId,
@@ -184,15 +213,12 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                 AllowMultipleToolCalls = true,
                 Tools = _toolCatalog.GetReadOnlyAiTools()
             },
-            AIContextProviders =
-                        [
-
-                                _ragContextInjector
-                        ],
-            ThrowOnChatHistoryProviderConflict = true,
+            ThrowOnChatHistoryProviderConflict = false,
+            WarnOnChatHistoryProviderConflict = true,
             ChatHistoryProvider = _chatHistoryProvider
         }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
+                .UseAIContextProviders([_ragContextInjector])
                 .Build();
 
 
@@ -231,7 +257,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
     public AIAgent GetBasicAIAgent()
     {
-        Uri ollamaUri = new UriBuilder(_ollamaHost) { Port = _ollamaPort }.Uri;
+        Uri ollamaUri = new UriBuilder(settings.RestEndpoint).Uri;
         _innerClient = new OllamaApiClient(ollamaUri, AIModels.LLAMA1_B);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 
@@ -336,7 +362,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     {
 
 
-        Uri ollamaUri = new UriBuilder(_ollamaHost) { Port = _ollamaPort }.Uri;
+        Uri ollamaUri = new UriBuilder(settings.RestEndpoint).Uri;
         _innerClient = new OllamaApiClient(ollamaUri, AIModels.BGE_RERANKER);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 

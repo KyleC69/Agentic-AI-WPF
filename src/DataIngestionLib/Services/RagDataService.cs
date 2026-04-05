@@ -15,12 +15,14 @@ using System.Diagnostics.CodeAnalysis;
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.EFModels;
-
+using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.SqlServer;
 
 using Newtonsoft.Json;
 
@@ -96,6 +98,33 @@ public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AI
         IEnumerable<ChatMessage> tagged = rags.Select(ms => ms.WithAgentRequestMessageSource(AgentRequestMessageSourceType.AIContextProvider, this.GetType().Name));
         return tagged;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

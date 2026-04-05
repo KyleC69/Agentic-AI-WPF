@@ -16,7 +16,6 @@ using DataIngestionLib.Contracts;
 using Microsoft.Extensions.AI;
 
 using RAGDataIngestionWPF.Contracts.ViewModels;
-using RAGDataIngestionWPF.Models;
 
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
@@ -46,7 +45,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         ArgumentNullException.ThrowIfNull(chatConversationService);
         _historyIdentity = historyIdentityService;
         _chatConversationService = chatConversationService;
-        Messages = new ObservableCollection<ChatMessageDisplayItem>();
+        Messages = new ObservableCollection<ChatMessage>();
 
         SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
@@ -94,7 +93,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
     } = string.Empty;
 
-    public ObservableCollection<ChatMessageDisplayItem> Messages { get; }
+    public ObservableCollection<ChatMessage> Messages { get; }
     public IAsyncRelayCommand NewConvoCommand { get; }
 
     public IAsyncRelayCommand SendMessageCommand { get; }
@@ -144,11 +143,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             //Add the history messages to the UI collection
             foreach (ChatMessage historyMessage in historyMessages)
             {
-                Messages.Add(CreateUiMessage(historyMessage));
+                Messages.Add(historyMessage);
             }
 
-            //Add old messages to the context so agent can pick up where it left off.
-            _historyIdentity.Current.Messages.AddRange(historyMessages);
 
             _historyLoaded = true;
         }
@@ -173,12 +170,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         return !IsBusy && !string.IsNullOrWhiteSpace(MessageInput);
     }
 
-    private static ChatMessageDisplayItem CreateUiMessage(ChatMessage message)
-    {
-        ArgumentNullException.ThrowIfNull(message);
 
-        return ChatMessageDisplayItem.Create(message.Role, message.Text);
-    }
 
     private void OnBusyStateChange(object sender, bool e)
     {
@@ -196,7 +188,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
 
         //Add Users message to UI collection
-        Messages.Add(ChatMessageDisplayItem.Create(ChatRole.User, content));
+        Messages.Add(new ChatMessage(ChatRole.User, content));
 
         //Clear UI input
         MessageInput = string.Empty;
@@ -204,11 +196,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         try
         {
             ChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _tokenSource.Token);
-            Messages.Add(CreateUiMessage(assistantMessage));
+            Messages.Add(assistantMessage);
         }
         catch (OperationCanceledException)
         {
-            Messages.Add(ChatMessageDisplayItem.Create(ChatRole.Assistant, "Response cancelled."));
+            Messages.Add(new ChatMessage(ChatRole.Assistant, "Response cancelled."));
         }
         finally
         {

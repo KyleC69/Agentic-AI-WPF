@@ -22,7 +22,7 @@ namespace RAGDataIngestionWPF.Models;
 ///     Represents a chat message formatted for WPF binding so the view can react to collection changes and display state
 ///     without depending on transport-specific message types.
 /// </summary>
-public sealed record ChatMessageDisplayItem(string Text, string Role, bool IsUser)
+public sealed record ChatMessageDisplayItem(string Text, string Role, DateTime CreateAt)
 {
     /// <summary>
     ///     Creates a display item from an AI chat role and message text so the UI can bind to stable, presentation-focused
@@ -31,8 +31,8 @@ public sealed record ChatMessageDisplayItem(string Text, string Role, bool IsUse
     /// <param name="role">The role that authored the message.</param>
     /// <param name="text">The text to display for the message.</param>
     /// <returns>A message item shaped for the `MainPage` bindings.</returns>
-    public static ChatMessageDisplayItem Create(ChatRole role, string text)
+    public static ChatMessageDisplayItem Create(ChatRole role, string text, DateTime createdAt)
     {
-        return new(text, role.ToString(), role == ChatRole.User);
+        return new(text, role.ToString(), createdAt);
     }
 }

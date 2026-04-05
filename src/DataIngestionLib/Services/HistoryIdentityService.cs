@@ -45,11 +45,42 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
 
 
 
+    public HistoryIdentityService()
+    {
+        this.Initialize(Guid.NewGuid().ToString(), "DefaultAgent", Environment.UserName);
+    }
+
+
+
+    /// <summary>
+    /// Applies the current <see cref="HistoryIdentity"/> snapshot to the specified <paramref name="session"/>.
+    /// </summary>
+    /// <param name="session">
+    /// The <see cref="AgentSession"/> to which the current <see cref="HistoryIdentity"/> snapshot will be applied.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when the <paramref name="session"/> is <c>null</c>.
+    /// </exception>
     public void ApplyToSession(AgentSession session)
     {
         Guard.IsNotNull(session);
 
         HistoryIdentity snapshot = Current;
+        Guard.IsNotNull(snapshot.ApplicationId);
+        Guard.IsNotNull(snapshot.AgentId);
+        Guard.IsNotNull(snapshot.UserId);
+        // Note: Currently, the session is not equipped to handle multiple conversations.
+        // The conversation ID is managed by the _current HistoryIdentity.
+        // If the requirement changes to support multiple conversations within a session,
+        // the session state management would need to be updated accordingly.
+        // For now, we ensure that the conversation ID is consistently applied.
+        if (string.IsNullOrWhiteSpace(snapshot.ConversationId))
+        {
+            // This case should ideally not happen if Initialize or GetConversationId has been called.
+            // However, as a fallback, we can regenerate if needed.
+            snapshot.ConversationId = GetConversationId();
+        }
+
 
         session.StateBag.SetValue("ApplicationId", snapshot.ApplicationId);
         session.StateBag.SetValue("AgentId", snapshot.AgentId);
@@ -71,7 +102,7 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
         {
             lock (_syncLock)
             {
-                return new HistoryIdentity(_current.ConversationId)
+                return new HistoryIdentity(GetConversationId())
                 {
                     AgentId = _current.AgentId,
                     ApplicationId = _current.ApplicationId,
@@ -105,9 +136,9 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
     {
         Guard.IsNotNullOrEmpty(applicationId);
         Guard.IsNotNullOrEmpty(agentId);
-
         var normalizedUserId = string.IsNullOrWhiteSpace(userId) ? Environment.UserName : userId.Trim();
         Guard.IsNotNullOrEmpty(normalizedUserId, nameof(userId));
+
         lock (_syncLock)
         {
             _current.ApplicationId = applicationId.Trim();

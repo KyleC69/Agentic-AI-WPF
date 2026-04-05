@@ -11,7 +11,6 @@
 
 using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
@@ -23,7 +22,6 @@ using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
 using DataIngestionLib.ToolFunctions;
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -36,7 +34,6 @@ using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.Views;
 using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Core.Services;
-using RAGDataIngestionWPF.Properties;
 using RAGDataIngestionWPF.Services;
 using RAGDataIngestionWPF.ViewModels;
 using RAGDataIngestionWPF.Views;
@@ -87,7 +84,7 @@ public sealed partial class App : Application
                     // Settings page.
                     logging.AddJsonConsole(options => { options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions { Indented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }; });
                     ILoggingBuilder unused1 = logging.SetMinimumLevel(LogLevel.Trace);
-                    ILoggingBuilder unused = logging.AddFilter((_, level) => level >= LogLevel.Trace);
+                    ILoggingBuilder unused = logging.AddFilter("Microsoft.Extensions.Http", LogLevel.Information);
                 })
                 .Build();
     }
@@ -311,6 +308,7 @@ public sealed partial class App : Application
         _ = services.AddSingleton<HistoryIdentityService>();
         _ = services.AddSingleton<IHistoryIdentityService>(provider => provider.GetRequiredService<HistoryIdentityService>());
         _ = services.AddHttpClient<WebSearchPlugin>();
+        _ = services.AddSingleton<WebSearchPlugin>();
         _ = services.AddSingleton<SandboxEventLogReader>();
         _ = services.AddSingleton<InstalledUpdatesTool>();
         _ = services.AddSingleton<NetworkConfigurationTool>();
@@ -328,14 +326,8 @@ public sealed partial class App : Application
         _ = services.AddSingleton<IAIToolCatalog>(provider => provider.GetRequiredService<ToolBuilder>());
         _ = services.AddSingleton<IRagDataService, RagDataService>();
         _ = services.AddSingleton<SqlChatHistoryProvider>();
-        _ = services.AddSingleton<ISqlChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
         _ = services.AddSingleton<AIContextRAGInjector>();
-        _ = services.AddSingleton<IAgentFactory>(provider =>
-        {
-            Settings settings = Settings.Default;
-
-            return new AgentFactory(provider.GetRequiredService<ILoggerFactory>(), settings.OllamaHost, settings.OllamaPort, provider.GetRequiredService<SqlChatHistoryProvider>(), provider.GetRequiredService<AIContextRAGInjector>(), provider.GetRequiredService<IAIToolCatalog>());
-        });
+        _ = services.AddSingleton<IAgentFactory, AgentFactory>();
 
         _ = services.AddSingleton<ChatHistoryContextInjector>();
     }

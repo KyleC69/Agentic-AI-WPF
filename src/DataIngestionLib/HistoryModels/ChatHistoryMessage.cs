@@ -46,7 +46,6 @@ public class ChatHistoryMessage
 
     public string? Summary { get; set; }
 
-    public DateTime TimestampUtc { get; set; }
 
     public string UserId { get; set; } = null!;
     public int TokenCnt { get; set; } = 0;

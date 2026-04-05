@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         IChatConversationService.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095139
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -26,24 +30,7 @@ public interface IChatConversationService
     /// </summary>
     List<ChatMessage> AIHistory { get; }
 
-    /// <summary>
-    ///     Gets the total current context token count for the active chat history.
-    /// </summary>
-    int ContextTokenCount { get; }
-
     string ConversationId { get; }
-
-    //Tokens used for RAG context, including prompt and response tokens affecting overall context size.
-    int RagTokenCount { get; }
-
-    //All token not otherwise accounted for including user
-    int SessionTokenCount { get; }
-
-    //Tokens used for system instructions, including prompt and response tokens affecting overall context size.
-    int SystemTokenCount { get; }
-
-    //Tokens used for tool calls, including prompt and response tokens affecting overall context size.
-    int ToolTokenCount { get; }
 
     event EventHandler<bool> BusyStateChanged;
 

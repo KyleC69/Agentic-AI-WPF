@@ -17,7 +17,6 @@ using DataIngestionLib.Contracts;
 using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
-using Microsoft.Agents.Builder.State;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -36,7 +35,6 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     private readonly ILogger<AIContextRAGInjector> _logger;
     private readonly IRagDataService _ragData;
     private readonly ProviderSessionState<HistoryIdentity> _sessionState;
-    private static readonly AsyncLocal<TurnState?> CurrentTurnState = new();
 
 
 
@@ -89,43 +87,50 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     protected override async ValueTask<IEnumerable<ChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _logger.LogTrace(" Entering ProvideMessagesAsync in AIContextRAGInjector provider - Context Enhancement");
-        _ = _sessionState.GetOrInitializeState(context.Session);
+        _logger.LogTrace("Entering ProvideMessagesAsync in AIContextRAGInjector provider - Context Enhancement");
+        // Extract the last request message
         ChatMessage request = context.RequestMessages.Last();
-        var searchTxt = request.Text;
-        if (!this.AgentFrameworkKeywordDetector(searchTxt))
+        var searchText = request.Text;
+
+
+        // Validate the query through multiple gates
+        if (!this.IsQueryValid(searchText, context))
         {
-            _logger.LogTrace("RAG failed gate1");
-            return [];
+            return context.RequestMessages;
         }
 
+        // Fetch results from the RAG data service
+        IEnumerable<ChatMessage> results = await _ragData.GetRagDataEntries(searchText, cancellationToken);
+        // Return results or an empty collection if null
+        return results ?? Enumerable.Empty<ChatMessage>();
 
-        //Checking for short or long queries that are unlikely to yield useful results and can add unnecessary overhead to the system. This is a common practice in search implementations to improve performance and relevance of results.
-        if (!this.IsValidQuery(searchTxt))
-        {
-            _logger.LogTrace("RAG failed gate2");
-            return [];
-        }
-
-        //Relevance gate - only provide messages if the context is relevant for this provider.
-        //This allows us to have multiple providers in the pipeline and only execute the ones that are relevant for the current context.
-        if (!this.IsRelevant(context))
-        {
-            _logger.LogTrace("RAG failed gate3");
-            return [];
-        }
-
-
-
-        //Results come back already tagged as External in the RagDataService, so we don't need to do any additional tagging here.
-        IEnumerable<ChatMessage> results = await _ragData.GetRagDataEntries(searchTxt);
-
-        return results ?? [];
     }
 
 
 
+    private bool IsQueryValid(string searchText, InvokingContext context)
+    {
+        // Gate 1: Check if the query contains relevant keywords
+        if (!this.AgentFrameworkKeywordDetector(searchText))
+        {
+            _logger.LogTrace("RAG failed gate1");
+            return false;
+        }
+        // Gate 2: Validate query length and content
+        if (!this.IsValidQuery(searchText))
+        {
+            _logger.LogTrace("RAG failed gate2");
+            return false;
+        }
+        // Gate 3: Ensure the context is relevant
+        if (!this.IsRelevant(context))
+        {
+            _logger.LogTrace("RAG failed gate3");
+            return false;
+        }
 
+        return true;
+    }
 
 
 
@@ -146,9 +151,8 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     protected override ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = default)
     {
 
-        _logger.LogInformation("Current turn state is: {turnstate}", CurrentTurnState.Value);
 
-        _logger.LogTrace("Finished with AIContextRAGInjector.");
+        _logger.LogTrace("Finished with AIContextRAGInjector. Leaving the provider");
         return ValueTask.CompletedTask;
     }
 
@@ -161,17 +165,23 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
     private bool AgentFrameworkKeywordDetector(string text)
     {
-        var FrameworkWords = new[] { "agent", "framework", "keyword", "workflow", "IChatClient", "AIAgent", "MAF", "chat", "chat client", "AI", "foundary", "copilot" };
-        //base keyword search
-        var answer = FrameworkWords.Any(word => text.Contains(word, StringComparison.OrdinalIgnoreCase));
-        if (!answer)
+        try
         {
-            _logger.LogTrace("User text did not pass keyword gate, no context enhancement is injected");
+            var FrameworkWords = new[] { "agent", "framework", "keyword", "workflow", "IChatClient", "AIAgent", "MAF", "chat", "chat client", "AI", "foundary", "copilot" };
+            //base keyword search
+            var answer = FrameworkWords.Any(word => text.Contains(word, StringComparison.OrdinalIgnoreCase));
+            if (!answer)
+            {
+                _logger.LogTrace("User text did not pass keyword gate, no context enhancement is injected");
+                return false;
+            }
+        }
+        catch (Exception)
+        {
+            _logger.LogError("Error in filter");
         }
 
-        return answer;
-
-
+        return true;
     }
 
 
@@ -189,9 +199,10 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
         if (!answer)
         {
             _logger.LogTrace("User text did not pass relevency test, no context enhancement is injected");
+            return false;
         }
 
-        return answer;
+        return true;
     }
 
 
@@ -203,11 +214,18 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
     public bool IsValidQuery(string text)
     {
-        //Basic validation to filter out queries that are too short or too long, which are unlikely to yield useful results and can add unnecessary overhead to the system.
-        if (string.IsNullOrWhiteSpace(text) || text.Length < 5 || text.Length > 1000)
+        try
         {
-            _logger.LogTrace("Query did not pass validation - Query: {Query}", text);
-            return false;
+            //Basic validation to filter out queries that are too short or too long, which are unlikely to yield useful results and can add unnecessary overhead to the system.
+            if (string.IsNullOrWhiteSpace(text) || text.Length < 5 || text.Length > 1000)
+            {
+                _logger.LogTrace("Query did not pass validation - Query: {Query}", text);
+                return false;
+            }
+        }
+        catch (Exception)
+        {
+            _logger.LogError("exception in basic relevance test");
         }
 
         return true;

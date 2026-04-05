@@ -12,7 +12,7 @@
     mc:Ignorable="d" Width="1400" Height="1000">
 
     <Page.Resources>
-        <full:MarkdownScrollViewer PreviewMouseWheel="OnPreviewMouseWheel" x:Key="Wheel" />
+     
     </Page.Resources>
 
 
@@ -37,7 +37,7 @@
             Text="{x:Static properties:Resources.MainPageTitle}" />
         <Grid Grid.Row="1" Margin="{StaticResource MediumLeftRightMargin}"
               Background="{DynamicResource MahApps.Brushes.Gray60}">
-            <Grid Margin="{StaticResource SmallTopBottomMargin}" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+            <Grid Margin="{StaticResource SmallTopBottomMargin}" ScrollViewer.VerticalScrollBarVisibility="Visible">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="933*" />
                     <ColumnDefinition Width="19*" />
@@ -79,7 +79,8 @@
                          ItemsSource="{Binding Messages}"
                          HorizontalContentAlignment="Stretch"
                          ScrollViewer.CanContentScroll="False"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto" IsManipulationEnabled="True"
+                         ScrollViewer.VerticalScrollBarVisibility="Hidden" IsManipulationEnabled="True"
+                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                          SelectionMode="Multiple">
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:MessageDisplay}">
@@ -112,9 +113,11 @@
                                                                 IsSelectionEnabled="True"
                                                                 Markdown="{Binding Text}"
                                                                 Foreground="DarkSlateGray"
+                                                                PreviewMouseWheel="OnPreviewMouseWheel"
                                                                 Background="BurlyWood"
                                                                 MarkdownStyleName="SasaBune" Syntax="MdXaml">
                                         <mdxam:MarkdownScrollViewer.Resources>
+                                            <full:MarkdownScrollViewer PreviewMouseWheel="OnPreviewMouseWheel" x:Key="Wheel" />
                                             <Style TargetType="TableRowGroup">
                                                 <Setter Property="Background" Value="DarkGray" />
                                             </Style>

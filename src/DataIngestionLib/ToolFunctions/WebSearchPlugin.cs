@@ -132,7 +132,27 @@ public sealed class WebSearchPlugin
     }
 
 
+    public static string SanitizeControlCharacters(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return input;
 
+        var sb = new StringBuilder(input.Length);
+
+        foreach (char c in input)
+        {
+            if (char.IsControl(c) && c != '\t' && c != '\n' && c != '\r')
+            {
+                sb.Append(' '); // Replace with space
+            }
+            else
+            {
+                sb.Append(c);
+            }
+        }
+
+        return sb.ToString();
+    }
 
 
 
@@ -182,11 +202,28 @@ public sealed class WebSearchPlugin
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            string jsonNorm;
+            try
+            {
+                jsonNorm = jsonResponse.Normalize(NormalizationForm.FormKC);
+            }
+            catch (ArgumentException)
+            {
+                return ToolResult<string>.Fail("Invalid Unicode content in response.");
+            }
 
-            //  var rerankedresponse = await ReRankResults(jsonResponse, cancellationToken).ConfigureAwait(false);
             JsonDocument doc;
-            doc = JsonDocument.Parse(jsonResponse);
-            var pretty = JsonSerializer.Serialize(jsonResponse, WriteOptions);
+            try
+            {
+                doc = JsonDocument.Parse(jsonNorm);
+            }
+            catch (JsonException)
+            {
+                return ToolResult<string>.Ok(jsonResponse);
+            }
+
+            // 3. Pretty-print
+            var pretty = JsonSerializer.Serialize(doc, WriteOptions);
 
             return ToolResult<string>.Ok(pretty);
 

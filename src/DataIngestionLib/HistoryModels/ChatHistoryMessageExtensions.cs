@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         ChatHistoryMessageExtensions.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095146
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -50,7 +54,7 @@ public static class ChatHistoryMessageExtensions
 
 
 
-    public static IReadOnlyList<ChatMessage> ToChatMessages(this IEnumerable<ChatHistoryMessage>? messages)
+    public static IReadOnlyList<ChatMessage> ToChatMessages(this IEnumerable<ChatHistoryMessage> messages)
     {
         return messages is null ? [] : (IReadOnlyList<ChatMessage>)messages.Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Content)).OrderBy(m => m.CreatedAt).ThenBy(m => m.MessageId).Select(m => m.ToChatMessage()).ToList();
     }
@@ -66,11 +70,11 @@ public static class ChatHistoryMessageExtensions
     {
         return role?.Trim().ToLowerInvariant() switch
         {
-                "assistant" => ChatRole.Assistant,
-                "system" => ChatRole.System,
-                "tool" => ChatRole.Tool,
-                "user" => ChatRole.User,
-                _ => ChatRole.User
+            "assistant" => ChatRole.Assistant,
+            "system" => ChatRole.System,
+            "tool" => ChatRole.Tool,
+            "user" => ChatRole.User,
+            _ => ChatRole.User
         };
     }
 }
