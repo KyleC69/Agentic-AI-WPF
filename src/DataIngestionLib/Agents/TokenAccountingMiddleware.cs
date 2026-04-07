@@ -1,4 +1,4 @@
-// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
 // Solution: ${File.SolutionName}
 // Project:   ${File.ProjectName}
 // File:      ${File.FileName}
@@ -71,6 +71,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
         cancellationToken.ThrowIfCancellationRequested();
 
         IReadOnlyList<ChatMessage> capturedMessages = messages as IReadOnlyList<ChatMessage> ?? [.. messages];
+        
         int estimatedInputTokens = EstimateMessagesTokens(capturedMessages);
 
         MiddlewareRequestContext requestContext = new(capturedMessages, estimatedInputTokens);

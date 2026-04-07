@@ -13,6 +13,7 @@
 
 using CommunityToolkit.Diagnostics;
 
+using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.EFModels;
 using DataIngestionLib.HistoryModels;
@@ -126,15 +127,6 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
 
 
-    /// <inheritdoc />
-    public int RagTokenCount { get; private set; }
-
-
-
-
-
-
-
 
     /// <summary>
     ///     Sends request to LLM and waits for a response.
@@ -152,7 +144,7 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
             Guard.IsNotNullOrEmpty(content);
             Guard.IsNotNull(_agent);
             Guard.IsNotNull(_agentSession);
-            ChatMessage cm = new(ChatRole.User, content);
+            ChatMessage cm = new(new ChatRole("User"), content);
             cm.CreatedAt = DateTime.Now;
 
             AIHistory.Add(cm);
@@ -171,14 +163,6 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
     }
 
 
-
-
-
-
-
-
-    /// <inheritdoc />
-    public int SessionTokenCount { get; private set; }
 
 
 
@@ -246,8 +230,8 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
         try
         {
             ConversationId = HistoryIdentityService.GetConversationId();
-
-            _agent = _agentFactory.GetCodingAssistantAgent(DefaultAgentId, AIModels.GLM5, "Agentic-Max Description");
+            IChatClient client = _agentFactory.GetChatClient(AIModels.GLM5);
+            _agent = _agentFactory.BuildAssistantAgent(client, DefaultAgentId, "AgentName", "Agentic-Max Description");
 
             _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
 

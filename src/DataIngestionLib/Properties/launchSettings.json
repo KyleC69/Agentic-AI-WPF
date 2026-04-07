@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "DataIngestionLib": {
-      "commandName": "Project",
-      "hotReloadEnabled": false
-    }
-  }
-}

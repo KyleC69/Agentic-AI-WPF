@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/03
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         ChunkMetadataGenerator.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 095141
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -13,7 +17,6 @@ using DataIngestionLib.Agents;
 using DataIngestionLib.Models;
 using DataIngestionLib.Utils;
 
-using Microsoft.Agents.Core.Serialization;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -72,8 +75,8 @@ public sealed class ChunkMetadataGenerator
     public async Task<GeneratedChunkMetadata> GenerateAsync(string chunkContent, CancellationToken cancellationToken = default)
     {
         Guard.IsNotNullOrWhiteSpace(chunkContent);
-        var keywords = NormalizeKeywords(await GenerateKeywordsAsync(chunkContent, cancellationToken).ConfigureAwait(false));
-        var summary = NormalizeSummary(await GenerateSummaryAsync(chunkContent, cancellationToken).ConfigureAwait(false));
+        var keywords = NormalizeKeywords(await this.GenerateKeywordsAsync(chunkContent, cancellationToken).ConfigureAwait(false));
+        var summary = NormalizeSummary(await this.GenerateSummaryAsync(chunkContent, cancellationToken).ConfigureAwait(false));
 
         return new GeneratedChunkMetadata(keywords, summary);
     }
@@ -119,18 +122,6 @@ public sealed class ChunkMetadataGenerator
 
 
 
-    public async Task<string> GenerateEmbeddingsAsync(string chunkContent, CancellationToken cancellationToken = default)
-    {
-
-        ArgumentException.ThrowIfNullOrWhiteSpace(chunkContent);
-        var vector = await _embedding.GenerateVectorAsync(chunkContent);
-        return vector.ToJsonElements().ToString()!;
-
-
-    }
-
-
-
 
 
 
@@ -152,7 +143,7 @@ public sealed class ChunkMetadataGenerator
                                     Return only the comma-separated keywords. No preamble, no labels.
                                     """;
 
-        return await GenerateCompletionAsync(systemPrompt, chunkContent, KeywordOptions, cancellationToken).ConfigureAwait(false);
+        return await this.GenerateCompletionAsync(systemPrompt, chunkContent, KeywordOptions, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -178,7 +169,7 @@ public sealed class ChunkMetadataGenerator
                                     Return only the summary text. No preamble, no labels.
                                     """;
 
-        return await GenerateCompletionAsync(systemPrompt, chunkContent, SummaryOptions, cancellationToken).ConfigureAwait(false);
+        return await this.GenerateCompletionAsync(systemPrompt, chunkContent, SummaryOptions, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -211,5 +202,17 @@ public sealed class ChunkMetadataGenerator
         var normalized = summary.Trim();
 
         return normalized.Length <= MaximumSummaryLength ? normalized : normalized[..MaximumSummaryLength].TrimEnd();
+    }
+
+
+
+
+
+
+
+
+    public async Task<Embedding> GenerateEmbeddingsAsync(string chunkContent, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

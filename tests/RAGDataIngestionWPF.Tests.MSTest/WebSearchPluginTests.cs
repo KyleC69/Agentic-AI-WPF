@@ -1,9 +1,10 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 
 using DataIngestionLib.ToolFunctions;
+using Moq;
 
 namespace RAGDataIngestionWPF.Tests.MSTest;
 
@@ -23,6 +24,13 @@ public class WebSearchPluginTests
         }
     }
 
+    private static IHttpClientFactory CreateMockFactory(HttpClient client)
+    {
+        Mock<IHttpClientFactory> mockFactory = new();
+        mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(client);
+        return mockFactory.Object;
+    }
+
     [TestMethod]
     public void ConstructorWithNullClientThrowsArgumentNullException()
     {
@@ -33,7 +41,8 @@ public class WebSearchPluginTests
     public async Task WebSearchWithEmptyQueryReturnsFailure()
     {
         using HttpClient client = new(new StubHttpMessageHandler(HttpStatusCode.OK, "{}"));
-        WebSearchPlugin plugin = new(client);
+        IHttpClientFactory factory = CreateMockFactory(client);
+        WebSearchPlugin plugin = new(factory);
 
         ToolResult<string> result = await plugin.WebSearch("  ");
 
@@ -45,7 +54,8 @@ public class WebSearchPluginTests
     public async Task WebSearchWithInvalidMaxResultsReturnsFailure()
     {
         using HttpClient client = new(new StubHttpMessageHandler(HttpStatusCode.OK, "{}"));
-        WebSearchPlugin plugin = new(client);
+        IHttpClientFactory factory = CreateMockFactory(client);
+        WebSearchPlugin plugin = new(factory);
 
         ToolResult<string> result = await plugin.WebSearch("query", 0);
 
@@ -62,7 +72,8 @@ public class WebSearchPluginTests
         try
         {
             using HttpClient client = new(new StubHttpMessageHandler(HttpStatusCode.OK, "{}"));
-            WebSearchPlugin plugin = new(client);
+            IHttpClientFactory factory = CreateMockFactory(client);
+            WebSearchPlugin plugin = new(factory);
 
             ToolResult<string> result = await plugin.WebSearch("query", 3);
 
@@ -84,7 +95,8 @@ public class WebSearchPluginTests
         try
         {
             using HttpClient client = new(new StubHttpMessageHandler(HttpStatusCode.BadRequest, "bad body"));
-            WebSearchPlugin plugin = new(client);
+            IHttpClientFactory factory = CreateMockFactory(client);
+            WebSearchPlugin plugin = new(factory);
 
             ToolResult<string> result = await plugin.WebSearch("query", 1);
 

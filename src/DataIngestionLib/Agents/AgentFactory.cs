@@ -16,7 +16,6 @@ using CommunityToolkit.Diagnostics;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Models;
 using DataIngestionLib.Providers;
-using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -37,32 +36,14 @@ namespace DataIngestionLib.Agents;
 /// <summary>
 ///     This class is intended to be an Agent Factory that will create and configure agents.
 /// </summary>
-public sealed class AgentFactory : IAgentFactory, IDisposable
+public class AgentFactory : IAgentFactory
 {
 
-    //keep track of created agents to prevent duplicate IDs, and to manage their lifecycle if needed
-    private readonly Dictionary<string, string> _agents = [];
-
-    private readonly SqlChatHistoryProvider _chatHistoryProvider;
-
-    private bool _disposedValue;
-
-    /// <summary>
-    ///     Base client that will be decorated with additional functionality using the builder pattern.
-    /// </summary>
-    private IChatClient? _innerClient;
-
-
-    private readonly AIContextRAGInjector _ragContextInjector;
-    private readonly IAIToolCatalog _toolCatalog;
-
+    private static SqlChatHistoryProvider? _chatHistoryProvider;
+    private static AIContextRAGInjector? _ragContextInjector;
+    private static IAIToolCatalog? _toolCatalog;
     private static ILoggerFactory _factory = NullLoggerFactory.Instance;
-    private readonly AppSettings settings = new();
-    private readonly ILogger<AgentFactory> _logger = NullLogger<AgentFactory>.Instance;
-
-
-
-
+    private static readonly AppSettings settings = new();
 
 
     /// <summary>
@@ -94,7 +75,6 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         _chatHistoryProvider = chatHistoryProvider;
         _ragContextInjector = ragContextInjector;
         _toolCatalog = toolCatalog;
-        _logger = factory.CreateLogger<AgentFactory>();
     }
 
 
@@ -104,42 +84,19 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
-    public void Dispose()
+
+
+
+    public IChatClient GetChatClient(string model)
     {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-    }
+        Uri ollamaUri = new UriBuilder(settings.RestEndpoint).Uri;
+        OllamaApiClient client = new(ollamaUri, model);
 
 
-
-
-
-
-    private async Task<AgentResponse> CustomAgentRunMiddleware(
-    IEnumerable<ChatMessage> messages,
-    AgentSession? session,
-    AgentRunOptions? options,
-    AIAgent innerAgent,
-    CancellationToken cancellationToken)
-    {
-        Console.WriteLine(messages.Count());
-
-        foreach (ChatMessage message in messages)
-        {
-            _logger.LogInformation("BEFORE agent run response message: {Message}", message.Text);
-        }
-
-        _logger.LogInformation("Custom middleware before agent run. Messages count: {Count}", messages.Count());
-
-        AgentResponse response = await innerAgent.RunAsync(messages, session, options, cancellationToken).ConfigureAwait(false);
-
-        foreach (ChatMessage message in response.Messages)
-        {
-            _logger.LogInformation("Post agent run response message: {Message}", message.Text);
-        }
-
-        _logger.LogInformation("Custom middleware after agent run. Messages count: {Count}", response.Messages.Count);
-        return response;
+        IChatClient baseclient = new LoggingChatClient(client, _factory.CreateLogger<LoggingChatClient>());
+        baseclient = new TokenAccountingMiddleware(baseclient, _factory.CreateLogger<TokenAccountingMiddleware>());
+        baseclient = new ForensicChatClient(baseclient, _factory.CreateLogger<ForensicChatClient>());
+        return baseclient;
     }
 
 
@@ -168,42 +125,17 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     ///     Thrown if an agent with the specified <paramref name="agentId" /> already
     ///     exists.
     /// </exception>
-    public AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null)
+    public AIAgent BuildAssistantAgent(IChatClient client, string agentId, string name, string agentDescription = "", string? instructions = null)
     {
 
         Guard.IsNotNullOrWhiteSpace(agentId);
-        Guard.IsNotNullOrWhiteSpace(model);
-        if (_agents.ContainsKey(agentId))
-        {
-            throw new InvalidOperationException($"An agent with the ID '{agentId}' already exists.");
-        }
 
-        _agents.Add(agentId, model);
 
-        _innerClient = new OllamaApiClient(new Uri(settings.RestEndpoint), model);
-        _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 
-#if !SQL
-        AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-                {
-                        Id = agentId,
-                        Name = agentId,
-                        Description = agentDescription,
-                        ChatOptions = new ChatOptions { Instructions = instructions ?? GetModelInstructions(), Temperature = 0.7f, MaxOutputTokens = 10000, Tools = _toolCatalog.GetReadOnlyAiTools() },
-                        ThrowOnChatHistoryProviderConflict = true
-                }, loggerFactory: _factory).AsBuilder()
-                .UseLogging(_factory)
-                .Use(CustomAgentRunMiddleware)
-                .Build();
-
-#else
-
-        HistoryMemoryProvider _memoryProvider = new(new HistoryIdentityService());
-
-        AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
+        ChatClientAgent outer = client.AsAIAgent(new ChatClientAgentOptions
         {
             Id = agentId,
-            Name = agentId,
+            Name = name,
             Description = agentDescription,
             ChatOptions = new ChatOptions
             {
@@ -213,71 +145,16 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                 AllowMultipleToolCalls = true,
                 Tools = _toolCatalog.GetReadOnlyAiTools()
             },
-            ThrowOnChatHistoryProviderConflict = false,
+            ChatHistoryProvider = _chatHistoryProvider,
+            AIContextProviders = [_ragContextInjector],
             WarnOnChatHistoryProviderConflict = true,
-            ChatHistoryProvider = _chatHistoryProvider
-        }, loggerFactory: _factory).AsBuilder()
-                .UseLogging(_factory)
-                .UseAIContextProviders([_ragContextInjector])
-                .Build();
+            ThrowOnChatHistoryProviderConflict = true
+        });
+        return outer.AsBuilder().UseLogging(_factory).Build();
 
-
-#endif
-        return outer;
     }
 
 
-
-
-
-
-
-
-    private void Dispose(bool disposing)
-    {
-        if (!_disposedValue)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            _disposedValue = true;
-        }
-    }
-
-
-
-
-
-
-
-
-    public AIAgent GetBasicAIAgent()
-    {
-        Uri ollamaUri = new UriBuilder(settings.RestEndpoint).Uri;
-        _innerClient = new OllamaApiClient(ollamaUri, AIModels.LLAMA1_B);
-        _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
-
-        AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions { Id = "IngestAgent", Name = "IngestAgent", Description = "Basic AI Agent for ingestion tasks", ChatOptions = new ChatOptions { Temperature = 0.7f, MaxOutputTokens = 10000 } }, loggerFactory: _factory).AsBuilder().UseLogging(_factory).Build();
-
-
-        return outer;
-    }
-
-
-
-
-
-
-
-
-    public static IChatClient GetChatClient()
-    {
-        throw new NotImplementedException();
-    }
 
 
 
@@ -303,10 +180,10 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     /// </exception>
     public static LoggingEmbeddingGenerator<string, Embedding<float>> GetEmbeddingClient()
     {
-        Uri ollamaUri = new("http://127.0.0.1:11434");
+        Uri ollamaUri = new(settings.RestEndpoint);
 
-        OllamaApiClient vector = new(ollamaUri, AIModels.MXBAI);
-        LoggingEmbeddingGenerator<string, Embedding<float>> logger = new(vector, _factory.CreateLogger<LoggingEmbeddingGenerator<string, Embedding<float>>>());
+        OllamaApiClient client = new(ollamaUri, AIModels.MXBAI);
+        LoggingEmbeddingGenerator<string, Embedding<float>> logger = new(client, _factory.CreateLogger<LoggingEmbeddingGenerator<string, Embedding<float>>>());
         return logger;
 
     }
@@ -358,17 +235,4 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
-    public async Task<AIAgent> GetReRankingAgent()
-    {
-
-
-        Uri ollamaUri = new UriBuilder(settings.RestEndpoint).Uri;
-        _innerClient = new OllamaApiClient(ollamaUri, AIModels.BGE_RERANKER);
-        _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
-
-        ChatClientAgent agent = _innerClient.AsAIAgent(loggerFactory: _factory);
-
-
-        return agent;
-    }
 }

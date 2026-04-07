@@ -1,7 +1,10 @@
 ﻿using System.Text.Json;
 
 using DataIngestionLib.Models;
-using DataIngestionLib.Services.Contracts;
+using DataIngestionLib.Services;
+
+
+
 
 namespace RAGDataIngestionWPF.Tests.MSTest;
 
@@ -52,16 +55,14 @@ public class PersistedAndModelContractsTests
         string gpt4 = AIModels.GPT4;
         string gptOss = AIModels.GPTOSS;
         string llama1B = AIModels.LLAMA1_B;
-        string llama3B = AIModels.LLAMA323_B;
         string mxbai = AIModels.MXBAI;
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(gpt4));
         Assert.IsFalse(string.IsNullOrWhiteSpace(gptOss));
         Assert.IsFalse(string.IsNullOrWhiteSpace(llama1B));
-        Assert.IsFalse(string.IsNullOrWhiteSpace(llama3B));
         Assert.IsFalse(string.IsNullOrWhiteSpace(mxbai));
 
-        CollectionAssert.AllItemsAreUnique(new object[] { gpt4, gptOss, llama1B, llama3B, mxbai });
+        CollectionAssert.AllItemsAreUnique(new object[] { gpt4, gptOss, llama1B, mxbai });
     }
 
     [TestMethod]
@@ -90,7 +91,7 @@ public class PersistedAndModelContractsTests
     [TestMethod]
     public void HistoryIdentitySupportsInitAndMutationProperties()
     {
-        HistoryIdentity identity = new()
+        HistoryIdentity identity = new(HistoryIdentityService.GetConversationId())
         {
             ApplicationId = "app",
             ConversationId = "conv"

@@ -1,8 +1,18 @@
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
+// Author: Kyle L. Crowder
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 using DataIngestionLib.Contracts;
+using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
-using Microsoft.Agents.Core.Serialization;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -48,7 +58,7 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(currentRequestMessages);
 
-        var effectiveConversationId = ResolveConversationId(conversationId);
+        var effectiveConversationId = this.ResolveConversationId(conversationId);
         HashSet<string> requestFingerprints = BuildFingerprintSet(ConvertKernelHistoryToChatMessages(currentRequestMessages));
 
         List<ChatMessage> snapshot;
@@ -78,7 +88,7 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
         ArgumentNullException.ThrowIfNull(requestMessages);
         ArgumentNullException.ThrowIfNull(responseMessages);
 
-        var effectiveConversationId = ResolveConversationId(conversationId);
+        var effectiveConversationId = this.ResolveConversationId(conversationId);
         List<ChatMessage> persistableMessages = ConvertKernelHistoryToChatMessages(requestMessages)
             .Concat(ConvertKernelHistoryToChatMessages(responseMessages))
             .Where(ShouldPersistMessage)
@@ -119,7 +129,7 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
         }
 
         var conversationId = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? _historyIdentityService.Current.ConversationId;
-        IEnumerable<ChatMessage> window = await BuildContextMessagesForRequestAsync(conversationId, context.RequestMessages ?? [], cancellationToken).ConfigureAwait(false);
+        IEnumerable<ChatMessage> window = await this.BuildContextMessagesForRequestAsync(conversationId, context.RequestMessages ?? [], cancellationToken).ConfigureAwait(false);
 
         return window.Select(message => message.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, nameof(HistoryMemoryProvider))).ToList();
     }
@@ -135,12 +145,12 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
             return;
         }
 
-        var identity = _historyIdentityService.Current;
+        HistoryIdentity identity = _historyIdentityService.Current;
         var conversationId = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? identity.ConversationId;
         IEnumerable<ChatMessage> requestMessages = context.RequestMessages ?? [];
         IEnumerable<ChatMessage> responseMessages = context.ResponseMessages ?? [];
 
-        await StoreMessagesInternalAsync(conversationId, requestMessages, responseMessages, cancellationToken).ConfigureAwait(false);
+        await this.StoreMessagesInternalAsync(conversationId, requestMessages, responseMessages, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -151,7 +161,7 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
         HashSet<string> fingerprints = new(StringComparer.Ordinal);
         foreach (ChatMessage message in messages)
         {
-            fingerprints.Add(CreateFingerprint(message));
+            _ = fingerprints.Add(CreateFingerprint(message));
         }
 
         return fingerprints;
@@ -173,17 +183,9 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
 
     private static bool HasExplicitSourceType(ChatMessage message, AgentRequestMessageSourceType sourceType)
     {
-        if (message.AdditionalProperties is null)
-        {
-            return false;
-        }
-
-        if (!message.AdditionalProperties.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out object? value))
-        {
-            return false;
-        }
-
-        return value is AgentRequestMessageSourceAttribution attribution && attribution.SourceType == sourceType;
+        return message.AdditionalProperties is null
+            ? false
+            : message.AdditionalProperties.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out var value) && value is AgentRequestMessageSourceAttribution attribution && attribution.SourceType == sourceType;
     }
 
 
@@ -191,12 +193,7 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
 
     private string ResolveConversationId(string? conversationId)
     {
-        if (!string.IsNullOrWhiteSpace(conversationId))
-        {
-            return conversationId;
-        }
-
-        return _historyIdentityService.Current.ConversationId;
+        return !string.IsNullOrWhiteSpace(conversationId) ? conversationId : _historyIdentityService.Current.ConversationId;
     }
 
 
@@ -210,12 +207,7 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
         }
 
         // Tool results are available only in the current turn and should not be replayed.
-        if (message.Role == ChatRole.Tool)
-        {
-            return false;
-        }
-
-        return true;
+        return message.Role != ChatRole.Tool;
     }
 
 
@@ -223,17 +215,7 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
 
     private static bool ShouldPersistMessage(ChatMessage message)
     {
-        if (!ShouldIncludeInContext(message))
-        {
-            return false;
-        }
-
-        if (HasExplicitSourceType(message, AgentRequestMessageSourceType.ChatHistory))
-        {
-            return false;
-        }
-
-        return true;
+        return !ShouldIncludeInContext(message) ? false : !HasExplicitSourceType(message, AgentRequestMessageSourceType.ChatHistory);
     }
 
 
@@ -244,7 +226,7 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
         cancellationToken.ThrowIfCancellationRequested();
 
         HashSet<string> requestFingerprints = BuildFingerprintSet(requestMessages);
-        var effectiveConversationId = ResolveConversationId(conversationId);
+        var effectiveConversationId = this.ResolveConversationId(conversationId);
 
         List<ChatMessage> snapshot;
         lock (_windowLock)
@@ -271,7 +253,7 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var effectiveConversationId = ResolveConversationId(conversationId);
+        var effectiveConversationId = this.ResolveConversationId(conversationId);
         List<ChatMessage> persistableMessages = requestMessages
             .Concat(responseMessages)
             .Where(ShouldPersistMessage)
@@ -322,21 +304,8 @@ public sealed class HistoryMemoryProvider : ChatHistoryProvider, IChatHistoryMem
 
     private static ChatRole MapRole(AuthorRole role)
     {
-        if (role == AuthorRole.System)
-        {
-            return ChatRole.System;
-        }
-
-        if (role == AuthorRole.Assistant)
-        {
-            return ChatRole.Assistant;
-        }
-
-        if (role == AuthorRole.Tool)
-        {
-            return ChatRole.Tool;
-        }
-
-        return ChatRole.User;
+        return role == AuthorRole.System
+            ? ChatRole.System
+            : role == AuthorRole.Assistant ? ChatRole.Assistant : role == AuthorRole.Tool ? ChatRole.Tool : ChatRole.User;
     }
 }

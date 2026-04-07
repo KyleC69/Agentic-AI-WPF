@@ -7,51 +7,40 @@
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     xmlns:models="clr-namespace:RAGDataIngestionWPF.Models"
     xmlns:full="https://github.com/whistyun/MdXaml.Full"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     x:Class="RAGDataIngestionWPF.Views.MainPage"
     Style="{DynamicResource MahApps.Styles.Page}"
-    mc:Ignorable="d" Width="1400" Height="1000">
-
-    <Page.Resources>
-     
-    </Page.Resources>
+    mc:Ignorable="d" Width="1400" Height="1000"
+    Background="{DynamicResource MahApps.Brushes.Window.Background.Backdrop.Acrylic}"
+    >
 
 
-    <Grid DataContext="{Binding}" ShowGridLines="True">
-        <Grid.Background>
-            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                <GradientStop Color="Black" Offset="0.153" />
-                <GradientStop Color="White" Offset="1" />
-                <GradientStop Color="#FF292929" Offset="0.293" />
-                <GradientStop Color="#FF515151" Offset="0.417" />
-                <GradientStop Color="#FF1B1111" Offset="0.567" />
-                <GradientStop Color="#FF1D1212" Offset="0.673" />
-                <GradientStop Color="#FF231B1B" Offset="0.85" />
-            </LinearGradientBrush>
-        </Grid.Background>
+    <Grid DataContext="{Binding}" >
+
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock
-            Style="{StaticResource PageTitleStyle}"
-            Text="{x:Static properties:Resources.MainPageTitle}" />
-        <Grid Grid.Row="1" Margin="{StaticResource MediumLeftRightMargin}"
-              Background="{DynamicResource MahApps.Brushes.Gray60}">
+        <TextBlock Style="{StaticResource PageTitleStyle}" Text="{x:Static properties:Resources.MainPageTitle}" />
+        <Grid Grid.Row="1" Margin="{StaticResource MediumLeftRightMargin}">
             <Grid Margin="{StaticResource SmallTopBottomMargin}" ScrollViewer.VerticalScrollBarVisibility="Visible">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="933*" />
                     <ColumnDefinition Width="19*" />
                     <ColumnDefinition Width="124" />
+                    <ColumnDefinition MinWidth="120"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <GroupBox Header="Options" Width="120" Grid.Column="3">
-                    <Button Content="New Convo" x:Name="convoBtn" Margin="8,20,0,8" Command="{Binding NewConvoCommand}" />
-                </GroupBox>
-                <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
+                <StackPanel MinWidth="120" Grid.Row="1" Grid.Column="3"  Orientation="Vertical">
+                    <GroupBox Header="Options">
+                        <Button Content="New Convo" x:Name="convoBtn" Margin="8,20,0,8" Command="{Binding NewConvoCommand}" />
+                    </GroupBox>
+                    </StackPanel>
+                    <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
                     <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
                                Text="{Binding TotalTokenCount, StringFormat=Total tokens: \{0\} / 130000}" />
                     <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
@@ -87,7 +76,7 @@
                             <Border
                                 Margin="0,4"
                                 Padding="10"
-                                MaxWidth="{Binding ElementName=MessagesListBox, Path=ActualWidth}"
+                                MaxWidth="{Binding ActualWidth, ElementName=MessagesListBox}"
                                 HorizontalAlignment="Left"
                                 Background="LightBlue">
                                 <Border.Style>
@@ -115,19 +104,20 @@
                                                                 Foreground="DarkSlateGray"
                                                                 PreviewMouseWheel="OnPreviewMouseWheel"
                                                                 Background="BurlyWood"
+                                                                VerticalScrollBarVisibility="Visible"
                                                                 MarkdownStyleName="SasaBune" Syntax="MdXaml">
                                         <mdxam:MarkdownScrollViewer.Resources>
                                             <full:MarkdownScrollViewer PreviewMouseWheel="OnPreviewMouseWheel" x:Key="Wheel" />
-                                            <Style TargetType="TableRowGroup">
+                                            <Style TargetType="{x:Type TableRowGroup}">
                                                 <Setter Property="Background" Value="DarkGray" />
                                             </Style>
-                                            <Style TargetType="TableCell">
+                                            <Style TargetType="{x:Type TableCell}">
                                                 <Setter Property="BorderThickness" Value="0.5" />
                                                 <Setter Property="BorderBrush" Value="Gray" />
                                                 <Setter Property="Padding" Value="2" />
                                                 <Style.Triggers>
                                                     <DataTrigger
-                                                        Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TableRow}}, Path=Tag}"
+                                                        Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType={x:Type TableRow}, Mode=FindAncestor}}"
                                                         Value="EvenTableRow">
                                                         <Setter Property="Background" Value="#AAFFAA" />
                                                     </DataTrigger>
@@ -141,7 +131,7 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <Grid Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" Grid.ColumnSpan="3" ShowGridLines="True">
+                <Grid Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" Grid.ColumnSpan="3" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -161,17 +151,8 @@
                              PreviewKeyDown="UIElement_OnPreviewKeyDown"
                              TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto"
-                             Text="{Binding MessageInput, UpdateSourceTrigger=PropertyChanged}">
-                        <TextBox.Background>
-                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                <GradientStop Color="Black" />
-                                <GradientStop Color="White" Offset="1" />
-                                <GradientStop Color="#FF282828" Offset="0.16" />
-                                <GradientStop Color="#FF404040" Offset="0.257" />
-                                <GradientStop Color="#FF191212" Offset="0.327" />
-                            </LinearGradientBrush>
-                        </TextBox.Background>
-                    </TextBox>
+                             
+                             Text="{Binding MessageInput, UpdateSourceTrigger=PropertyChanged}" Effect="{DynamicResource DropShadowBrush}" Style="{DynamicResource MahApps.Styles.TextBox}"/>
 
                     <StackPanel Grid.Row="0"
                                 Grid.Column="1"
@@ -200,7 +181,7 @@
                         IsIndeterminate="True"
                         Orientation="Horizontal">
                         <ProgressBar.Style>
-                            <Style TargetType="ProgressBar" BasedOn="{StaticResource {x:Type ProgressBar}}">
+                            <Style TargetType="{x:Type ProgressBar}" BasedOn="{StaticResource {x:Type ProgressBar}}">
                                 <!-- Default state -->
                                 <Setter Property="Visibility" Value="Visible" />
 

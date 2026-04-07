@@ -12,14 +12,12 @@
 
 
 using System.Diagnostics;
-using System.Text.Json;
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.EFModels;
 using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
-using Microsoft.Agents.Core.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -205,8 +203,8 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
         //REmoves messages that are tagged with ignored source types or that have empty/whitespace content,
         //as these are not useful to keep in the chat history and can cause issues with some LLM providers if included in the prompt.
         ChatMessage[] clean = allMessages.Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType())).Where(message => !string.IsNullOrWhiteSpace(message.Text)).ToArray();
-        IEnumerable<ChatMessage> good = clean.Where(msg => !IsErroredToolResult(msg)).ToList();
-        return good;
+
+        return clean;
     }
 
 
@@ -240,33 +238,4 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
 
 
 
-    /// <summary>
-    ///     Determines whether the specified chat message represents an errored tool result.
-    /// </summary>
-    /// <param name="msg">The chat message to evaluate.</param>
-    /// <returns>
-    ///     <c>true</c> if the chat message is from a tool and contains an error; otherwise, <c>false</c>.
-    /// </returns>
-    private static bool IsErroredToolResult(ChatMessage msg)
-    {
-        if (msg.Role != ChatRole.Tool)
-        {
-            return false;
-        }
-
-        _ = msg.ToJsonElements();
-
-        foreach (AIContent content in msg.Contents)
-        {
-            if (content is FunctionResultContent rc)
-            {
-                if (rc.Result is not null && rc.Result is JsonElement resultElement && resultElement.TryGetProperty("error", out _))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 }

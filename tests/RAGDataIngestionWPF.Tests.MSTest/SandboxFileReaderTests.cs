@@ -47,9 +47,9 @@ public class SandboxFileReaderTests
     public void Read_Known_Good_Path_(string path)
     {
 
-        FileContentsReadingTool tool = new("E:\\");
+        _ = new FileContentsReadingTool("E:\\");
 
-        ToolResult<string> result = tool.ReadFileContents(path);
+        ToolResult<string> result = FileContentsReadingTool.ReadFileContents(path);
 
 
         Assert.IsNotNull(result.Value);
@@ -87,9 +87,9 @@ public class SandboxFileReaderTests
     [DataRow("  ")]
     public void ReadFileWithNullOrWhitespacePathReturnsFailure(string relativePath)
     {
-        FileContentsReadingTool tool = new(_sandboxRoot);
+        _ = new FileContentsReadingTool(_sandboxRoot);
 
-        ToolResult<string> result = tool.ReadFileContents(relativePath!);
+        ToolResult<string> result = FileContentsReadingTool.ReadFileContents(relativePath!);
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual("Path cannot be empty.", result.Error);
@@ -98,9 +98,9 @@ public class SandboxFileReaderTests
     [TestMethod]
     public void ReadFileOutsideSandboxReturnsAccessDenied()
     {
-        FileContentsReadingTool tool = new(_sandboxRoot);
+        _ = new FileContentsReadingTool(_sandboxRoot);
 
-        ToolResult<string> result = tool.ReadFileContents("..\\outside.txt");
+        ToolResult<string> result = FileContentsReadingTool.ReadFileContents("..\\outside.txt");
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual("Access denied: path is outside the sandbox.", result.Error);
@@ -109,9 +109,9 @@ public class SandboxFileReaderTests
     [TestMethod]
     public void ReadFileMissingFileReturnsFailure()
     {
-        FileContentsReadingTool tool = new(_sandboxRoot);
+        _ = new FileContentsReadingTool(_sandboxRoot);
 
-        ToolResult<string> result = tool.ReadFileContents("missing.txt");
+        ToolResult<string> result = FileContentsReadingTool.ReadFileContents("missing.txt");
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual("File not found: missing.txt", result.Error);
@@ -122,9 +122,9 @@ public class SandboxFileReaderTests
     {
         var filePath = Path.Combine(_sandboxRoot, "sample.txt");
         File.WriteAllText(filePath, "hello reader");
-        FileContentsReadingTool tool = new(_sandboxRoot);
+        _ = new FileContentsReadingTool(_sandboxRoot);
 
-        ToolResult<string> result = tool.ReadFileContents("sample.txt");
+        ToolResult<string> result = FileContentsReadingTool.ReadFileContents("sample.txt");
 
         Assert.IsTrue(result.Success);
         Assert.AreEqual("hello reader", result.Value);
