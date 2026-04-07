@@ -7,15 +7,13 @@
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     xmlns:models="clr-namespace:RAGDataIngestionWPF.Models"
     xmlns:full="https://github.com/whistyun/MdXaml.Full"
-    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     x:Class="RAGDataIngestionWPF.Views.MainPage"
     Style="{DynamicResource MahApps.Styles.Page}"
     mc:Ignorable="d" Width="1400" Height="1000"
-    Background="{DynamicResource MahApps.Brushes.Window.Background.Backdrop.Acrylic}"
-    >
+    Background="{DynamicResource MahApps.Brushes.Window.Background.Backdrop.Acrylic}">
 
 
-    <Grid DataContext="{Binding}" >
+    <Grid DataContext="{Binding}">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
@@ -28,19 +26,20 @@
                     <ColumnDefinition Width="933*" />
                     <ColumnDefinition Width="19*" />
                     <ColumnDefinition Width="124" />
-                    <ColumnDefinition MinWidth="120"/>
+                    <ColumnDefinition MinWidth="120" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel MinWidth="120" Grid.Row="1" Grid.Column="3"  Orientation="Vertical">
+                <StackPanel MinWidth="120" Grid.Row="1" Grid.Column="3" Orientation="Vertical">
                     <GroupBox Header="Options">
-                        <Button Content="New Convo" x:Name="convoBtn" Margin="8,20,0,8" Command="{Binding NewConvoCommand}" />
+                        <Button Content="New Convo" x:Name="convoBtn" Margin="8,20,0,8"
+                                Command="{Binding NewConvoCommand}" />
                     </GroupBox>
-                    </StackPanel>
-                    <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
+                </StackPanel>
+                <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
                     <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
                                Text="{Binding TotalTokenCount, StringFormat=Total tokens: \{0\} / 130000}" />
                     <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
@@ -107,7 +106,6 @@
                                                                 VerticalScrollBarVisibility="Visible"
                                                                 MarkdownStyleName="SasaBune" Syntax="MdXaml">
                                         <mdxam:MarkdownScrollViewer.Resources>
-                                            <full:MarkdownScrollViewer PreviewMouseWheel="OnPreviewMouseWheel" x:Key="Wheel" />
                                             <Style TargetType="{x:Type TableRowGroup}">
                                                 <Setter Property="Background" Value="DarkGray" />
                                             </Style>
@@ -131,7 +129,7 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <Grid Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" Grid.ColumnSpan="3" >
+                <Grid Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" Grid.ColumnSpan="3">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -151,8 +149,10 @@
                              PreviewKeyDown="UIElement_OnPreviewKeyDown"
                              TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto"
-                             
-                             Text="{Binding MessageInput, UpdateSourceTrigger=PropertyChanged}" Effect="{DynamicResource DropShadowBrush}" Style="{DynamicResource MahApps.Styles.TextBox}"/>
+
+                             Text="{Binding MessageInput, UpdateSourceTrigger=PropertyChanged}"
+                             Effect="{DynamicResource DropShadowBrush}"
+                             Style="{DynamicResource MahApps.Styles.TextBox}" />
 
                     <StackPanel Grid.Row="0"
                                 Grid.Column="1"

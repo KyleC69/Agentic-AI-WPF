@@ -1,6 +1,22 @@
+// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         SystemInfoToolTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 213003
+
+
+
 using DataIngestionLib.ToolFunctions;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class SystemInfoToolTests
@@ -8,7 +24,7 @@ public class SystemInfoToolTests
     [TestMethod]
     public void GetInfoReturnsSnapshotWithExpectedFields()
     {
-        ToolResult<SystemInfoSnapshot> result = SystemInfoTool.GetInfo();
+        var result = SystemInfoTool.GetInfo();
 
         Assert.IsTrue(result.Success);
         Assert.IsNotNull(result.Value);

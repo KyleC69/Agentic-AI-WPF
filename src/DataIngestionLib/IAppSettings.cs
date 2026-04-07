@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         IAppSettings.cs
 // Author: Kyle L. Crowder
-// Build Num: 211356
+// Build Num: 212926
 
 
 
@@ -15,19 +15,18 @@ namespace DataIngestionLib;
 
 public interface IAppSettings
 {
-    string OllamaHost { get; set; }
-    int OllamaPort { get; set; }
+    string AgentId { get; set; }
+    string ApplicationId { get; set; }
+    string ChatHistoryConnectionString { get; set; }
+    string ChatModel { get; set; }
     string EmbeddingModel { get; set; }
+    string LearnBaseUrl { get; set; }
     string LogDirectory { get; set; }
     string LogName { get; set; }
     int MaximumContext { get; set; }
-    string AgentId { get; set; }
-    string ChatHistoryConnectionString { get; set; }
-    string RemoteRAGConnectionString { get; set; }
-    bool ResumeLast { get; set; }
-    string ChatModel { get; set; }
-    string LearnBaseUrl { get; set; }
-    string ApplicationId { get; set; }
-    string UserName { get; set; }
     OrchestrationMode Orchestration { get; set; }
+    string RemoteRAGConnectionString { get; set; }
+    string RestEndpoint { get; set; }
+    bool ResumeLast { get; set; }
+    string UserName { get; set; }
 }

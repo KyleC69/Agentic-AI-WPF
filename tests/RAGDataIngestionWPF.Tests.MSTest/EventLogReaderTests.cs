@@ -1,6 +1,22 @@
+// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         EventLogReaderTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 212957
+
+
+
 using DataIngestionLib.ToolFunctions;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class EventLogReaderTests
@@ -15,17 +31,19 @@ public class EventLogReaderTests
         Assert.IsNull(result.Entries);
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public void EventLogReadResultOkSetsEntriesAndSuccessTrue()
     {
         IReadOnlyList<EventLogEntryDto> entries =
         [
-            new EventLogEntryDto
-            {
-                EventId = 1,
-                Source = "src",
-                Message = "msg"
-            }
+                new EventLogEntryDto { EventId = 1, Source = "src", Message = "msg" }
         ];
 
         EventLogReadResult result = EventLogReadResult.Ok(entries);
@@ -35,6 +53,13 @@ public class EventLogReaderTests
         Assert.IsNull(result.Error);
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     [DataRow(null)]
     [DataRow("")]
@@ -43,18 +68,25 @@ public class EventLogReaderTests
     {
         SandboxEventLogReader reader = new();
 
-        ToolResult<IReadOnlyList<EventLogEntryDto>> result = reader.ReadLog(logName!);
+        var result = reader.ReadLog(logName!);
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual("Log name cannot be empty.", result.Error);
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public void ReadLogWithMissingLogReturnsFailure()
     {
-        SandboxEventLogReader reader = new();
+        SandboxEventLogReader reader = new SandboxEventLogReader();
 
-        ToolResult<IReadOnlyList<EventLogEntryDto>> result = reader.ReadLog($"NoSuchLog-{Guid.NewGuid():N}");
+        var result = reader.ReadLog($"NoSuchLog-{Guid.NewGuid():N}");
 
         Assert.IsFalse(result.Success);
         StringAssert.StartsWith(result.Error, "Event log '");

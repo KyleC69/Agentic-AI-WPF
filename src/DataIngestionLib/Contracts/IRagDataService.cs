@@ -1,14 +1,20 @@
-// Build Date: 2026/04/04
+// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IRagDataService.cs
-// Author: GitHub Copilot
+// Author: Kyle L. Crowder
+// Build Num: 212854
+
 
 
 using Microsoft.Extensions.AI;
 
 
+
+
 namespace DataIngestionLib.Contracts;
+
+
 
 
 

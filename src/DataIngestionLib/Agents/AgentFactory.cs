@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 212847
 
 
 
@@ -40,10 +36,16 @@ public class AgentFactory : IAgentFactory
 {
 
     private static SqlChatHistoryProvider? _chatHistoryProvider;
+    private static ILoggerFactory _factory = NullLoggerFactory.Instance;
     private static AIContextRAGInjector? _ragContextInjector;
     private static IAIToolCatalog? _toolCatalog;
-    private static ILoggerFactory _factory = NullLoggerFactory.Instance;
     private static readonly AppSettings settings = new();
+
+
+
+
+
+
 
 
     /// <summary>
@@ -84,26 +86,6 @@ public class AgentFactory : IAgentFactory
 
 
 
-
-
-
-    public IChatClient GetChatClient(string model)
-    {
-        Uri ollamaUri = new UriBuilder(settings.RestEndpoint).Uri;
-        OllamaApiClient client = new(ollamaUri, model);
-
-
-        IChatClient baseclient = new LoggingChatClient(client, _factory.CreateLogger<LoggingChatClient>());
-        baseclient = new TokenAccountingMiddleware(baseclient, _factory.CreateLogger<TokenAccountingMiddleware>());
-        baseclient = new ForensicChatClient(baseclient, _factory.CreateLogger<ForensicChatClient>());
-        return baseclient;
-    }
-
-
-
-
-
-
     /// <summary>
     ///     Creates and returns a coding assistant agent configured with the specified parameters.
     ///     Unique agent IDs are enforced to prevent conflicts within the system. The agent is designed to assist with
@@ -134,27 +116,44 @@ public class AgentFactory : IAgentFactory
 
         ChatClientAgent outer = client.AsAIAgent(new ChatClientAgentOptions
         {
-            Id = agentId,
-            Name = name,
-            Description = agentDescription,
-            ChatOptions = new ChatOptions
-            {
-                Instructions = instructions ?? GetModelInstructions(),
-                Temperature = 0.7f,
-                MaxOutputTokens = 10000,
-                AllowMultipleToolCalls = true,
-                Tools = _toolCatalog.GetReadOnlyAiTools()
-            },
-            ChatHistoryProvider = _chatHistoryProvider,
-            AIContextProviders = [_ragContextInjector],
-            WarnOnChatHistoryProviderConflict = true,
-            ThrowOnChatHistoryProviderConflict = true
+                Id = agentId,
+                Name = name,
+                Description = agentDescription,
+                ChatOptions = new ChatOptions
+                {
+                        Instructions = instructions ?? GetModelInstructions(),
+                        Temperature = 0.7f,
+                        MaxOutputTokens = 10000,
+                        AllowMultipleToolCalls = true,
+                        Tools = _toolCatalog.GetReadOnlyAiTools()
+                },
+                ChatHistoryProvider = _chatHistoryProvider,
+                AIContextProviders = [_ragContextInjector],
+                WarnOnChatHistoryProviderConflict = true,
+                ThrowOnChatHistoryProviderConflict = true
         });
         return outer.AsBuilder().UseLogging(_factory).Build();
 
     }
 
 
+
+
+
+
+
+
+    public IChatClient GetChatClient(string model)
+    {
+        Uri ollamaUri = new UriBuilder(settings.RestEndpoint).Uri;
+        OllamaApiClient client = new(ollamaUri, model);
+
+
+        IChatClient baseclient = new LoggingChatClient(client, _factory.CreateLogger<LoggingChatClient>());
+        baseclient = new TokenAccountingMiddleware(baseclient, _factory.CreateLogger<TokenAccountingMiddleware>());
+        baseclient = new ForensicChatClient(baseclient, _factory.CreateLogger<ForensicChatClient>());
+        return baseclient;
+    }
 
 
 
@@ -227,12 +226,4 @@ public class AgentFactory : IAgentFactory
                 - Provide concise, factual answers without unnecessary commentary.
                """;
     }
-
-
-
-
-
-
-
-
 }

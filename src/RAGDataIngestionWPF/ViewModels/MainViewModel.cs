@@ -1,12 +1,15 @@
-﻿// Build Date: 2026/04/03
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         MainViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 095219
+// Build Num: 212941
+
+
 
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Threading;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -19,7 +22,14 @@ using RAGDataIngestionWPF.Contracts.ViewModels;
 
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
+
+
+
 namespace RAGDataIngestionWPF.ViewModels;
+
+
+
+
 
 public sealed partial class MainViewModel : ObservableObject, IDisposable, INavigationAware
 {
@@ -40,6 +50,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     [ObservableProperty] private int toolTokenCount;
     [ObservableProperty] private int totalTokenCount;
 
+
+
+
+
+
+
+
     public MainViewModel(IChatConversationService chatConversationService, IHistoryIdentityService historyIdentityService)
     {
         ArgumentNullException.ThrowIfNull(chatConversationService);
@@ -57,6 +74,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         // Need to link this back to applicaion lifecycle
         _tokenSource = new CancellationTokenSource();
     }
+
+
+
+
+
+
+
 
     public IRelayCommand CancelMessageCommand { get; }
 
@@ -98,11 +122,25 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     public IAsyncRelayCommand SendMessageCommand { get; }
 
+
+
+
+
+
+
+
     public void Dispose()
     {
         _tokenSource?.Dispose();
         _chatConversationService.BusyStateChanged -= OnBusyStateChange;
     }
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Called when the view model is navigated away from.
@@ -114,6 +152,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     public void OnNavigatedFrom()
     {
     }
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Called when the view model is navigated to.
@@ -155,15 +200,36 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
     }
 
+
+
+
+
+
+
+
     private bool CanCancelMessage()
     {
         return IsBusy;
     }
 
+
+
+
+
+
+
+
     private void CancelMessage()
     {
         _tokenSource?.Cancel();
     }
+
+
+
+
+
+
+
 
     private bool CanSendMessage()
     {
@@ -172,10 +238,43 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
+
+
+
+
+
     private void OnBusyStateChange(object sender, bool e)
     {
         RunOnUiThread(() => IsBusy = e);
     }
+
+
+
+
+
+
+
+
+    private static void RunOnUiThread(Action updateAction)
+    {
+        ArgumentNullException.ThrowIfNull(updateAction);
+
+        Dispatcher dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            updateAction();
+            return;
+        }
+
+        _ = dispatcher.InvokeAsync(updateAction);
+    }
+
+
+
+
+
+
+
 
     private async Task SendMessageAsync()
     {
@@ -209,26 +308,17 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
     }
 
+
+
+
+
+
+
+
     private async Task StartNewConversationAsync(CancellationToken arg)
     {
         // Clear the current conversation in the service, which should trigger the UI to clear as well.
         await _chatConversationService.StartNewConversationAsync(arg);
         Messages.Clear();
-    }
-
-
-
-    private static void RunOnUiThread(Action updateAction)
-    {
-        ArgumentNullException.ThrowIfNull(updateAction);
-
-        var dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is null || dispatcher.CheckAccess())
-        {
-            updateAction();
-            return;
-        }
-
-        _ = dispatcher.InvokeAsync(updateAction);
     }
 }

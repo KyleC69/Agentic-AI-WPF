@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChatHistoryMessage.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 212902
 
 
 
@@ -45,8 +41,7 @@ public class ChatHistoryMessage
     public string Role { get; set; } = null!;
 
     public string? Summary { get; set; }
-
+    public int TokenCnt { get; set; } = 0;
 
     public string UserId { get; set; } = null!;
-    public int TokenCnt { get; set; } = 0;
 }

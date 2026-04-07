@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/03
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         DataGridViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 095218
+// Build Num: 212939
 
 
 
@@ -30,9 +30,9 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 public sealed class DataGridViewModel : ObservableObject, INavigationAware
 {
+    private readonly DocIngestionPipeline _docIngest;
     private readonly ILogger<DataGridViewModel> _logger;
     private AsyncRelayCommand _startIngestionCommand;
-    private readonly DocIngestionPipeline _docIngest;
 
     private CancellationTokenSource cts = new();
 
@@ -41,7 +41,9 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    public DataGridViewModel(DataIngestionLib.DocIngestion.DocIngestionPipeline docIngestionPipeline)
+
+
+    public DataGridViewModel(DocIngestionPipeline docIngestionPipeline)
     {
         _docIngest = docIngestionPipeline;
     }

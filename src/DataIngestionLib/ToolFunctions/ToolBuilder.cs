@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/03
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ToolBuilder.cs
 // Author: Kyle L. Crowder
-// Build Num: 095204
+// Build Num: 212922
 
 
 
@@ -22,23 +22,25 @@ namespace DataIngestionLib.ToolFunctions;
 
 public sealed class ToolBuilder : IAIToolCatalog
 {
-    private readonly Lazy<AITool> _webSearchTool;
-    private readonly Lazy<AITool> _systemInfoTool;
     private readonly Lazy<AITool> _eventLogTool;
+    private readonly Lazy<AITool> _fileSystemWriterTool;
     private readonly Lazy<AITool> _installedUpdatesReadTool;
+    private readonly Lazy<AITool> _listFolderContentsTool;
     private readonly Lazy<AITool> _networkConfigurationReadTool;
     private readonly Lazy<AITool> _performanceCounterReadTool;
     private readonly Lazy<AITool> _processSnapshotReadTool;
-    private readonly Lazy<AITool> _windowsEventChannelReadTool;
     private readonly Lazy<AITool> _registryReadTool;
     private readonly Lazy<AITool> _reliabilityHistoryReadTool;
+    private readonly Lazy<AITool> _safeCommandRunTool;
     private readonly Lazy<AITool> _serviceHealthReadTool;
     private readonly Lazy<AITool> _startupInventoryReadTool;
     private readonly Lazy<AITool> _storageHealthReadTool;
+    private readonly Lazy<AITool> _systemInfoTool;
+    private readonly Lazy<AITool> _webSearchTool;
+    private readonly Lazy<AITool> _windowsEventChannelReadTool;
     private readonly Lazy<AITool> _windowsWmiReadTool;
-    private readonly Lazy<AITool> _safeCommandRunTool;
-    private readonly Lazy<AITool> _listFolderContentsTool;
-    private readonly Lazy<AITool> _fileSystemWriterTool;
+
+
 
 
 
@@ -66,9 +68,16 @@ public sealed class ToolBuilder : IAIToolCatalog
         _fileSystemWriterTool = new(() => AIFunctionFactory.Create(FileSystemWriterTool.WriteText));
     }
 
+
+
+
+
+
+
+
     public IList<AITool> GetAiTools()
     {
-        return this.GetReadOnlyAiTools();
+        return GetReadOnlyAiTools();
     }
 
 

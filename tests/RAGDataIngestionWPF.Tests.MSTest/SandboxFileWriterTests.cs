@@ -1,11 +1,14 @@
-﻿// Build Date: 2026/03/15
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         SandboxFileWriterTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 182419
+// Build Num: 213002
+
+
 
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
 
 
 
@@ -15,12 +18,12 @@ public class SandboxFileWriterTests
 {
     private string _sandboxRoot = string.Empty;
 
-    [TestInitialize]
-    public void Initialize()
-    {
-        _sandboxRoot = Path.Combine(Path.GetTempPath(), "writer-tool-tests", Guid.NewGuid().ToString("N"));
-        _ = Directory.CreateDirectory(_sandboxRoot);
-    }
+
+
+
+
+
+
 
     [TestCleanup]
     public void Cleanup()
@@ -32,7 +35,16 @@ public class SandboxFileWriterTests
     }
 
 
+
+
+
+
+
+
+    [TestInitialize]
+    public void Initialize()
+    {
+        _sandboxRoot = Path.Combine(Path.GetTempPath(), "writer-tool-tests", Guid.NewGuid().ToString("N"));
+        _ = Directory.CreateDirectory(_sandboxRoot);
+    }
 }
-
-
-

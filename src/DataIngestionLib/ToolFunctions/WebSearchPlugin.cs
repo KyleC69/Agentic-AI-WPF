@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         WebSearchPlugin.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 212923
 
 
 
@@ -15,7 +11,6 @@ using System.ComponentModel;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-
 
 
 
@@ -132,15 +127,20 @@ public sealed class WebSearchPlugin
     }
 
 
+
+
+
+
+
+
     public static string SanitizeControlCharacters(string input)
     {
         if (string.IsNullOrEmpty(input))
             return input;
 
-        var sb = new StringBuilder(input.Length);
+        StringBuilder sb = new(input.Length);
 
-        foreach (char c in input)
-        {
+        foreach (var c in input)
             if (char.IsControl(c) && c != '\t' && c != '\n' && c != '\r')
             {
                 sb.Append(' '); // Replace with space
@@ -149,10 +149,12 @@ public sealed class WebSearchPlugin
             {
                 sb.Append(c);
             }
-        }
 
         return sb.ToString();
     }
+
+
+
 
 
 

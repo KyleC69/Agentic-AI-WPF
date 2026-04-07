@@ -9,53 +9,52 @@
 //
 //
 
+
+
 using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
+
+
+
+
 public sealed class ForensicChatClient : DelegatingChatClient
 {
     private readonly ILogger<ForensicChatClient> _logger;
 
-    public ForensicChatClient(IChatClient inner, ILogger<ForensicChatClient> logger)
-        : base(inner)
+
+
+
+
+
+
+
+    public ForensicChatClient(IChatClient inner, ILogger<ForensicChatClient> logger) : base(inner)
     {
         _logger = logger;
     }
 
-    private void SafeLog(LogLevel level, string message, params object?[] args)
-    {
-        try { _logger.Log(level, message, args); }
-        catch { /* swallow */ }
-    }
 
-    private static string CorrelationId()
-    {
-        return Guid.NewGuid().ToString("N");
-    }
 
-    private void LogAnomalies(string id, List<string> anomalies)
-    {
-        if (anomalies.Count == 0)
-        {
-            return;
-        }
 
-        this.SafeLog(LogLevel.Warning,
-            "[Forensic:{Id}] Anomalies detected:\n - {A}",
-            id,
-            string.Join("\n - ", anomalies));
-    }
+
+
+
 
     // --------------------------------------------------------------------
     // NON-STREAMING: GetResponseAsync(messages)
     // --------------------------------------------------------------------
 
-    public override async Task<ChatResponse> GetResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
+
+
+
+
+
+
+
+    public override async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         var id = CorrelationId();
         this.SafeLog(LogLevel.Information, "[Forensic:{Id}] ENTER GetResponseAsync(messages)", id);
@@ -63,7 +62,7 @@ public sealed class ForensicChatClient : DelegatingChatClient
         List<string> anomalies = new();
         this.DetectRequest(messages, "GetResponseAsync(messages)", anomalies);
 
-        var response = await base.GetResponseAsync(messages, options, cancellationToken);
+        ChatResponse response = await base.GetResponseAsync(messages, options, cancellationToken);
 
         this.DetectResponse(response, "GetResponseAsync(messages)", anomalies);
 
@@ -73,14 +72,25 @@ public sealed class ForensicChatClient : DelegatingChatClient
         return response;
     }
 
+
+
+
+
+
+
+
     // --------------------------------------------------------------------
     // STREAMING: GetStreamingResponseAsync(messages)
     // --------------------------------------------------------------------
 
-    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+
+
+
+
+
+
+
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var id = CorrelationId();
         this.SafeLog(LogLevel.Information, "[Forensic:{Id}] ENTER GetStreamingResponseAsync(messages)", id);
@@ -90,7 +100,7 @@ public sealed class ForensicChatClient : DelegatingChatClient
 
         var sawAny = false;
 
-        await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken))
+        await foreach (ChatResponseUpdate update in base.GetStreamingResponseAsync(messages, options, cancellationToken))
         {
             sawAny = true;
             this.DetectStreaming(update, "GetStreamingResponseAsync(messages)", anomalies);
@@ -106,9 +116,35 @@ public sealed class ForensicChatClient : DelegatingChatClient
         this.SafeLog(LogLevel.Information, "[Forensic:{Id}] EXIT GetStreamingResponseAsync(messages)", id);
     }
 
+
+
+
+
+
+
+
+    private static string CorrelationId()
+    {
+        return Guid.NewGuid().ToString("N");
+    }
+
+
+
+
+
+
+
+
     // --------------------------------------------------------------------
     // REQUEST ANOMALY DETECTION
     // --------------------------------------------------------------------
+
+
+
+
+
+
+
 
     private void DetectRequest(IEnumerable<ChatMessage> messages, string method, List<string> anomalies)
     {
@@ -118,32 +154,45 @@ public sealed class ForensicChatClient : DelegatingChatClient
             return;
         }
 
-        var list = messages as IList<ChatMessage> ?? messages.ToList();
-
-        if (list.Count == 0)
+        IList<ChatMessage> messageList = messages as IList<ChatMessage> ?? messages.ToList();
+        if (!messageList.Any())
         {
             anomalies.Add($"{method}: messages is empty.");
         }
 
-        if (list.Any(m => m == null))
+        if (messageList.Any(message => message == null))
         {
             anomalies.Add($"{method}: null ChatMessage encountered.");
         }
 
-        if (list.Any(m => m.Role == null))
+        if (messageList.Any(message => message?.Role == null))
         {
             anomalies.Add($"{method}: message with null Role.");
         }
 
-        if (list.Any(m => m.Contents == null))
+        if (messageList.Any(message => message?.Contents == null))
         {
             anomalies.Add($"{method}: message with null Content.");
         }
     }
 
+
+
+
+
+
+
+
     // --------------------------------------------------------------------
     // RESPONSE ANOMALY DETECTION
     // --------------------------------------------------------------------
+
+
+
+
+
+
+
 
     private void DetectResponse(ChatResponse response, string method, List<string> anomalies)
     {
@@ -174,9 +223,23 @@ public sealed class ForensicChatClient : DelegatingChatClient
         }
     }
 
+
+
+
+
+
+
+
     // --------------------------------------------------------------------
     // STREAMING ANOMALY DETECTION
     // --------------------------------------------------------------------
+
+
+
+
+
+
+
 
     private void DetectStreaming(ChatResponseUpdate update, string method, List<string> anomalies)
     {
@@ -189,6 +252,42 @@ public sealed class ForensicChatClient : DelegatingChatClient
         if (update.Contents == null && update.MessageId == null)
         {
             anomalies.Add($"{method}: streaming update contains neither Contents nor MessageId.");
+        }
+    }
+
+
+
+
+
+
+
+
+    private void LogAnomalies(string id, List<string> anomalies)
+    {
+        if (anomalies.Count == 0)
+        {
+            return;
+        }
+
+        this.SafeLog(LogLevel.Warning, "[Forensic:{Id}] Anomalies detected:\n - {A}", id, string.Join("\n - ", anomalies));
+    }
+
+
+
+
+
+
+
+
+    private void SafeLog(LogLevel level, string message, params object?[] args)
+    {
+        try
+        {
+            _logger.Log(level, message, args);
+        }
+        catch
+        {
+            /* swallow */
         }
     }
 }

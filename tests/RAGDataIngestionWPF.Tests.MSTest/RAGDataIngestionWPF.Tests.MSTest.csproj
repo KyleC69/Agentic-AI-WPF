@@ -45,4 +45,8 @@
 		<ProjectReference Include="..\..\src\RAGDataIngestionWPF\RAGDataIngestionWPF.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="ToolFunctions\" />
+	</ItemGroup>
+
 </Project>

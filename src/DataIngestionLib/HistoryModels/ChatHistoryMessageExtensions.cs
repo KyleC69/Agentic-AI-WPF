@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChatHistoryMessageExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 212903
 
 
 
@@ -70,11 +66,11 @@ public static class ChatHistoryMessageExtensions
     {
         return role?.Trim().ToLowerInvariant() switch
         {
-            "assistant" => ChatRole.Assistant,
-            "system" => ChatRole.System,
-            "tool" => ChatRole.Tool,
-            "user" => ChatRole.User,
-            _ => ChatRole.User
+                "assistant" => ChatRole.Assistant,
+                "system" => ChatRole.System,
+                "tool" => ChatRole.Tool,
+                "user" => ChatRole.User,
+                _ => ChatRole.User
         };
     }
 }

@@ -1,6 +1,22 @@
+// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         StaTestHelper.cs
+// Author: Kyle L. Crowder
+// Build Num: 213002
+
+
+
 using System.Runtime.ExceptionServices;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 internal static class StaTestHelper
 {
@@ -29,6 +45,13 @@ internal static class StaTestHelper
             ExceptionDispatchInfo.Capture(error).Throw();
         }
     }
+
+
+
+
+
+
+
 
     public static T Run<T>(Func<T> action)
     {

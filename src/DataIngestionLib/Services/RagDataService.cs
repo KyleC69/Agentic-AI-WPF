@@ -1,13 +1,9 @@
-// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         RagDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 212914
 
 
 
@@ -15,14 +11,12 @@ using System.Diagnostics.CodeAnalysis;
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.EFModels;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
+
 using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.SqlServer;
 
 using Newtonsoft.Json;
 
@@ -34,10 +28,13 @@ namespace DataIngestionLib.Services;
 
 
 
+
 public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AIRemoteRagContext> remoteRagDbFactory) : IRagDataService
 {
     private readonly ILogger<RagDataService> _logger = logger;
     private readonly IDbContextFactory<AIRemoteRagContext> _remoteRagDbFactory = remoteRagDbFactory;
+
+
 
 
 
@@ -95,34 +92,9 @@ public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AI
         }
 
         //Tag messages with source for agent request - this allows the agent to know that these messages came from a RAG data source, and can be used for things like tool use decisions, or source attribution in responses.
-        IEnumerable<ChatMessage> tagged = rags.Select(ms => ms.WithAgentRequestMessageSource(AgentRequestMessageSourceType.AIContextProvider, this.GetType().Name));
+        var tagged = rags.Select(ms => ms.WithAgentRequestMessageSource(AgentRequestMessageSourceType.AIContextProvider, this.GetType().Name));
         return tagged;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -146,20 +118,20 @@ public class RagDataService(ILogger<RagDataService> logger, IDbContextFactory<AI
         conn.Open();
         using SqlDataReader reader = cmd.ExecuteReader();
         while (reader.Read())
-        {
             results.Add(new FullTextResults
             {
-                Id = reader.GetInt32(0),
-                Title = reader.GetString(1),
-                Summary = reader.GetString(2),
-                Keywords = reader.GetString(3).Split(','),
-                Score = reader.GetDouble(4)
+                    Id = reader.GetInt32(0),
+                    Title = reader.GetString(1),
+                    Summary = reader.GetString(2),
+                    Keywords = reader.GetString(3).Split(','),
+                    Score = reader.GetDouble(4)
             });
-        }
 
         return JsonConvert.SerializeObject(results);
 
     }
+
+
 
 
 

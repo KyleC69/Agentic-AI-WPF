@@ -72,6 +72,11 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
 
 
+    /// <summary>
+    ///     Current token context derived from middleware snapshots.
+    /// </summary>
+    public int ContextTokenCount { get; private set; }
+
     public bool Initialized { get; set; }
 
     /// <summary>
@@ -81,11 +86,6 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
     /// <inheritdoc />
     public event EventHandler<bool>? BusyStateChanged;
-
-    /// <summary>
-    ///     Current token context derived from middleware snapshots.
-    /// </summary>
-    public int ContextTokenCount { get; private set; }
 
     /// <inheritdoc />
     public string ConversationId { get; private set; } = HistoryIdentityService.GetConversationId();
@@ -113,13 +113,12 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
         ConversationId = HistoryIdentityService.GetConversationId();
 
         List<ChatHistoryMessage> historyMessages = db.ChatHistoryMessages.Where(m => m.ConversationId == ConversationId).OrderByDescending(m => m.CreatedAt).ToList();
-        IReadOnlyList<ChatMessage> messages = historyMessages.ToChatMessages();
+        var messages = historyMessages.ToChatMessages();
         //Tag messages to identify source as history load vs new conversation.
-        IEnumerable<ChatMessage> tagged = messages.Select(m => m.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, this.GetType().Name));
+        var tagged = messages.Select(m => m.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, this.GetType().Name));
 
         return tagged;
     }
-
 
 
 
@@ -161,8 +160,6 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
             BusyStateChanged?.Invoke(this, false);
         }
     }
-
-
 
 
 
@@ -236,7 +233,7 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
             _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
 
 
-            _historyIdentityService.Initialize(Settings.ApplicationId.ToString("D"), DefaultAgentId, _initialUserId);
+            _historyIdentityService.Initialize(Settings.ApplicationId, DefaultAgentId, _initialUserId);
 
             _historyIdentityService.ApplyToSession(_agentSession);
 
@@ -252,9 +249,4 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
             var unused = _initializeGate.Release();
         }
     }
-
-
-
-
-
 }

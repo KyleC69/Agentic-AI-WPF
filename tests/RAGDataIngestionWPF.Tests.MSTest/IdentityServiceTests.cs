@@ -1,15 +1,83 @@
+// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         IdentityServiceTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 212958
+
+
+
 using RAGDataIngestionWPF.Core.Helpers;
 using RAGDataIngestionWPF.Core.Services;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class IdentityServiceTests
 {
+
+    [TestMethod]
+    public async Task AcquireTokenSilentAsyncReturnsFalse()
+    {
+        IdentityService service = new();
+
+        var acquired = await service.AcquireTokenSilentAsync();
+
+        Assert.IsFalse(acquired);
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public async Task GetAccessTokenAsyncReturnsEmptyString()
+    {
+        IdentityService service = new IdentityService();
+
+        var token = await service.GetAccessTokenAsync(["scope"]);
+
+        Assert.AreEqual(string.Empty, token);
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void IsAuthorizedAlwaysReturnsTrue()
+    {
+        IdentityService service = new IdentityService();
+
+        var authorized = service.IsAuthorized();
+
+        Assert.IsTrue(authorized);
+    }
+
+
+
+
+
+
+
+
     [TestMethod]
     public async Task LoginAsyncSetsStateAndRaisesLoggedInEvent()
     {
-        IdentityService service = new();
+        IdentityService service = new IdentityService();
         var eventRaised = false;
         service.LoggedIn += (_, _) => eventRaised = true;
 
@@ -21,10 +89,17 @@ public class IdentityServiceTests
         Assert.IsTrue(eventRaised);
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public async Task LogoutAsyncAfterLoginClearsStateAndRaisesLoggedOutEvent()
     {
-        IdentityService service = new();
+        IdentityService service = new IdentityService();
         var eventRaised = false;
         service.LoggedOut += (_, _) => eventRaised = true;
         _ = await service.LoginAsync();
@@ -35,45 +110,22 @@ public class IdentityServiceTests
         Assert.IsTrue(eventRaised);
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public async Task LogoutAsyncWhenNotLoggedInDoesNotRaiseEvent()
     {
-        IdentityService service = new();
+        IdentityService service = new IdentityService();
         var eventRaised = false;
         service.LoggedOut += (_, _) => eventRaised = true;
 
         await service.LogoutAsync();
 
         Assert.IsFalse(eventRaised);
-    }
-
-    [TestMethod]
-    public void IsAuthorizedAlwaysReturnsTrue()
-    {
-        IdentityService service = new();
-
-        bool authorized = service.IsAuthorized();
-
-        Assert.IsTrue(authorized);
-    }
-
-    [TestMethod]
-    public async Task GetAccessTokenAsyncReturnsEmptyString()
-    {
-        IdentityService service = new();
-
-        string token = await service.GetAccessTokenAsync(["scope"]);
-
-        Assert.AreEqual(string.Empty, token);
-    }
-
-    [TestMethod]
-    public async Task AcquireTokenSilentAsyncReturnsFalse()
-    {
-        IdentityService service = new();
-
-        bool acquired = await service.AcquireTokenSilentAsync();
-
-        Assert.IsFalse(acquired);
     }
 }

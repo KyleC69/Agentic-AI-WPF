@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChatHistoryContextInjector.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 212907
 
 
 
@@ -108,11 +104,6 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
 
 
 
-
-
-
-
-
     /// <summary>
     ///     Asynchronously provides the AI context for the current invocation of an AI operation.
     /// </summary>
@@ -169,11 +160,11 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
         try
         {
             HistoryIdentity state = _sessionStateHelper.GetOrInitializeState(context.Session);
-            List<ChatMessage> cm = this.GetContextMessages(context);
+            var cm = GetContextMessages(context);
 
             //Need to filter out bad tool results and empty messages before saving to the session state and database,
             //but we want to keep the full set of messages in the session state for any providers that run after this one in the pipeline and may need access to the unfiltered messages.
-            IEnumerable<ChatMessage> filtered = FilterMessages(cm);
+            var filtered = FilterMessages(cm);
 
             state.Messages.AddRange(filtered);
             _sessionStateHelper.SaveState(context.Session, state);
@@ -202,7 +193,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
 
         //REmoves messages that are tagged with ignored source types or that have empty/whitespace content,
         //as these are not useful to keep in the chat history and can cause issues with some LLM providers if included in the prompt.
-        ChatMessage[] clean = allMessages.Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType())).Where(message => !string.IsNullOrWhiteSpace(message.Text)).ToArray();
+        var clean = allMessages.Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType())).Where(message => !string.IsNullOrWhiteSpace(message.Text)).ToArray();
 
         return clean;
     }
@@ -218,24 +209,10 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
     {
         List<ChatMessage> msgs = [];
         Debug.Assert(context.ResponseMessages != null);
-        foreach (ChatMessage m in context.ResponseMessages)
-        {
-            msgs.Add(m);
-        }
+        foreach (ChatMessage m in context.ResponseMessages) msgs.Add(m);
 
-        foreach (ChatMessage m in context.RequestMessages)
-        {
-            msgs.Add(m);
-        }
+        foreach (ChatMessage m in context.RequestMessages) msgs.Add(m);
 
         return msgs;
     }
-
-
-
-
-
-
-
-
 }

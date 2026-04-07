@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/03
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Core
 // File:         FileService.cs
 // Author: Kyle L. Crowder
-// Build Num: 095208
+// Build Num: 212927
 
 
 

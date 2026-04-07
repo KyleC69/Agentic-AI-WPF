@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/03
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         sp_LearnDocs_Search_VectorResult.cs
 // Author: Kyle L. Crowder
-// Build Num: 095145
+// Build Num: 212900
 
 
 

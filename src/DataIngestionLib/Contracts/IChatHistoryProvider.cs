@@ -1,12 +1,9 @@
-﻿// Build Date: 2026/04/03
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IChatHistoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 095140
-
-
-
+// Build Num: 212853
 
 // Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
@@ -15,18 +12,12 @@
 // Author: Kyle L. Crowder
 // Build Num: 095140
 
-
-
-
 // Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IChatHistoryProvider.cs
 // Author: Kyle L. Crowder
 // Build Num: 095140
-
-
-
 
 // Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF

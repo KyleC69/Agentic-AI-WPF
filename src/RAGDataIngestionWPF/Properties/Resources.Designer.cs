@@ -70,7 +70,7 @@ namespace RAGDataIngestionWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Blank.
+        ///   Looks up a localized string similar to Agent Orchestration.
         /// </summary>
         public static string BlankPageTitle {
             get {

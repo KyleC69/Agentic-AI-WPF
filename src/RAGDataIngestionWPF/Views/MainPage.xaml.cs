@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/03
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         MainPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 095223
+// Build Num: 212946
 
 
 
@@ -52,18 +52,17 @@ public sealed partial class MainPage
 
 
 
-    private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
-    {
-        if (sender is DependencyObject source &&
-            FindParentScrollViewer(source) is ScrollViewer scrollViewer)
-        {
-            e.Handled = true; // Prevent the event from being handled by child elements
 
-            // Adjust scroll offset based on wheel delta
-            scrollViewer.ScrollToVerticalOffset(
-                    scrollViewer.VerticalOffset - e.Delta / 3.0);
-        }
-    }
+
+
+    public MainViewModel ViewModel { get; }
+
+
+
+
+
+
+
 
     private static ScrollViewer FindParentScrollViewer(DependencyObject child)
     {
@@ -79,10 +78,6 @@ public sealed partial class MainPage
 
         return null;
     }
-
-
-
-    public MainViewModel ViewModel { get; }
 
 
 
@@ -137,6 +132,24 @@ public sealed partial class MainPage
     private void OnMessagesItemsChanged(object sender, ItemsChangedEventArgs e)
     {
         ScrollMessagesToBottom();
+    }
+
+
+
+
+
+
+
+
+    private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (sender is DependencyObject source && FindParentScrollViewer(source) is ScrollViewer scrollViewer)
+        {
+            e.Handled = true; // Prevent the event from being handled by child elements
+
+            // Adjust scroll offset based on wheel delta
+            scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3.0);
+        }
     }
 
 

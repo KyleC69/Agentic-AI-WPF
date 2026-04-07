@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChatConversationBase.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 212915
 
 
 
@@ -23,9 +19,12 @@ using Microsoft.Extensions.Logging;
 
 namespace DataIngestionLib.Services;
 
+
+
+
+
 public class ChatConversationBase
 {
-    protected const string DefaultAgentId = "Agentic-Max";
     protected AIAgent? _agent;
     protected IAgentFactory? _agentFactory;
     protected AgentSession? _agentSession;
@@ -35,6 +34,7 @@ public class ChatConversationBase
     protected ILogger<ChatConversationService>? _logger;
     protected RagDataService? _ragDataService;
     protected ProviderSessionState<HistoryIdentity> _sessionStateHelper = null!;
+    protected const string DefaultAgentId = "Agentic-Max";
 
     /// <summary>
     ///     This is to provide an identifier in enterprise scenarios running multiple applications.

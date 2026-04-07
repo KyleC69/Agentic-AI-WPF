@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         AIContextRAGInjector.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 212906
 
 
 
@@ -35,6 +31,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     private readonly ILogger<AIContextRAGInjector> _logger;
     private readonly IRagDataService _ragData;
     private readonly ProviderSessionState<HistoryIdentity> _sessionState;
+
 
 
 
@@ -94,13 +91,13 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
         // Validate the query through multiple gates
-        if (!this.IsQueryValid(searchText, context))
+        if (!IsQueryValid(searchText, context))
         {
             return context.RequestMessages;
         }
 
         // Fetch results from the RAG data service
-        IEnumerable<ChatMessage> results = await _ragData.GetRagDataEntries(searchText, cancellationToken);
+        var results = await _ragData.GetRagDataEntries(searchText, cancellationToken);
         // Return results or an empty collection if null
         return results ?? Enumerable.Empty<ChatMessage>();
 
@@ -108,29 +105,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
 
-    private bool IsQueryValid(string searchText, InvokingContext context)
-    {
-        // Gate 1: Check if the query contains relevant keywords
-        if (!this.AgentFrameworkKeywordDetector(searchText))
-        {
-            _logger.LogTrace("RAG failed gate1");
-            return false;
-        }
-        // Gate 2: Validate query length and content
-        if (!this.IsValidQuery(searchText))
-        {
-            _logger.LogTrace("RAG failed gate2");
-            return false;
-        }
-        // Gate 3: Ensure the context is relevant
-        if (!this.IsRelevant(context))
-        {
-            _logger.LogTrace("RAG failed gate3");
-            return false;
-        }
 
-        return true;
-    }
 
 
 
@@ -191,11 +166,44 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
 
+    private bool IsQueryValid(string searchText, InvokingContext context)
+    {
+        // Gate 1: Check if the query contains relevant keywords
+        if (!AgentFrameworkKeywordDetector(searchText))
+        {
+            _logger.LogTrace("RAG failed gate1");
+            return false;
+        }
+
+        // Gate 2: Validate query length and content
+        if (!IsValidQuery(searchText))
+        {
+            _logger.LogTrace("RAG failed gate2");
+            return false;
+        }
+
+        // Gate 3: Ensure the context is relevant
+        if (!IsRelevant(context))
+        {
+            _logger.LogTrace("RAG failed gate3");
+            return false;
+        }
+
+        return true;
+    }
+
+
+
+
+
+
+
+
     private bool IsRelevant(InvokingContext context)
     {
         var text = string.Join(" ", context.RequestMessages.Where(m => m.Role == ChatRole.User).Select(m => m.Text));
 
-        var answer = this.AgentFrameworkKeywordDetector(text);
+        var answer = AgentFrameworkKeywordDetector(text);
         if (!answer)
         {
             _logger.LogTrace("User text did not pass relevency test, no context enhancement is injected");

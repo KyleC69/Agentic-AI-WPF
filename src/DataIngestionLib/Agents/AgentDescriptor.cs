@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/05
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AgentDescriptor.cs
 // Author: Kyle L. Crowder
-// Build Num: 124507
+// Build Num: 212848
 
 
 

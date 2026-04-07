@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         IAgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 182914
+// Build Num: 212852
 
 
 
@@ -21,14 +21,6 @@ namespace DataIngestionLib.Agents;
 
 public interface IAgentFactory
 {
-    IChatClient GetChatClient(string model);
-
-
-
-
-
-
-
 
     /// <summary>
     ///     Creates and returns a coding assistant agent configured with the specified parameters.
@@ -52,4 +44,13 @@ public interface IAgentFactory
     ///     exists.
     /// </exception>
     AIAgent BuildAssistantAgent(IChatClient client, string agentId, string model, string agentDescription = "", string? instructions = null);
+
+
+
+
+
+
+
+
+    IChatClient GetChatClient(string model);
 }

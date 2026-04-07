@@ -1,13 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/04/06
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         HistoryIdentityService.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Num: 212913
 
 
 
@@ -47,19 +43,24 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
 
     public HistoryIdentityService()
     {
-        this.Initialize(Guid.NewGuid().ToString(), "DefaultAgent", Environment.UserName);
+        Initialize(Guid.NewGuid().ToString(), "DefaultAgent", Environment.UserName);
     }
 
 
 
+
+
+
+
+
     /// <summary>
-    /// Applies the current <see cref="HistoryIdentity"/> snapshot to the specified <paramref name="session"/>.
+    ///     Applies the current <see cref="HistoryIdentity" /> snapshot to the specified <paramref name="session" />.
     /// </summary>
     /// <param name="session">
-    /// The <see cref="AgentSession"/> to which the current <see cref="HistoryIdentity"/> snapshot will be applied.
+    ///     The <see cref="AgentSession" /> to which the current <see cref="HistoryIdentity" /> snapshot will be applied.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when the <paramref name="session"/> is <c>null</c>.
+    ///     Thrown when the <paramref name="session" /> is <c>null</c>.
     /// </exception>
     public void ApplyToSession(AgentSession session)
     {
@@ -102,12 +103,7 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
         {
             lock (_syncLock)
             {
-                return new HistoryIdentity(GetConversationId())
-                {
-                    AgentId = _current.AgentId,
-                    ApplicationId = _current.ApplicationId,
-                    UserId = _current.UserId
-                };
+                return new HistoryIdentity(GetConversationId()) { AgentId = _current.AgentId, ApplicationId = _current.ApplicationId, UserId = _current.UserId };
             }
         }
     }

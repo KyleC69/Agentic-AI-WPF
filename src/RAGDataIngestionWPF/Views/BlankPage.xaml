@@ -8,7 +8,7 @@
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     mc:Ignorable="d" Background="{DynamicResource MahApps.Brushes.Window.Background.Backdrop.Acrylic}"
     d:DesignHeight="450" d:DesignWidth="800">
-    <Grid ShowGridLines="True" >
+    <Grid ShowGridLines="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
@@ -20,8 +20,8 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
-            Style="{StaticResource PageTitleStyle}"
-            Text="{x:Static properties:Resources.BlankPageTitle}" />
+                   Style="{StaticResource PageTitleStyle}"
+                   Text="{x:Static properties:Resources.BlankPageTitle}" />
         <Grid
             Grid.Row="1"
             Margin="{StaticResource MediumLeftRightMargin}"
@@ -33,34 +33,34 @@
         </Grid>
         <Grid Grid.Row="1" Grid.Column="1">
             <Border CornerRadius="30" Padding="5" Background="{DynamicResource MahApps.Brushes.Control.Background}">
-            <GroupBox Header="Orchestration" >
-             <StackPanel >
-                 <RadioButton GroupName="Orchestration" Content="None"/>
-                        <RadioButton GroupName="Orchestration" Content="Concurrent Group"/>
-                 <RadioButton GroupName="Orchestration" Content="Round Robin"/>
-                 <RadioButton GroupName="Orchestration" Content=""/>
+                <GroupBox Header="Orchestration">
+                    <StackPanel>
+                        <RadioButton GroupName="Orchestration" Content="None" />
+                        <RadioButton GroupName="Orchestration" Content="Concurrent Group" />
+                        <RadioButton GroupName="Orchestration" Content="Round Robin" />
+                        <RadioButton GroupName="Orchestration" Content="" />
                     </StackPanel>
-            </GroupBox>
+                </GroupBox>
             </Border>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="2">
             <Border CornerRadius="30" Background="{DynamicResource MahApps.Brushes.Control.Background}">
-                <GroupBox Header="Orchestration" >
-                    <StackPanel ></StackPanel>
+                <GroupBox Header="Orchestration">
+                    <StackPanel />
                 </GroupBox>
             </Border>
         </Grid>
         <Grid Grid.Row="2" Grid.Column="1">
             <Border CornerRadius="30" Background="{DynamicResource MahApps.Brushes.Control.Background}">
-                <GroupBox Header="Orchestration" >
-                    <StackPanel ></StackPanel>
+                <GroupBox Header="Orchestration">
+                    <StackPanel />
                 </GroupBox>
             </Border>
         </Grid>
         <Grid Grid.Row="2" Grid.Column="2">
             <Border CornerRadius="30" Background="{DynamicResource MahApps.Brushes.Control.Background}">
-                <GroupBox Header="Orchestration" >
-                    <StackPanel ></StackPanel>
+                <GroupBox Header="Orchestration">
+                    <StackPanel />
                 </GroupBox>
             </Border>
         </Grid>
