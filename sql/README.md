@@ -68,22 +68,23 @@ Suggested script order by area:
 ### ChatHistory
 
 1. [ChatHistory/dbo.ChatHistoryMessages.Table.sql](ChatHistory/dbo.ChatHistoryMessages.Table.sql)
-2. [ChatHistory/dbo.ChatHistoryTextChunks.Table.sql](ChatHistory/dbo.ChatHistoryTextChunks.Table.sql)
-3. [ChatHistory/ChatHistoryCat.FullTextCatalog.sql](ChatHistory/ChatHistoryCat.FullTextCatalog.sql)
-4. [ChatHistory/ChatChunkIdx.FullTextCatalog.sql](ChatHistory/ChatChunkIdx.FullTextCatalog.sql)
-5. [ChatHistory/dbo.fn_BM25.UserDefinedFunction.sql](ChatHistory/dbo.fn_BM25.UserDefinedFunction.sql)
-6. [ChatHistory/dbo.sp_GenerateTextChunks.StoredProcedure.sql](ChatHistory/dbo.sp_GenerateTextChunks.StoredProcedure.sql)
-7. [ChatHistory/dbo.sp_GenerateEmbedding.StoredProcedure.sql](ChatHistory/dbo.sp_GenerateEmbedding.StoredProcedure.sql)
-8. [ChatHistory/dbo.sp_Generate_Vector.StoredProcedure.sql](ChatHistory/dbo.sp_Generate_Vector.StoredProcedure.sql)
-9. [ChatHistory/dbo.sp_GenerateKeywords.StoredProcedure.sql](ChatHistory/dbo.sp_GenerateKeywords.StoredProcedure.sql)
-10. [ChatHistory/dbo.sp_GenerateSummary.StoredProcedure.sql](ChatHistory/dbo.sp_GenerateSummary.StoredProcedure.sql)
-11. [ChatHistory/dbo.sp_GetEmbedding.StoredProcedure.sql](ChatHistory/dbo.sp_GetEmbedding.StoredProcedure.sql)
-12. [ChatHistory/dbo.sp_GetLastConversationId.StoredProcedure.sql](ChatHistory/dbo.sp_GetLastConversationId.StoredProcedure.sql)
-13. [ChatHistory/dbo.sp_Search_FullText.StoredProcedure.sql](ChatHistory/dbo.sp_Search_FullText.StoredProcedure.sql)
-14. [ChatHistory/dbo.sp_Search_Contains_FullText.StoredProcedure.sql](ChatHistory/dbo.sp_Search_Contains_FullText.StoredProcedure.sql)
-15. [ChatHistory/dbo.sp_Search_FreeText.StoredProcedure.sql](ChatHistory/dbo.sp_Search_FreeText.StoredProcedure.sql)
-16. [ChatHistory/dbo.sp_Search_FullText_Keywords.StoredProcedure.sql](ChatHistory/dbo.sp_Search_FullText_Keywords.StoredProcedure.sql)
-17. [ChatHistory/dbo.sp_Search_Hybrid.StoredProcedure.sql](ChatHistory/dbo.sp_Search_Hybrid.StoredProcedure.sql)
+2. [ChatHistory/dbo.AgentConfigurations.Table.sql](ChatHistory/dbo.AgentConfigurations.Table.sql)
+3. [ChatHistory/dbo.ChatHistoryTextChunks.Table.sql](ChatHistory/dbo.ChatHistoryTextChunks.Table.sql)
+4. [ChatHistory/ChatHistoryCat.FullTextCatalog.sql](ChatHistory/ChatHistoryCat.FullTextCatalog.sql)
+5. [ChatHistory/ChatChunkIdx.FullTextCatalog.sql](ChatHistory/ChatChunkIdx.FullTextCatalog.sql)
+6. [ChatHistory/dbo.fn_BM25.UserDefinedFunction.sql](ChatHistory/dbo.fn_BM25.UserDefinedFunction.sql)
+7. [ChatHistory/dbo.sp_GenerateTextChunks.StoredProcedure.sql](ChatHistory/dbo.sp_GenerateTextChunks.StoredProcedure.sql)
+8. [ChatHistory/dbo.sp_GenerateEmbedding.StoredProcedure.sql](ChatHistory/dbo.sp_GenerateEmbedding.StoredProcedure.sql)
+9. [ChatHistory/dbo.sp_Generate_Vector.StoredProcedure.sql](ChatHistory/dbo.sp_Generate_Vector.StoredProcedure.sql)
+10. [ChatHistory/dbo.sp_GenerateKeywords.StoredProcedure.sql](ChatHistory/dbo.sp_GenerateKeywords.StoredProcedure.sql)
+11. [ChatHistory/dbo.sp_GenerateSummary.StoredProcedure.sql](ChatHistory/dbo.sp_GenerateSummary.StoredProcedure.sql)
+12. [ChatHistory/dbo.sp_GetEmbedding.StoredProcedure.sql](ChatHistory/dbo.sp_GetEmbedding.StoredProcedure.sql)
+13. [ChatHistory/dbo.sp_GetLastConversationId.StoredProcedure.sql](ChatHistory/dbo.sp_GetLastConversationId.StoredProcedure.sql)
+14. [ChatHistory/dbo.sp_Search_FullText.StoredProcedure.sql](ChatHistory/dbo.sp_Search_FullText.StoredProcedure.sql)
+15. [ChatHistory/dbo.sp_Search_Contains_FullText.StoredProcedure.sql](ChatHistory/dbo.sp_Search_Contains_FullText.StoredProcedure.sql)
+16. [ChatHistory/dbo.sp_Search_FreeText.StoredProcedure.sql](ChatHistory/dbo.sp_Search_FreeText.StoredProcedure.sql)
+17. [ChatHistory/dbo.sp_Search_FullText_Keywords.StoredProcedure.sql](ChatHistory/dbo.sp_Search_FullText_Keywords.StoredProcedure.sql)
+18. [ChatHistory/dbo.sp_Search_Hybrid.StoredProcedure.sql](ChatHistory/dbo.sp_Search_Hybrid.StoredProcedure.sql)
 
 ## Safeguards
 
@@ -155,6 +156,7 @@ Execution impact:
 - [ChatHistory/ChatChunkIdx.FullTextCatalog.sql](ChatHistory/ChatChunkIdx.FullTextCatalog.sql) - Creates full-text catalog/index for chat text chunks.
 - [ChatHistory/ChatHistoryCat.FullTextCatalog.sql](ChatHistory/ChatHistoryCat.FullTextCatalog.sql) - Creates full-text catalog for chat history content.
 - [ChatHistory/dbo.ChatHistoryMessages.Table.sql](ChatHistory/dbo.ChatHistoryMessages.Table.sql) - Creates table for chat message records.
+- [ChatHistory/dbo.AgentConfigurations.Table.sql](ChatHistory/dbo.AgentConfigurations.Table.sql) - Creates table for persisted custom agent configuration and orchestration metadata.
 - [ChatHistory/dbo.ChatHistoryTextChunks.Table.sql](ChatHistory/dbo.ChatHistoryTextChunks.Table.sql) - Creates table for chunked chat text storage.
 - [ChatHistory/dbo.fn_BM25.UserDefinedFunction.sql](ChatHistory/dbo.fn_BM25.UserDefinedFunction.sql) - Defines BM25 scoring function for ranking search results.
 - [ChatHistory/dbo.sp_Generate_Vector.StoredProcedure.sql](ChatHistory/dbo.sp_Generate_Vector.StoredProcedure.sql) - Generates vectors for chat content.
@@ -169,4 +171,3 @@ Execution impact:
 - [ChatHistory/dbo.sp_Search_FullText_Keywords.StoredProcedure.sql](ChatHistory/dbo.sp_Search_FullText_Keywords.StoredProcedure.sql) - Full-text search tuned for keyword queries.
 - [ChatHistory/dbo.sp_Search_FullText.StoredProcedure.sql](ChatHistory/dbo.sp_Search_FullText.StoredProcedure.sql) - General full-text search procedure.
 - [ChatHistory/dbo.sp_Search_Hybrid.StoredProcedure.sql](ChatHistory/dbo.sp_Search_Hybrid.StoredProcedure.sql) - Hybrid search using text and semantic/vector signals.
-*

@@ -328,7 +328,7 @@ public sealed partial class App : Application
         _ = services.AddSingleton<SqlChatHistoryProvider>();
         _ = services.AddSingleton<AIContextRAGInjector>();
         _ = services.AddSingleton<IAgentFactory, AgentFactory>();
-
+        _ = services.AddSingleton<IWorkflowConversationService, WorkflowConversationService>();
         _ = services.AddSingleton<ChatHistoryContextInjector>();
     }
 

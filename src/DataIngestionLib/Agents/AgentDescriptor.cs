@@ -1,13 +1,15 @@
-﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         AgentDescriptor.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 212848
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
-
-using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 
@@ -20,15 +22,36 @@ namespace DataIngestionLib.Agents;
 
 
 
-internal class AgentDescriptor
+public class AgentDescriptor
 {
-    public string Description { get; set; }
+
+    public AgentDescriptor()
+    {
+        ID = Guid.NewGuid().ToString("D");
+    }
+
 
     public string ID { get; set; } = string.Empty;
-    public string Instructions { get; set; }
 
-    public AIModels Model { get; set; }
-    public string Name { get; set; }
+    public string AgentType { get; set; } = "Custom";
+
+    public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
+
+    public bool Enabled { get; set; } = true;
+
+    public string Name { get; set; } = string.Empty;
+
+    public string Description { get; set; } = string.Empty;
+
+    public string Instructions { get; set; } = string.Empty;
+
+    public string Model { get; set; } = string.Empty;
+
+    public DateTime ModifiedUtc { get; set; } = DateTime.UtcNow;
+
+    public int TokenBudget { get; set; } = 120000;
+
+    public string? ToolPolicyKey { get; set; }
 
     public List<AITool> Tools { get; set; } = new List<AITool>();
 }

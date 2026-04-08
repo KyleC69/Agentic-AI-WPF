@@ -136,6 +136,12 @@
                         <TextBox Margin="{StaticResource XSmallTopMargin}"
                                  Text="{Binding MaxContextTokens, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
+                        <TextBlock Margin="{StaticResource SmallTopMargin}" Style="{StaticResource BodyTextStyle}"
+                                   Text="Orchestration Mode" />
+                        <ComboBox Margin="{StaticResource XSmallTopMargin}"
+                                  ItemsSource="{Binding AvailableOrchestrationModes, Mode=OneTime}"
+                                  SelectedItem="{Binding OrchestrationMode, Mode=TwoWay}" />
+
                         <CheckBox Margin="{StaticResource SmallTopMargin}"
                                   Content="{Binding RagKnowledgeEnabledLabelText, Mode=OneWay}"
                                   IsChecked="{Binding RAGKnowledgeEnabled, Mode=TwoWay}" />

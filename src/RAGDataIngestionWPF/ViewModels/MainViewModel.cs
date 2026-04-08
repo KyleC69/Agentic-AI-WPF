@@ -8,6 +8,7 @@
 
 
 using System.Collections.ObjectModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -15,6 +16,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.Contracts;
+using DataIngestionLib.Services;
 
 using Microsoft.Extensions.AI;
 
@@ -49,6 +51,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     [ObservableProperty] private int systemTokenCount;
     [ObservableProperty] private int toolTokenCount;
     [ObservableProperty] private int totalTokenCount;
+    private readonly IWorkflowConversationService _workflow;
 
 
 
@@ -57,7 +60,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    public MainViewModel(IChatConversationService chatConversationService, IHistoryIdentityService historyIdentityService)
+    public MainViewModel(IChatConversationService chatConversationService, IHistoryIdentityService historyIdentityService, IWorkflowConversationService workflowConversationService)
     {
         ArgumentNullException.ThrowIfNull(chatConversationService);
         _historyIdentity = historyIdentityService;
@@ -73,6 +76,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
         // Need to link this back to applicaion lifecycle
         _tokenSource = new CancellationTokenSource();
+        _workflow = workflowConversationService;
     }
 
 
@@ -292,10 +296,74 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         //Clear UI input
         MessageInput = string.Empty;
 
+        int? liveAssistantMessageIndex = null;
+        StringBuilder streamedAssistantText = new();
+
         try
         {
-            ChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _tokenSource.Token);
-            Messages.Add(assistantMessage);
+            //  ChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _tokenSource.Token);
+            //Messages.Add(assistantMessage);
+
+            await _workflow.InitializeAsync();
+            List<ChatMessage> response = await _workflow.RunStreamingWorkflowAsync(
+                content,
+                (updateMessage, cancellationToken) =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    string chunkText = updateMessage.Text;
+                    if (string.IsNullOrWhiteSpace(chunkText))
+                    {
+                        return Task.CompletedTask;
+                    }
+
+                    lock (streamedAssistantText)
+                    {
+                        streamedAssistantText.Append(chunkText);
+
+                        ChatMessage liveMessage = new(ChatRole.Assistant, streamedAssistantText.ToString());
+                        RunOnUiThread(() =>
+                        {
+                            if (liveAssistantMessageIndex is null)
+                            {
+                                Messages.Add(liveMessage);
+                                liveAssistantMessageIndex = Messages.Count - 1;
+                                return;
+                            }
+
+                            Messages[liveAssistantMessageIndex.Value] = liveMessage;
+                        });
+                    }
+
+                    return Task.CompletedTask;
+                },
+                _tokenSource.Token);
+
+            if (liveAssistantMessageIndex is null)
+            {
+                StringBuilder fallbackAssistantText = new();
+                foreach (ChatMessage message in response)
+                {
+                    if (message.Role == ChatRole.User || string.IsNullOrWhiteSpace(message.Text))
+                    {
+                        continue;
+                    }
+
+                    if (fallbackAssistantText.Length > 0)
+                    {
+                        fallbackAssistantText.AppendLine();
+                    }
+
+                    fallbackAssistantText.Append(message.Text.Trim());
+                }
+
+                if (fallbackAssistantText.Length > 0)
+                {
+                    Messages.Add(new ChatMessage(ChatRole.Assistant, fallbackAssistantText.ToString()));
+                }
+            }
+
+
         }
         catch (OperationCanceledException)
         {

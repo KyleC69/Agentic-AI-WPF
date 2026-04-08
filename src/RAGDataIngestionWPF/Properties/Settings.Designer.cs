@@ -193,5 +193,14 @@ namespace RAGDataIngestionWPF.Properties {
                 return ((string)(this["UserName"]));
             }
         }
+
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("None")]
+        public string OrchestrationMode {
+            get {
+                return ((string)(this["OrchestrationMode"]));
+            }
+        }
     }
 }

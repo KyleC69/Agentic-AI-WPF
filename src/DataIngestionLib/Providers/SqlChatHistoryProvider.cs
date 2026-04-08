@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         SqlChatHistoryProvider.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 212908
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -78,8 +82,8 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
         try
         {
             HistoryIdentity state = _sessionState.GetOrInitializeState(context.Session);
-            var historyMessages = await GetMessagesAsync(state.ConversationId, cancellationToken).ConfigureAwait(false);
-            var tagged = historyMessages?.Select(message => message.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, nameof(SqlChatHistoryProvider)));
+            IEnumerable<ChatMessage>? historyMessages = await this.GetMessagesAsync(state.ConversationId, cancellationToken).ConfigureAwait(false);
+            IEnumerable<ChatMessage>? tagged = historyMessages?.Select(message => message.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, nameof(SqlChatHistoryProvider)));
             return tagged ?? [];
         }
         catch (Exception exception)
@@ -101,8 +105,8 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
         try
         {
             HistoryIdentity state = _sessionState.GetOrInitializeState(context.Session);
-            var newMessages = context.RequestMessages.Concat(context.ResponseMessages ?? []).ToList();
-            var persistableMessages = newMessages.Where(ShouldPersistMessage).ToList();
+            List<ChatMessage> newMessages = context.RequestMessages.Concat(context.ResponseMessages ?? []).ToList();
+            List<ChatMessage> persistableMessages = newMessages.Where(ShouldPersistMessage).ToList();
 
             _logger.LogTrace("Beginning to save chat messages for conversation {ConversationId}", state.ConversationId);
             if (persistableMessages.Count == 0)
@@ -110,7 +114,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
                 return;
             }
 
-            await PersistInteractionAsync(state, persistableMessages, cancellationToken).ConfigureAwait(false);
+            await this.PersistInteractionAsync(state, persistableMessages, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception)
         {
@@ -125,10 +129,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
-    public override IReadOnlyList<string> StateKeys
-    {
-        get { return new[] { _sessionState.StateKey }; }
-    }
+    public override IReadOnlyList<string> StateKeys => new[] { _sessionState.StateKey };
 
 
 
@@ -158,15 +159,15 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
         _logger.LogTrace("Fetching chat history messages for conversation {ConversationId}", conversationId);
         try
         {
-            var ordered = await db.ChatHistoryMessages.Where(message => message.ConversationId == conversationId).OrderBy(message => message.CreatedAt).ToListAsync(cancellationToken).ConfigureAwait(false);
+            List<ChatHistoryMessage> ordered = await db.ChatHistoryMessages.Where(message => message.ConversationId == conversationId).OrderBy(message => message.CreatedAt).ToListAsync(cancellationToken).ConfigureAwait(false);
 
             if (ordered.Count == 0)
             {
                 return [];
             }
 
-            var chatMessages = ordered.ToChatMessages();
-            var tagged = chatMessages.Select(message => message.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, nameof(SqlChatHistoryProvider)));
+            IReadOnlyList<ChatMessage> chatMessages = ordered.ToChatMessages();
+            IEnumerable<ChatMessage> tagged = chatMessages.Select(message => message.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, nameof(SqlChatHistoryProvider)));
 
             return tagged;
         }
@@ -206,7 +207,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     {
         await using AIChatHistoryDb dbContext = await _dbcontextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entities = ToEntities(messages, identity);
+        List<ChatHistoryMessage> entities = this.ToEntities(messages, identity);
         if (entities.Count == 0)
         {
             return;
@@ -307,17 +308,17 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
             entities.Add(new ChatHistoryMessage
             {
-                    MessageId = messageId,
-                    ConversationId = identity.ConversationId,
-                    AgentId = identity.AgentId,
-                    UserId = identity.UserId,
-                    ApplicationId = identity.ApplicationId,
-                    Role = message.Role.Value,
-                    Content = message.Text.Trim(),
-                    Metadata = SerializeMetadata(message.AdditionalProperties),
-                    CreatedAt = message.CreatedAt.Value.LocalDateTime,
-                    Enabled = true,
-                    TokenCnt = EstimateTokenCount(message)
+                MessageId = messageId,
+                ConversationId = identity.ConversationId,
+                AgentId = identity.AgentId,
+                UserId = identity.UserId,
+                ApplicationId = identity.ApplicationId,
+                Role = message.Role.Value,
+                Content = message.Text.Trim(),
+                Metadata = this.SerializeMetadata(message.AdditionalProperties),
+                CreatedAt = DateTime.Now,
+                Enabled = true,
+                TokenCnt = this.EstimateTokenCount(message)
             });
         }
 

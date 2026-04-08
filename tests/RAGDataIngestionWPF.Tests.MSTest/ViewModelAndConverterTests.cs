@@ -22,6 +22,8 @@ using RAGDataIngestionWPF.Models;
 using RAGDataIngestionWPF.Properties;
 using RAGDataIngestionWPF.ViewModels;
 
+using SystemConfigurationManager = System.Configuration.ConfigurationManager;
+
 
 
 
@@ -194,5 +196,67 @@ public class ViewModelAndConverterTests
 
         viewModel.OnNavigationCompleted(this, null);
         Assert.IsFalse(viewModel.IsLoading);
+    }
+
+
+
+
+    [TestMethod]
+    public void SettingsViewModelOnNavigatedToLoadsOrchestrationModeFromConfig()
+    {
+        SetAppSettingForTest("OrchestrationMode", "RoundRobin");
+
+        Mock<ISystemService> system = new();
+        Mock<IApplicationInfoService> appInfo = new();
+        Mock<IUserDataService> userData = new();
+        appInfo.Setup(service => service.GetVersion()).Returns(new Version(1, 0, 0));
+        userData.Setup(service => service.GetUser()).Returns(new UserViewModel());
+
+        SettingsViewModel viewModel = new(system.Object, appInfo.Object, userData.Object);
+
+        viewModel.OnNavigatedTo(null);
+
+        Assert.AreEqual(DataIngestionLib.OrchestrationMode.RoundRobin, viewModel.OrchestrationMode);
+    }
+
+
+
+
+    [TestMethod]
+    public void SettingsViewModelSaveChatHistorySettingsPersistsOrchestrationMode()
+    {
+        Mock<ISystemService> system = new();
+        Mock<IApplicationInfoService> appInfo = new();
+        Mock<IUserDataService> userData = new();
+        appInfo.Setup(service => service.GetVersion()).Returns(new Version(1, 0, 0));
+        userData.Setup(service => service.GetUser()).Returns(new UserViewModel());
+
+        SettingsViewModel viewModel = new(system.Object, appInfo.Object, userData.Object);
+        viewModel.OnNavigatedTo(null);
+        viewModel.OrchestrationMode = DataIngestionLib.OrchestrationMode.None;
+
+        viewModel.SaveChatHistorySettingsCommand.Execute(null);
+
+        var savedMode = SystemConfigurationManager.AppSettings["OrchestrationMode"];
+        Assert.AreEqual("None", savedMode);
+    }
+
+
+
+
+    private static void SetAppSettingForTest(string key, string value)
+    {
+        System.Configuration.Configuration config = SystemConfigurationManager.OpenExeConfiguration(System.Configuration.ConfigurationUserLevel.None);
+        if (config.AppSettings.Settings[key] is null)
+        {
+            config.AppSettings.Settings.Add(key, value);
+        }
+        else
+        {
+            config.AppSettings.Settings[key].Value = value;
+        }
+
+        config.Save(System.Configuration.ConfigurationSaveMode.Modified);
+        SystemConfigurationManager.RefreshSection("appSettings");
     }
 }

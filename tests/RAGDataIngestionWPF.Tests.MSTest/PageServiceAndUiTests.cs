@@ -1,4 +1,4 @@
-// Build Date: 2026/04/06
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         PageServiceAndUiTests.cs
@@ -11,10 +11,6 @@ using System.Windows.Markup;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Moq;
-
-using RAGDataIngestionWPF.Core.Contracts.Services;
-using RAGDataIngestionWPF.Core.Helpers;
 using RAGDataIngestionWPF.Services;
 using RAGDataIngestionWPF.ViewModels;
 using RAGDataIngestionWPF.Views;
@@ -32,21 +28,6 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 public class PageServiceAndUiTests
 {
 
-    [TestMethod]
-    public void BlankPageAndLogInWindowCanSurfaceResourceEdgeCases()
-    {
-        StaTestHelper.Run(() =>
-        {
-            BlankViewModel blankViewModel = new();
-            Assert.ThrowsExactly<XamlParseException>(() => _ = new BlankPage(blankViewModel));
-
-            Mock<IIdentityService> identity = new();
-            identity.Setup(service => service.LoginAsync()).ReturnsAsync(LoginResultType.Success);
-            LogInViewModel vm = new(identity.Object);
-
-            Assert.ThrowsExactly<XamlParseException>(() => _ = new LogInWindow(vm));
-        });
-    }
 
 
 

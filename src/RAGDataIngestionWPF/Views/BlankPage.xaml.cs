@@ -7,6 +7,8 @@
 
 
 
+using System.Windows;
+
 using RAGDataIngestionWPF.ViewModels;
 
 
@@ -24,5 +26,26 @@ public sealed partial class BlankPage
     {
         InitializeComponent();
         DataContext = viewModel;
+        ViewModel = viewModel;
+    }
+
+
+
+    public BlankViewModel ViewModel { get; set; }
+
+
+
+
+
+
+
+
+
+
+
+    private void AddAgent_OnClick(object sender, RoutedEventArgs e)
+    {
+        var win = new AddAgent(ViewModel);
+        win.Show();
     }
 }

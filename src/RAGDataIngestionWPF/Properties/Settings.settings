@@ -59,5 +59,8 @@
     <Setting Name="UserName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">TommyCat</Value>
     </Setting>
+    <Setting Name="OrchestrationMode" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">None</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -7,6 +7,8 @@
 
 
 
+using SystemConfigurationManager = System.Configuration.ConfigurationManager;
+
 namespace DataIngestionLib;
 
 
@@ -15,6 +17,24 @@ namespace DataIngestionLib;
 
 public class AppSettings : IAppSettings
 {
+    public AppSettings()
+    {
+        AgentId = GetAppSetting(nameof(AgentId), AgentId);
+        ApplicationId = GetAppSetting(nameof(ApplicationId), ApplicationId);
+        ChatHistoryConnectionString = GetAppSetting(nameof(ChatHistoryConnectionString), ChatHistoryConnectionString);
+        ChatModel = GetAppSetting("ChatModelName", ChatModel);
+        EmbeddingModel = GetAppSetting("EmbeddingsModelName", EmbeddingModel);
+        LearnBaseUrl = GetAppSetting(nameof(LearnBaseUrl), LearnBaseUrl);
+        LogDirectory = GetAppSetting(nameof(LogDirectory), LogDirectory);
+        LogName = GetAppSetting(nameof(LogName), LogName);
+        MaximumContext = ParseInt(GetAppSetting("MaxContextTokens", MaximumContext.ToString()), MaximumContext);
+        Orchestration = ParseOrchestration(GetAppSetting("OrchestrationMode", nameof(OrchestrationMode.None)));
+        RemoteRAGConnectionString = GetAppSetting(nameof(RemoteRAGConnectionString), RemoteRAGConnectionString);
+        RestEndpoint = GetAppSetting(nameof(RestEndpoint), RestEndpoint);
+        ResumeLast = ParseBool(GetAppSetting(nameof(ResumeLast), ResumeLast.ToString()), ResumeLast);
+        UserName = GetAppSetting(nameof(UserName), UserName);
+    }
+
 
     public string AgentId { get; set; } = "Agentic-Max";
 
@@ -42,6 +62,27 @@ public class AppSettings : IAppSettings
     public bool ResumeLast { get; set; } = true;
 
     public string UserName { get; set; } = "TommyCat";
+
+    private static string GetAppSetting(string key, string fallback)
+    {
+        string? value = SystemConfigurationManager.AppSettings[key];
+        return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+    }
+
+    private static bool ParseBool(string value, bool fallback)
+    {
+        return bool.TryParse(value, out bool parsed) ? parsed : fallback;
+    }
+
+    private static int ParseInt(string value, int fallback)
+    {
+        return int.TryParse(value, out int parsed) && parsed > 0 ? parsed : fallback;
+    }
+
+    private static OrchestrationMode ParseOrchestration(string value)
+    {
+        return Enum.TryParse(value, true, out OrchestrationMode mode) ? mode : OrchestrationMode.None;
+    }
 }
 
 

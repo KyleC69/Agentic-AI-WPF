@@ -15,6 +15,8 @@ using CommunityToolkit.Mvvm.Input;
 
 using ControlzEx.Theming;
 
+using DataIngestionLib;
+
 using MahApps.Metro.Theming;
 
 using Microsoft.Extensions.Logging;
@@ -57,6 +59,8 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
     [ObservableProperty] private int maxContextMessages;
 
     [ObservableProperty] private int? maxContextTokens;
+
+    [ObservableProperty] private OrchestrationMode orchestrationMode;
 
     /// <summary>Gets or sets the currently selected minimum log level.</summary>
     [ObservableProperty] private LogLevel minimumLogLevel;
@@ -125,6 +129,11 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
     public ICommand PrivacyStatementCommand
     {
         get { return field ??= new RelayCommand(OnPrivacyStatement); }
+    }
+
+    public IReadOnlyList<OrchestrationMode> AvailableOrchestrationModes
+    {
+        get { return Enum.GetValues<OrchestrationMode>(); }
     }
 
     public static string RagKnowledgeEnabledLabelText
@@ -196,6 +205,7 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
         EmbeddingsModelName = GetAppSetting("EmbeddingsModelName", "mxbai-embed-large-v1:latest");
         MaxContextMessages = ParseInt(GetAppSetting("MaxContextMessages", "40"), 40, 1);
         MaxContextTokens = ParseNullableInt(GetAppSetting("MaxContextTokens", "120000"), 120000);
+        OrchestrationMode = ParseOrchestrationMode(GetAppSetting("OrchestrationMode", OrchestrationMode.None.ToString()));
         RAGKnowledgeEnabled = ParseBool(GetAppSetting("RagKnowledgeEnabled", bool.TrueString), true);
         ChatHistoryContextEnabled = ParseBool(GetAppSetting("ChatHistoryContextEnabled", bool.TrueString), true);
         ChatHistorySettingsStatus = string.Empty;
@@ -310,6 +320,7 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
         SetAppSetting("EmbeddingsModelName", EmbeddingsModelName?.Trim() ?? string.Empty);
         SetAppSetting("MaxContextMessages", MaxContextMessages.ToString());
         SetAppSetting("MaxContextTokens", MaxContextTokens?.ToString() ?? string.Empty);
+        SetAppSetting("OrchestrationMode", OrchestrationMode.ToString());
         SetAppSetting("RagKnowledgeEnabled", RAGKnowledgeEnabled.ToString());
         SetAppSetting("ChatHistoryContextEnabled", ChatHistoryContextEnabled.ToString());
         ChatHistorySettingsStatus = ChatHistorySaveStatusText;
@@ -400,6 +411,14 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
     private static AppTheme ParseTheme(string themeName)
     {
         return Enum.TryParse(themeName, out AppTheme theme) ? theme : AppTheme.Default;
+    }
+
+
+
+
+    private static OrchestrationMode ParseOrchestrationMode(string value)
+    {
+        return Enum.TryParse(value, true, out OrchestrationMode parsed) ? parsed : OrchestrationMode.None;
     }
 
 

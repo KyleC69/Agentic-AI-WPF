@@ -22,15 +22,24 @@
         <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
                    Style="{StaticResource PageTitleStyle}"
                    Text="{x:Static properties:Resources.BlankPageTitle}" />
-        <Grid
-            Grid.Row="1"
-            Margin="{StaticResource MediumLeftRightMargin}"
-            Background="{DynamicResource MahApps.Brushes.Gray10}">
-            <!--
-            The Mahapps Gray10 color represents where you should place your content.
-            Place your content here.
-            -->
+        <Grid Grid.Row="1">
+            <Grid Grid.Row="2" Grid.Column="2">
+            <Border CornerRadius="30" Background="{DynamicResource MahApps.Brushes.Control.Background}">
+                <GroupBox Header="Agents">
+
+                    <GroupItem>
+
+                    <StackPanel VerticalAlignment="Stretch" Orientation="Vertical">
+                            <ListBox x:Name="AgentBox" VerticalAlignment="Stretch">
+                                <ListBoxItem Content="Default"/>
+                            </ListBox>
+                            <Button x:Name="AddAgent" Content="Add Agent" Click="AddAgent_OnClick" />
+                        </StackPanel>
+                    </GroupItem>
+                </GroupBox>
+            </Border>
         </Grid>
+    </Grid>
         <Grid Grid.Row="1" Grid.Column="1">
             <Border CornerRadius="30" Padding="5" Background="{DynamicResource MahApps.Brushes.Control.Background}">
                 <GroupBox Header="Orchestration">
@@ -38,7 +47,7 @@
                         <RadioButton GroupName="Orchestration" Content="None" />
                         <RadioButton GroupName="Orchestration" Content="Concurrent Group" />
                         <RadioButton GroupName="Orchestration" Content="Round Robin" />
-                        <RadioButton GroupName="Orchestration" Content="" />
+                        <RadioButton GroupName="Orchestration" Content="Sequential" />
                     </StackPanel>
                 </GroupBox>
             </Border>

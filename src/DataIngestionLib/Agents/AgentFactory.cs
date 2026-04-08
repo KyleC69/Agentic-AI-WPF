@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         AgentFactory.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 212847
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -116,23 +120,55 @@ public class AgentFactory : IAgentFactory
 
         ChatClientAgent outer = client.AsAIAgent(new ChatClientAgentOptions
         {
-                Id = agentId,
-                Name = name,
-                Description = agentDescription,
-                ChatOptions = new ChatOptions
-                {
-                        Instructions = instructions ?? GetModelInstructions(),
-                        Temperature = 0.7f,
-                        MaxOutputTokens = 10000,
-                        AllowMultipleToolCalls = true,
-                        Tools = _toolCatalog.GetReadOnlyAiTools()
-                },
-                ChatHistoryProvider = _chatHistoryProvider,
-                AIContextProviders = [_ragContextInjector],
-                WarnOnChatHistoryProviderConflict = true,
-                ThrowOnChatHistoryProviderConflict = true
+            Id = agentId,
+            Name = name,
+            Description = agentDescription,
+            ChatOptions = new ChatOptions
+            {
+                Instructions = instructions ?? GetModelInstructions(),
+                Temperature = 0.7f,
+                MaxOutputTokens = 10000,
+                AllowMultipleToolCalls = true,
+                Tools = _toolCatalog.GetReadOnlyAiTools()
+            },
+            ChatHistoryProvider = _chatHistoryProvider,
+            AIContextProviders = [_ragContextInjector],
+            WarnOnChatHistoryProviderConflict = true,
+            ThrowOnChatHistoryProviderConflict = true
         });
         return outer.AsBuilder().UseLogging(_factory).Build();
+
+    }
+
+
+
+
+
+
+
+
+    public AIAgent BuildBasicAgent(IChatClient client, string agentId, string name, string agentDescription = "", string? instructions = null)
+    {
+
+
+
+        ChatClientAgent outer = client.AsAIAgent(new ChatClientAgentOptions
+        {
+            Id = agentId,
+            Name = name,
+            Description = agentDescription,
+            ChatOptions = new ChatOptions
+            {
+                Instructions = instructions ?? GetModelInstructions(),
+                Temperature = 0.7f,
+                MaxOutputTokens = 10000,
+                AllowMultipleToolCalls = true,
+                Tools = _toolCatalog.GetReadOnlyAiTools()
+            }
+        });
+        return outer.AsBuilder().UseLogging(_factory).Build();
+
+
 
     }
 
