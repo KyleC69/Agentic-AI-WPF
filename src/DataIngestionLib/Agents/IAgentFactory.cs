@@ -54,7 +54,7 @@ public interface IAgentFactory
     AIAgent BuildBasicAgent(IChatClient client, string agentId, string model, string agentDescription = "", string? instructions = null);
 
 
-
+    IEmbeddingGenerator<string, Embedding<float>> GetEmbeddingClient();
 
 
     IChatClient GetChatClient(string model);

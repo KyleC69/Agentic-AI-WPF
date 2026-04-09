@@ -231,7 +231,11 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
             _agent = _agentFactory.BuildAssistantAgent(client, DefaultAgentId, "AgentName", "Agentic-Max Description");
 
             _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
-
+            _agentSession.StateBag.SetValue("ConversationId",ConversationId);
+            _agentSession.StateBag.SetValue("ApplicationId", _historyIdentityService.Current.ApplicationId);
+            _agentSession.StateBag.SetValue("AgentId", _historyIdentityService.Current.AgentId);
+            _agentSession.StateBag.SetValue("UserId", _historyIdentityService.Current.UserId);
+            
 
             _historyIdentityService.Initialize(Settings.ApplicationId, DefaultAgentId, _initialUserId);
 

@@ -1,12 +1,17 @@
-// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         ProcessSnapshotTool.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 212919
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 
@@ -51,11 +56,11 @@ public sealed class ProcessSnapshotTool
             {
                 return new ProcessSnapshot
                 {
-                        Name = DiagnosticsText.Truncate(process.ProcessName, 64),
-                        Id = process.Id,
-                        WorkingSetMb = (long)Math.Round(process.WorkingSet64 / 1024d / 1024d, MidpointRounding.AwayFromZero),
-                        ThreadCount = process.Threads.Count,
-                        StartTimeUtc = SafeGetStartTime(process)
+                    Name = DiagnosticsText.Truncate(process.ProcessName, 64),
+                    Id = process.Id,
+                    WorkingSetMb = (long)Math.Round(process.WorkingSet64 / 1024d / 1024d, MidpointRounding.AwayFromZero),
+                    ThreadCount = process.Threads.Count,
+                    StartTimeUtc = SafeGetStartTime(process)
                 };
             }
             catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException or Win32Exception)
@@ -75,14 +80,14 @@ public sealed class ProcessSnapshotTool
     [Description("Read a bounded process snapshot ordered by working set memory.")]
     public ToolResult<IReadOnlyList<ProcessSnapshot>> ReadTopProcesses([Description("Maximum number of processes to return. Range: 1 to 20.")] int maxResults = 10)
     {
-        if (maxResults < 1 || maxResults > MaxResults)
+        if (maxResults is < 1 or > MaxResults)
         {
             return ToolResult<IReadOnlyList<ProcessSnapshot>>.Fail($"maxResults must be between 1 and {MaxResults}.");
         }
 
         try
         {
-            var processes = Process.GetProcesses().Select(process => CreateSnapshot(process)).Where(snapshot => snapshot != null).Cast<ProcessSnapshot>().OrderByDescending(snapshot => snapshot.WorkingSetMb).Take(maxResults).ToList().AsReadOnly();
+            ReadOnlyCollection<ProcessSnapshot> processes = Process.GetProcesses().Select(CreateSnapshot).Where(snapshot => snapshot != null).Cast<ProcessSnapshot>().OrderByDescending(snapshot => snapshot.WorkingSetMb).Take(maxResults).ToList().AsReadOnly();
 
             return ToolResult<IReadOnlyList<ProcessSnapshot>>.Ok(processes);
         }
@@ -103,9 +108,11 @@ public sealed class ProcessSnapshotTool
     {
         try
         {
-            return process.StartTime.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+            return process.StartTime
+                    .ToUniversalTime()
+                    .ToString("O", System.Globalization.CultureInfo.InvariantCulture);
         }
-        catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException or Win32Exception)
+        catch
         {
             return string.Empty;
         }

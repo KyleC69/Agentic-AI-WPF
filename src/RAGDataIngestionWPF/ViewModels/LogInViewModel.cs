@@ -55,10 +55,10 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
     {
         return loginResult switch
         {
-                LoginResultType.Unauthorized => Resources.StatusUnauthorized,
-                LoginResultType.NoNetworkAvailable => Resources.StatusNoNetworkAvailable,
-                LoginResultType.UnknownError => Resources.StatusLoginFails,
-                _ => string.Empty
+            LoginResultType.Unauthorized => Resources.StatusUnauthorized,
+            LoginResultType.NoNetworkAvailable => Resources.StatusNoNetworkAvailable,
+            LoginResultType.UnknownError => Resources.StatusLoginFails,
+            _ => string.Empty
         };
     }
 
@@ -73,7 +73,7 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
     {
         IsBusy = true;
         StatusMessage = string.Empty;
-        LoginResultType loginResult = await _identityService.LoginAsync();
+        LoginResultType loginResult = await _identityService.LoginAsync().ConfigureAwait(false);
         StatusMessage = GetStatusMessage(loginResult);
         IsBusy = false;
     }

@@ -61,7 +61,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
         _historyIdentityService = historyIdentityService;
         _dbcontextFactory = dbcontextFactory;
 
-        _sessionState = new ProviderSessionState<HistoryIdentity>((stateInitializer ?? (_ => new HistoryIdentity(HistoryIdentityService.GetConversationId())))!, stateKey ?? this.GetType().Name);
+        _sessionState = new ProviderSessionState<HistoryIdentity>(stateInitializer: currentSession => new HistoryIdentity(HistoryIdentityService.GetConversationId()), stateKey: this.GetType().Name);
     }
 
 

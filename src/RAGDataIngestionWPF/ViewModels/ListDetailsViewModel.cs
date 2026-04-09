@@ -73,7 +73,7 @@ public sealed partial class ListDetailsViewModel : ObservableObject, INavigation
     {
         SampleItems.Clear();
 
-        var data = await _sampleDataService.GetListDetailsDataAsync();
+        var data = await _sampleDataService.GetListDetailsDataAsync().ConfigureAwait(false);
 
         foreach (SampleOrder item in data) SampleItems.Add(item);
 

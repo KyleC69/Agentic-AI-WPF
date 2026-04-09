@@ -109,7 +109,7 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
     {
 
 
-        await _docIngest.DoIngestionAsync(Properties.Settings.Default.LearnBaseUrl, cts.Token);
+        await _docIngest.DoIngestionAsync(Properties.Settings.Default.LearnBaseUrl, cts.Token).ConfigureAwait(false);
 
 
 

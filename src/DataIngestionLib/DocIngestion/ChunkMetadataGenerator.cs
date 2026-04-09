@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         ChunkMetadataGenerator.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 212854
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -31,8 +35,9 @@ public sealed class ChunkMetadataGenerator
 {
 
     private readonly IChatClient _chatClient;
-    private readonly LoggingEmbeddingGenerator<string, Embedding<float>> _embedding;
+    private readonly IEmbeddingGenerator<string, Embedding<float>> _embedding;
     private readonly ILogger<ChunkMetadataGenerator> _logger;
+    private readonly IAgentFactory _agentFactory;
     private const int KeywordMaxOutputTokens = 128;
     private const int MaximumKeywordsLength = 500;
     private const int MaximumSummaryLength = 4000;
@@ -49,16 +54,17 @@ public sealed class ChunkMetadataGenerator
 
 
 
-    public ChunkMetadataGenerator(ILoggerFactory loggerFactory, IChatClient client)
+    public ChunkMetadataGenerator(ILoggerFactory loggerFactory, IChatClient client, IAgentFactory factory)
     {
         Guard.IsNotNull(loggerFactory);
         Guard.IsNotNull(client);
+        Guard.IsNotNull(factory);
+        _agentFactory = factory;
 
         _logger = loggerFactory.CreateLogger<ChunkMetadataGenerator>();
 
         Uri ollamaUri = new("http://localhost:11434");
         _chatClient = new OllamaApiClient(ollamaUri, AIModels.GEMMA3);
-        _embedding = AgentFactory.GetEmbeddingClient();
     }
 
 
@@ -71,8 +77,8 @@ public sealed class ChunkMetadataGenerator
     public async Task<GeneratedChunkMetadata> GenerateAsync(string chunkContent, CancellationToken cancellationToken = default)
     {
         Guard.IsNotNullOrWhiteSpace(chunkContent);
-        var keywords = NormalizeKeywords(await GenerateKeywordsAsync(chunkContent, cancellationToken).ConfigureAwait(false));
-        var summary = NormalizeSummary(await GenerateSummaryAsync(chunkContent, cancellationToken).ConfigureAwait(false));
+        var keywords = NormalizeKeywords(await this.GenerateKeywordsAsync(chunkContent, cancellationToken).ConfigureAwait(false));
+        var summary = NormalizeSummary(await this.GenerateSummaryAsync(chunkContent, cancellationToken).ConfigureAwait(false));
 
         return new GeneratedChunkMetadata(keywords, summary);
     }
@@ -146,7 +152,7 @@ public sealed class ChunkMetadataGenerator
                                     Return only the comma-separated keywords. No preamble, no labels.
                                     """;
 
-        return await GenerateCompletionAsync(systemPrompt, chunkContent, KeywordOptions, cancellationToken).ConfigureAwait(false);
+        return await this.GenerateCompletionAsync(systemPrompt, chunkContent, KeywordOptions, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -172,7 +178,7 @@ public sealed class ChunkMetadataGenerator
                                     Return only the summary text. No preamble, no labels.
                                     """;
 
-        return await GenerateCompletionAsync(systemPrompt, chunkContent, SummaryOptions, cancellationToken).ConfigureAwait(false);
+        return await this.GenerateCompletionAsync(systemPrompt, chunkContent, SummaryOptions, cancellationToken).ConfigureAwait(false);
     }
 
 

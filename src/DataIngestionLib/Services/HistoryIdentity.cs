@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         HistoryIdentity.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 212915
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -41,4 +45,5 @@ public class HistoryIdentity
     [JsonPropertyName("messages")] public List<ChatMessage> Messages { get; set; } = [];
 
     [JsonPropertyName("userid")] public string UserId { get; set; } = string.Empty;
+    [JsonPropertyName("tokencount")] public int TokenCount { get; set; } = 0;
 }

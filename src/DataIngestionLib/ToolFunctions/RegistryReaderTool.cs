@@ -1,11 +1,17 @@
-// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         RegistryReaderTool.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 212919
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
+
+using System.ComponentModel;
 
 using DataIngestionLib.Services;
 
@@ -64,10 +70,10 @@ public class RegistryReaderTool
     {
         return value switch
         {
-                string text => Truncate(text),
-                string[] items => Truncate(string.Join("; ", items.Where(item => !string.IsNullOrWhiteSpace(item)))),
-                byte[] bytes => Convert.ToHexString(bytes.AsSpan(0, Math.Min(bytes.Length, 64))),
-                _ => Truncate(value.ToString() ?? string.Empty)
+            string text => Truncate(text),
+            string[] items => Truncate(string.Join("; ", items.Where(item => !string.IsNullOrWhiteSpace(item)))),
+            byte[] bytes => Convert.ToHexString(bytes.AsSpan(0, Math.Min(bytes.Length, 64))),
+            _ => Truncate(value.ToString() ?? string.Empty)
         };
     }
 
@@ -85,7 +91,7 @@ public class RegistryReaderTool
     /// <returns>A <see cref="ToolResult{T}" /> with the value on success, or an error message on failure.</returns>
     public ToolResult<string> ReadStringValue(string keyPath)
     {
-        var result = ReadValue(keyPath);
+        ToolResult<RegistryValueSnapshot> result = this.ReadValue(keyPath);
 
         return result.Success ? ToolResult<string>.Ok(result.Value!.ValueText) : ToolResult<string>.Fail(result.Error!);
     }
@@ -95,26 +101,13 @@ public class RegistryReaderTool
 
 
 
-
-
-    /// <summary>
-    ///     Reads a registry value and returns bounded metadata suitable for diagnostics.
-    /// </summary>
-    /// <param name="keyPath">The full path to the registry key and value (e.g., "HKEY_LOCAL_MACHINE\Software\Vendor\Value").</param>
-    /// <returns>A <see cref="ToolResult{T}" /> that contains a normalized snapshot of the registry value.</returns>
-    public ToolResult<RegistryValueSnapshot> ReadValue(string keyPath)
+    [Description("A Windows registry value reader.")]
+    public ToolResult<RegistryValueSnapshot> ReadValue([Description("Full path of the registry key to read")] string keyPath)
     {
         if (string.IsNullOrWhiteSpace(keyPath))
         {
             const string message = "Registry key path cannot be null or empty.";
             _logger.LogRegistryKeyPathCannotBeNullOrEmpty();
-            return ToolResult<RegistryValueSnapshot>.Fail(message);
-        }
-
-        if (!OperatingSystem.IsWindows())
-        {
-            const string message = "Registry access is only supported on Windows.";
-            _logger.LogRegistryAccessIsOnlySupportedOnWindows();
             return ToolResult<RegistryValueSnapshot>.Fail(message);
         }
 
@@ -176,11 +169,11 @@ public class RegistryReaderTool
 
             return ToolResult<RegistryValueSnapshot>.Ok(new RegistryValueSnapshot
             {
-                    Hive = hiveName,
-                    KeyPath = subKeyPath,
-                    ValueName = string.IsNullOrEmpty(valueName) ? "(Default)" : valueName,
-                    ValueKind = subKey.GetValueKind(valueName).ToString(),
-                    ValueText = FormatRegistryValue(value)
+                Hive = hiveName,
+                KeyPath = subKeyPath,
+                ValueName = string.IsNullOrEmpty(valueName) ? "(Default)" : valueName,
+                ValueKind = subKey.GetValueKind(valueName).ToString(),
+                ValueText = FormatRegistryValue(value)
             });
         }
         catch (System.Security.SecurityException ex)
@@ -206,12 +199,7 @@ public class RegistryReaderTool
     {
         const int maxLength = 512;
 
-        if (value.Length <= maxLength)
-        {
-            return value;
-        }
-
-        return value[..maxLength] + "...";
+        return value.Length <= maxLength ? value : value[..maxLength] + "...";
     }
 
 
@@ -225,12 +213,15 @@ public class RegistryReaderTool
     {
         baseKey = hiveName.ToUpperInvariant() switch
         {
-                "HKEY_CLASSES_ROOT" => Microsoft.Win32.Registry.ClassesRoot,
-                "HKEY_CURRENT_USER" => Microsoft.Win32.Registry.CurrentUser,
-                "HKEY_LOCAL_MACHINE" => Microsoft.Win32.Registry.LocalMachine,
-                "HKEY_USERS" => Microsoft.Win32.Registry.Users,
-                "HKEY_CURRENT_CONFIG" => Microsoft.Win32.Registry.CurrentConfig,
-                _ => null
+            "HKLM" => Microsoft.Win32.Registry.LocalMachine,
+            "HKCU" => Microsoft.Win32.Registry.CurrentUser,
+            "HKCC" => Microsoft.Win32.Registry.CurrentConfig,
+            "HKEY_CLASSES_ROOT" => Microsoft.Win32.Registry.ClassesRoot,
+            "HKEY_CURRENT_USER" => Microsoft.Win32.Registry.CurrentUser,
+            "HKEY_LOCAL_MACHINE" => Microsoft.Win32.Registry.LocalMachine,
+            "HKEY_USERS" => Microsoft.Win32.Registry.Users,
+            "HKEY_CURRENT_CONFIG" => Microsoft.Win32.Registry.CurrentConfig,
+            _ => null
         };
 
         return baseKey != null;

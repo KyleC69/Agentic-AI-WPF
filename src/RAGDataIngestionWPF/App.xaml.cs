@@ -132,7 +132,7 @@ public sealed partial class App : Application
                 return;
             }
 
-            await _host.StartAsync();
+            await _host.StartAsync().ConfigureAwait(false);
             _isHostStarted = true;
         }
         catch (Exception ex)
@@ -176,7 +176,7 @@ public sealed partial class App : Application
 
         IConfiguration configuration = _host.Services.GetRequiredService<IConfiguration>();
         configuration[ToastNotificationActivationHandler.ACTIVATION_ARGUMENTS] = toastArgument;
-        await EnsureHostStartedAsync();
+        await EnsureHostStartedAsync().ConfigureAwait(false);
     }
 
 
@@ -227,7 +227,7 @@ public sealed partial class App : Application
         {
             if (_isHostStarted)
             {
-                await _host.StopAsync();
+                await _host.StopAsync().ConfigureAwait(false);
             }
         }
         catch (InvalidOperationException ex)
@@ -275,7 +275,7 @@ public sealed partial class App : Application
             return;
         }
 
-        await EnsureHostStartedAsync();
+        await EnsureHostStartedAsync().ConfigureAwait(false);
     }
 
 

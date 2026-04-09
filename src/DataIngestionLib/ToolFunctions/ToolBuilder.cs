@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         ToolBuilder.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 212922
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -35,7 +39,6 @@ public sealed class ToolBuilder : IAIToolCatalog
     private readonly Lazy<AITool> _serviceHealthReadTool;
     private readonly Lazy<AITool> _startupInventoryReadTool;
     private readonly Lazy<AITool> _storageHealthReadTool;
-    private readonly Lazy<AITool> _systemInfoTool;
     private readonly Lazy<AITool> _webSearchTool;
     private readonly Lazy<AITool> _windowsEventChannelReadTool;
     private readonly Lazy<AITool> _windowsWmiReadTool;
@@ -50,7 +53,6 @@ public sealed class ToolBuilder : IAIToolCatalog
     public ToolBuilder(WebSearchPlugin webSearchPlugin, SandboxEventLogReader eventLogReader, InstalledUpdatesTool installedUpdatesTool, NetworkConfigurationTool networkConfigurationTool, PerformanceCounterTool performanceCounterTool, ProcessSnapshotTool processSnapshotTool, RegistryReaderTool registryReaderTool, ReliabilityHistoryTool reliabilityHistoryTool, SafeCommandRunner safeCommandRunner, ServiceHealthTool serviceHealthTool, StartupInventoryTool startupInventoryTool, StorageHealthTool storageHealthTool, WindowsEventChannelReaderTool windowsEventChannelReaderTool, WindowsWmiReaderTool windowsWmiReaderTool)
     {
         _webSearchTool = new(() => AIFunctionFactory.Create(webSearchPlugin.WebSearch));
-        _systemInfoTool = new(() => AIFunctionFactory.Create(SystemInfoTool.GetInfo));
         _eventLogTool = new(() => AIFunctionFactory.Create(eventLogReader.ReadLog));
         _installedUpdatesReadTool = new(() => AIFunctionFactory.Create(installedUpdatesTool.ReadInstalledUpdates));
         _networkConfigurationReadTool = new(() => AIFunctionFactory.Create(networkConfigurationTool.ReadActiveAdapters));
@@ -77,7 +79,7 @@ public sealed class ToolBuilder : IAIToolCatalog
 
     public IList<AITool> GetAiTools()
     {
-        return GetReadOnlyAiTools();
+        return this.GetReadOnlyAiTools();
     }
 
 
@@ -92,7 +94,6 @@ public sealed class ToolBuilder : IAIToolCatalog
         return
         [
                 _webSearchTool.Value,
-                _systemInfoTool.Value,
                 _eventLogTool.Value,
                 _installedUpdatesReadTool.Value,
                 _networkConfigurationReadTool.Value,

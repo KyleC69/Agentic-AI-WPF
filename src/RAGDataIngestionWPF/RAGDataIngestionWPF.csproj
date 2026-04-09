@@ -13,6 +13,7 @@
 		<EnableNETAnalyzers>False</EnableNETAnalyzers>
 		<RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
 		<DefineConstants>$(DefineConstants);SQL</DefineConstants>
+        <ReleaseCopyOutputDir>e:\Releases\</ReleaseCopyOutputDir>
 	</PropertyGroup>
 
 
@@ -60,5 +61,20 @@
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
 		</None>
 	</ItemGroup>
+
+	<Target Name="CopyBuildOutputToReleases" AfterTargets="Build">
+		<ItemGroup>
+			<BuildOutputFiles Include="$(TargetDir)**\*" />
+		</ItemGroup>
+
+		<MakeDir Directories="$(ReleaseCopyOutputDir)" />
+		<Copy SourceFiles="@(BuildOutputFiles)"
+			  DestinationFiles="@(BuildOutputFiles->'$(ReleaseCopyOutputDir)%(RecursiveDir)%(Filename)%(Extension)')"
+			  SkipUnchangedFiles="true" />
+		<Message Text="Build output copied to $(ReleaseCopyOutputDir)" Importance="High"  />	
+	</Target>
+
+
+
 
 </Project>

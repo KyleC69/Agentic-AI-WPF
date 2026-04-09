@@ -38,6 +38,7 @@ namespace DataIngestionLib.Agents;
 /// </summary>
 public class AgentFactory : IAgentFactory
 {
+    private readonly IHistoryIdentityService _historyIdentity;
 
     private static SqlChatHistoryProvider? _chatHistoryProvider;
     private static ILoggerFactory _factory = NullLoggerFactory.Instance;
@@ -70,13 +71,15 @@ public class AgentFactory : IAgentFactory
     /// <exception cref="ArgumentNullException">
     ///     Thrown when any of the provided parameters is <c>null</c>.
     /// </exception>
-    public AgentFactory(ILoggerFactory factory, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector, IAIToolCatalog toolCatalog)
+    public AgentFactory(ILoggerFactory factory, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector, IAIToolCatalog toolCatalog, IHistoryIdentityService historyIdentityService)
     {
         Guard.IsNotNull(factory);
         Guard.IsNotNull(chatHistoryProvider);
         Guard.IsNotNull(ragContextInjector);
         Guard.IsNotNull(toolCatalog);
+        Guard.IsNotNull(historyIdentityService);
 
+        _historyIdentity = historyIdentityService;
         _factory = factory;
         _chatHistoryProvider = chatHistoryProvider;
         _ragContextInjector = ragContextInjector;
@@ -115,7 +118,7 @@ public class AgentFactory : IAgentFactory
     {
 
         Guard.IsNotNullOrWhiteSpace(agentId);
-
+        HistoryMemoryProvider _window = new(_historyIdentity);
 
 
         ChatClientAgent outer = client.AsAIAgent(new ChatClientAgentOptions
@@ -132,7 +135,7 @@ public class AgentFactory : IAgentFactory
                 Tools = _toolCatalog.GetReadOnlyAiTools()
             },
             ChatHistoryProvider = _chatHistoryProvider,
-            AIContextProviders = [_ragContextInjector],
+            AIContextProviders = [_window, _ragContextInjector!],
             WarnOnChatHistoryProviderConflict = true,
             ThrowOnChatHistoryProviderConflict = true
         });
@@ -213,13 +216,13 @@ public class AgentFactory : IAgentFactory
     /// <exception cref="UriFormatException">
     ///     Thrown if the predefined URI is invalid.
     /// </exception>
-    public static LoggingEmbeddingGenerator<string, Embedding<float>> GetEmbeddingClient()
+    public IEmbeddingGenerator<string, Embedding<float>> GetEmbeddingClient()
     {
         Uri ollamaUri = new(settings.RestEndpoint);
 
-        OllamaApiClient client = new(ollamaUri, AIModels.MXBAI);
-        LoggingEmbeddingGenerator<string, Embedding<float>> logger = new(client, _factory.CreateLogger<LoggingEmbeddingGenerator<string, Embedding<float>>>());
-        return logger;
+        IEmbeddingGenerator<string, Embedding<float>> client = new OllamaApiClient(ollamaUri, AIModels.MXBAI);
+
+        return client;
 
     }
 

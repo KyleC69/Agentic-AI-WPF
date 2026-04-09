@@ -8,17 +8,19 @@
 
 
 using System.Collections.ObjectModel;
-using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 
+using CommunityToolkit.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Services;
 
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
 using RAGDataIngestionWPF.Contracts.ViewModels;
 
@@ -52,6 +54,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     [ObservableProperty] private int toolTokenCount;
     [ObservableProperty] private int totalTokenCount;
     private readonly IWorkflowConversationService _workflow;
+    private readonly ILogger<MainViewModel> _logger;
 
 
 
@@ -60,23 +63,41 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    public MainViewModel(IChatConversationService chatConversationService, IHistoryIdentityService historyIdentityService, IWorkflowConversationService workflowConversationService)
+    public MainViewModel(IChatConversationService chatConversationService, IHistoryIdentityService historyIdentityService, IWorkflowConversationService workflowConversationService, ILogger<MainViewModel> logger)
     {
-        ArgumentNullException.ThrowIfNull(chatConversationService);
-        _historyIdentity = historyIdentityService;
+        Guard.IsNotNull(chatConversationService);
+        Guard.IsNotNull(historyIdentityService);
+        Guard.IsNotNull(workflowConversationService);
+        Guard.IsNotNull(logger);
+        _logger = logger;
+        _workflow = workflowConversationService;
         _chatConversationService = chatConversationService;
-        Messages = new ObservableCollection<ChatMessage>();
-
-        SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
+        SendMessageCommand = new AsyncRelayCommand(StartWorkflowAsync, CanSendMessage);
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
-
+        Messages = new();
         _chatConversationService.BusyStateChanged += OnBusyStateChange;
+        _workflow.BusyStateChanged += OnBusyStateChange;
 
         NewConvoCommand = new AsyncRelayCommand(StartNewConversationAsync);
 
         // Need to link this back to applicaion lifecycle
         _tokenSource = new CancellationTokenSource();
-        _workflow = workflowConversationService;
+        TokenAccountingMiddleware.TotalTokensChanged += (s, e) =>
+        {
+            RunOnUiThread(() => TotalTokenCount = e.CurrentValue);
+        };
+        TokenAccountingMiddleware.RagTokensChanged += (s, e) =>
+        {
+            RunOnUiThread(() => RagTokenCount = e.CurrentValue);
+        };
+        TokenAccountingMiddleware.ReasoningTokensChanged += (s, e) => { RunOnUiThread(() => ReasoningTokenCount = e.CurrentValue); };
+        TokenAccountingMiddleware.InputTokensChanged += (s, e) => { RunOnUiThread(() => InputTokenCount = e.CurrentValue); };
+        TokenAccountingMiddleware.OutputTokensChanged += (s, e) => { RunOnUiThread(() => OutputTokenCount = e.CurrentValue); };
+        TokenAccountingMiddleware.CachedInputTokensChanged += (s, e) => { RunOnUiThread(() => CachedInputTokenCount = e.CurrentValue); };
+        TokenAccountingMiddleware.SessionTokensChanged += (s, e) => { RunOnUiThread(() => SessionTokenCount = e.CurrentValue); };
+        TokenAccountingMiddleware.RagTokensChanged += (s, e) => { RunOnUiThread(() => RagTokenCount = e.CurrentValue); };
+        TokenAccountingMiddleware.ToolTokensChanged += (s, e) => { RunOnUiThread(() => ToolTokenCount = e.CurrentValue); };
+        TokenAccountingMiddleware.SystemTokensChanged += (s, e) => { RunOnUiThread(() => SystemTokenCount = e.CurrentValue); };
     }
 
 
@@ -136,7 +157,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     public void Dispose()
     {
         _tokenSource?.Dispose();
-        _chatConversationService.BusyStateChanged -= OnBusyStateChange;
+
     }
 
 
@@ -178,30 +199,66 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     /// </remarks>
     public async void OnNavigatedTo(object parameter)
     {
+
         if (_historyLoaded)
         {
             return;
         }
 
+
+        // Load conversation history on navigation
+
         try
         {
-            Messages.Clear();
-
-            var historyMessages = await _chatConversationService.LoadConversationHistoryAsync(_tokenSource.Token).ConfigureAwait(true);
-
-            //Add the history messages to the UI collection
-            foreach (ChatMessage historyMessage in historyMessages)
-            {
-                Messages.Add(historyMessage);
-            }
-
+            _chatConversationService.BusyStateChanged += OnBusyStateChange;
+            await LoadConversationHistoryAsync().ConfigureAwait(false);
 
             _historyLoaded = true;
         }
-        catch
+        catch (Exception e)
         {
-            Messages.Clear();
+            _logger.LogError(e, "Failed to load conversation history.");
         }
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+    private async Task LoadConversationHistoryAsync()
+    {
+        try
+        {
+            // Ensure a new token source is created for this operation if needed, or reuse if appropriate.
+            // For simplicity here, we assume it might be okay to use a potentially cancelled _tokenSource if the UI is already being navigated away from.
+            // A more robust approach might create a new CancellationTokenSource specifically for loading history.
+            var history = await _chatConversationService.LoadConversationHistoryAsync(_tokenSource.Token).ConfigureAwait(false);
+            foreach (ChatMessage chatMessage in history)
+            {
+                Messages.Add(chatMessage);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Loading conversation history was cancelled.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load conversation history.");
+            // Optionally, inform the user or handle the error in a way that doesn't break the UI.
+        }
+
     }
 
 
@@ -280,6 +337,50 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
+    private async Task StartWorkflowAsync()
+    {
+        _tokenSource = new CancellationTokenSource();
+        IsBusy = true;
+        var content = MessageInput.Trim();
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return;
+        }
+
+        //Add Users message to UI collection
+        Messages.Add(new ChatMessage(ChatRole.User, content));
+
+        //Clear UI input
+        MessageInput = string.Empty;
+        try
+        {
+            //  await _workflow.InitializeAsync().ConfigureAwait(false);
+            //  var result = await _workflow.ExecuteWorkflow(content).ConfigureAwait(true);
+
+            var result = await _chatConversationService.SendRequestToModelAsync(content, _tokenSource.Token);
+
+            Messages.Add(result);
+            //  Messages.Add(new ChatMessage(ChatRole.Assistant, result));
+        }
+        catch (OperationCanceledException e)
+        {
+            _logger.LogError(e, "Error running workflow");
+            Messages.Add(new ChatMessage(ChatRole.Assistant, $"Error running workflow: {e.Message}"));
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error running workflow");
+            Messages.Add(new ChatMessage(ChatRole.Assistant, $"Error running workflow: {ex.Message}"));
+        }
+
+    }
+
+
+
+
+
+    /*
     private async Task SendMessageAsync()
     {
         _tokenSource = new CancellationTokenSource();
@@ -303,11 +404,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         {
             //  ChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _tokenSource.Token);
             //Messages.Add(assistantMessage);
-
+            
             await _workflow.InitializeAsync();
-            List<ChatMessage> response = await _workflow.RunStreamingWorkflowAsync(
-                content,
-                (updateMessage, cancellationToken) =>
+            List<ChatMessage> response = await _workflow.ExecuteWorkflow(content, (updateMessage, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -376,7 +475,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
     }
 
-
+    */
 
 
 
@@ -386,7 +485,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     private async Task StartNewConversationAsync(CancellationToken arg)
     {
         // Clear the current conversation in the service, which should trigger the UI to clear as well.
-        await _chatConversationService.StartNewConversationAsync(arg);
+        await _chatConversationService.StartNewConversationAsync(arg).ConfigureAwait(false);
         Messages.Clear();
     }
 }

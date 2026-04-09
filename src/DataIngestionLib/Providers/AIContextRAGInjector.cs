@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         AIContextRAGInjector.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 212906
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -48,14 +52,29 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
         _historyIdentityService = historyIdentityService;
 
-        // Database keys are stored in the state bag of the session for easy access by the providers and context injectors,
-        // and to keep them in sync with the history identity service which is the source of truth for these identifiers.
-        _sessionState = new ProviderSessionState<HistoryIdentity>(currentSession => _historyIdentityService.Current, this.GetType().Name);
-        // The key under which to store state in the session for this provider. Make sure it does not clash with the keys of other providers.
+        _sessionState = new ProviderSessionState<HistoryIdentity>(stateInitializer: currentSession => new HistoryIdentity(HistoryIdentityService.GetConversationId()), stateKey: this.GetType().Name);
 
 
 
     }
+
+
+
+
+
+
+
+
+    /// <summary>
+    /// Gets the set of keys used to store the provider state in the <see cref="P:Microsoft.Agents.AI.AgentSession.StateBag" />.
+    /// </summary>
+    /// <remarks>
+    /// The default value is a single-element set containing the name of the concrete type (e.g. <c>"TextSearchProvider"</c>).
+    /// Implementations may override this to provide custom keys, for example when multiple
+    /// instances of the same provider type are used in the same session, or when a provider
+    /// stores state under more than one key.
+    /// </remarks>
+    public override IReadOnlyList<string> StateKeys => new[] { _sessionState.StateKey };
 
 
 
@@ -91,13 +110,13 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
         // Validate the query through multiple gates
-        if (!IsQueryValid(searchText, context))
+        if (!this.IsQueryValid(searchText, context))
         {
             return context.RequestMessages;
         }
 
         // Fetch results from the RAG data service
-        var results = await _ragData.GetRagDataEntries(searchText, cancellationToken);
+        IEnumerable<ChatMessage> results = await _ragData.GetRagDataEntries(searchText, cancellationToken);
         // Return results or an empty collection if null
         return results ?? Enumerable.Empty<ChatMessage>();
 
@@ -169,21 +188,21 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     private bool IsQueryValid(string searchText, InvokingContext context)
     {
         // Gate 1: Check if the query contains relevant keywords
-        if (!AgentFrameworkKeywordDetector(searchText))
+        if (!this.AgentFrameworkKeywordDetector(searchText))
         {
             _logger.LogTrace("RAG failed gate1");
             return false;
         }
 
         // Gate 2: Validate query length and content
-        if (!IsValidQuery(searchText))
+        if (!this.IsValidQuery(searchText))
         {
             _logger.LogTrace("RAG failed gate2");
             return false;
         }
 
         // Gate 3: Ensure the context is relevant
-        if (!IsRelevant(context))
+        if (!this.IsRelevant(context))
         {
             _logger.LogTrace("RAG failed gate3");
             return false;
@@ -203,7 +222,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     {
         var text = string.Join(" ", context.RequestMessages.Where(m => m.Role == ChatRole.User).Select(m => m.Text));
 
-        var answer = AgentFrameworkKeywordDetector(text);
+        var answer = this.AgentFrameworkKeywordDetector(text);
         if (!answer)
         {
             _logger.LogTrace("User text did not pass relevency test, no context enhancement is injected");
