@@ -4,7 +4,7 @@ path: /docs/ChangeLog.md
 purpose: Track notable repository-level documentation and implementation milestones for developers following project evolution.
 audience: Developers evaluating the repository or looking for recent changes
 status: draft
-last reviewed: 2026-03-15
+last reviewed: 2026-04-09
 related components:
   - /README.md
   - /docs/DocumentationManifest.md
@@ -17,6 +17,25 @@ related components:
 This starter change log highlights noteworthy repository-level updates. It complements the source history by giving developers a concise narrative of what changed and why.
 
 See also: [/docs/DocumentationManifest.md](/docs/DocumentationManifest.md)
+
+## 2026-04-09
+
+### Documentation
+
+- Expanded this change log to include the latest repository documentation maintenance entries so recent work is easier to track.
+
+## 2026-04-02
+
+### Documentation
+
+- Refreshed `/README.md` with current solution targeting details, updated documentation entry points, current project-role summaries, and current build/test guidance.
+
+## 2026-03-21
+
+### Documentation
+
+- Updated `/docs/DocumentationManifest.md` to reflect the active documentation set and review status.
+- Recorded current `Components` and `Context Management` documentation review metadata in the manifest.
 
 ## 2026-03-15
 

@@ -44,7 +44,7 @@ public interface IWorkflowConversationService
     Task<bool> InitializeAsync();
 
 
-    Task<string?> ExecuteWorkflow(string UserTask);
+    Task<string?> ExecuteWorkflow(string UserTask, Func<object, object, Task> value);
     event EventHandler<bool> BusyStateChanged;
 
 }

@@ -8,6 +8,7 @@
 
 
 using System.Collections.ObjectModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -378,104 +379,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-
-
-    /*
-    private async Task SendMessageAsync()
-    {
-        _tokenSource = new CancellationTokenSource();
-
-        var content = MessageInput.Trim();
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return;
-        }
-
-        //Add Users message to UI collection
-        Messages.Add(new ChatMessage(ChatRole.User, content));
-
-        //Clear UI input
-        MessageInput = string.Empty;
-
-        int? liveAssistantMessageIndex = null;
-        StringBuilder streamedAssistantText = new();
-
-        try
-        {
-            //  ChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _tokenSource.Token);
-            //Messages.Add(assistantMessage);
-            
-            await _workflow.InitializeAsync();
-            List<ChatMessage> response = await _workflow.ExecuteWorkflow(content, (updateMessage, cancellationToken) =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    string chunkText = updateMessage.Text;
-                    if (string.IsNullOrWhiteSpace(chunkText))
-                    {
-                        return Task.CompletedTask;
-                    }
-
-                    lock (streamedAssistantText)
-                    {
-                        streamedAssistantText.Append(chunkText);
-
-                        ChatMessage liveMessage = new(ChatRole.Assistant, streamedAssistantText.ToString());
-                        RunOnUiThread(() =>
-                        {
-                            if (liveAssistantMessageIndex is null)
-                            {
-                                Messages.Add(liveMessage);
-                                liveAssistantMessageIndex = Messages.Count - 1;
-                                return;
-                            }
-
-                            Messages[liveAssistantMessageIndex.Value] = liveMessage;
-                        });
-                    }
-
-                    return Task.CompletedTask;
-                },
-                _tokenSource.Token);
-
-            if (liveAssistantMessageIndex is null)
-            {
-                StringBuilder fallbackAssistantText = new();
-                foreach (ChatMessage message in response)
-                {
-                    if (message.Role == ChatRole.User || string.IsNullOrWhiteSpace(message.Text))
-                    {
-                        continue;
-                    }
-
-                    if (fallbackAssistantText.Length > 0)
-                    {
-                        fallbackAssistantText.AppendLine();
-                    }
-
-                    fallbackAssistantText.Append(message.Text.Trim());
-                }
-
-                if (fallbackAssistantText.Length > 0)
-                {
-                    Messages.Add(new ChatMessage(ChatRole.Assistant, fallbackAssistantText.ToString()));
-                }
-            }
-
-
-        }
-        catch (OperationCanceledException)
-        {
-            Messages.Add(new ChatMessage(ChatRole.Assistant, "Response cancelled."));
-        }
-        finally
-        {
-            _tokenSource?.Dispose();
-            _tokenSource = null;
-        }
-    }
-
-    */
 
 
 
