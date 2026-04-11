@@ -22,8 +22,6 @@ using RAGDataIngestionWPF.Models;
 using RAGDataIngestionWPF.Properties;
 using RAGDataIngestionWPF.ViewModels;
 
-using SystemConfigurationManager = System.Configuration.ConfigurationManager;
-
 
 
 
@@ -204,15 +202,16 @@ public class ViewModelAndConverterTests
     [TestMethod]
     public void SettingsViewModelOnNavigatedToLoadsOrchestrationModeFromConfig()
     {
-        SetAppSettingForTest("OrchestrationMode", "RoundRobin");
-
         Mock<ISystemService> system = new();
         Mock<IApplicationInfoService> appInfo = new();
         Mock<IUserDataService> userData = new();
+        Mock<IRuntimeAppSettingsService> runtimeSettings = new();
         appInfo.Setup(service => service.GetVersion()).Returns(new Version(1, 0, 0));
         userData.Setup(service => service.GetUser()).Returns(new UserViewModel());
+        runtimeSettings.Setup(service => service.GetValue(It.IsAny<string>(), It.IsAny<string>())).Returns((string _, string fallback) => fallback);
+        runtimeSettings.Setup(service => service.GetValue("OrchestrationMode", It.IsAny<string>())).Returns("RoundRobin");
 
-        SettingsViewModel viewModel = new(system.Object, appInfo.Object, userData.Object);
+        SettingsViewModel viewModel = new(system.Object, appInfo.Object, userData.Object, runtimeSettings.Object);
 
         viewModel.OnNavigatedTo(null);
 
@@ -228,35 +227,17 @@ public class ViewModelAndConverterTests
         Mock<ISystemService> system = new();
         Mock<IApplicationInfoService> appInfo = new();
         Mock<IUserDataService> userData = new();
+        Mock<IRuntimeAppSettingsService> runtimeSettings = new();
         appInfo.Setup(service => service.GetVersion()).Returns(new Version(1, 0, 0));
         userData.Setup(service => service.GetUser()).Returns(new UserViewModel());
+        runtimeSettings.Setup(service => service.GetValue(It.IsAny<string>(), It.IsAny<string>())).Returns((string _, string fallback) => fallback);
 
-        SettingsViewModel viewModel = new(system.Object, appInfo.Object, userData.Object);
+        SettingsViewModel viewModel = new(system.Object, appInfo.Object, userData.Object, runtimeSettings.Object);
         viewModel.OnNavigatedTo(null);
         viewModel.OrchestrationMode = DataIngestionLib.OrchestrationMode.None;
 
         viewModel.SaveChatHistorySettingsCommand.Execute(null);
 
-        var savedMode = SystemConfigurationManager.AppSettings["OrchestrationMode"];
-        Assert.AreEqual("None", savedMode);
-    }
-
-
-
-
-    private static void SetAppSettingForTest(string key, string value)
-    {
-        System.Configuration.Configuration config = SystemConfigurationManager.OpenExeConfiguration(System.Configuration.ConfigurationUserLevel.None);
-        if (config.AppSettings.Settings[key] is null)
-        {
-            config.AppSettings.Settings.Add(key, value);
-        }
-        else
-        {
-            config.AppSettings.Settings[key].Value = value;
-        }
-
-        config.Save(System.Configuration.ConfigurationSaveMode.Modified);
-        SystemConfigurationManager.RefreshSection("appSettings");
+        runtimeSettings.Verify(service => service.SetValue("OrchestrationMode", "None"), Times.Once);
     }
 }

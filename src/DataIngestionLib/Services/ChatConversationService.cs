@@ -48,11 +48,12 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
 
 
 
-    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IHistoryIdentityService historyIdentityService, SqlChatHistoryProvider? sqlChatHistoryProvider)
+    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IHistoryIdentityService historyIdentityService, SqlChatHistoryProvider? sqlChatHistoryProvider, IAppSettings appSettings) : base(appSettings)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(agentFactory);
         ArgumentNullException.ThrowIfNull(historyIdentityService);
+        ArgumentNullException.ThrowIfNull(appSettings);
         Guard.IsNotNull(sqlChatHistoryProvider);
         ApplicationId = historyIdentityService.Current.ApplicationId;
         _initialUserId = historyIdentityService.Current.UserId;
@@ -226,25 +227,29 @@ public sealed class ChatConversationService : ChatConversationBase, IChatConvers
         await _initializeGate.WaitAsync().ConfigureAwait(false);
         try
         {
+            IAgentFactory agentFactory = _agentFactory ?? throw new InvalidOperationException("Agent factory has not been initialized.");
+            IHistoryIdentityService historyIdentityService = _historyIdentityService ?? throw new InvalidOperationException("History identity service has not been initialized.");
+            string initialUserId = string.IsNullOrWhiteSpace(_initialUserId) ? historyIdentityService.Current.UserId : _initialUserId;
+
             ConversationId = HistoryIdentityService.GetConversationId();
-            IChatClient client = _agentFactory.GetChatClient(AIModels.GLM5);
-            _agent = _agentFactory.BuildAssistantAgent(client, DefaultAgentId, "AgentName", "Agentic-Max Description");
+            IChatClient client = agentFactory.GetChatClient(AIModels.GLM5);
+            _agent = agentFactory.BuildAssistantAgent(client, DefaultAgentId, "AgentName", "Agentic-Max Description");
 
             _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
             _agentSession.StateBag.SetValue("ConversationId",ConversationId);
-            _agentSession.StateBag.SetValue("ApplicationId", _historyIdentityService.Current.ApplicationId);
-            _agentSession.StateBag.SetValue("AgentId", _historyIdentityService.Current.AgentId);
-            _agentSession.StateBag.SetValue("UserId", _historyIdentityService.Current.UserId);
+            _agentSession.StateBag.SetValue("ApplicationId", historyIdentityService.Current.ApplicationId);
+            _agentSession.StateBag.SetValue("AgentId", historyIdentityService.Current.AgentId);
+            _agentSession.StateBag.SetValue("UserId", historyIdentityService.Current.UserId);
             
 
-            _historyIdentityService.Initialize(Settings.ApplicationId, DefaultAgentId, _initialUserId);
+            historyIdentityService.Initialize(Settings.ApplicationId, DefaultAgentId, initialUserId);
 
-            _historyIdentityService.ApplyToSession(_agentSession);
+            historyIdentityService.ApplyToSession(_agentSession);
 
 
-            _sessionStateHelper = new ProviderSessionState<HistoryIdentity>(currentSession => _historyIdentityService.Current, this.GetType().Name);
+            _sessionStateHelper = new ProviderSessionState<HistoryIdentity>(currentSession => historyIdentityService.Current, this.GetType().Name);
 
-            _sessionStateHelper.SaveState(_agentSession, _historyIdentityService.Current);
+            _sessionStateHelper.SaveState(_agentSession, historyIdentityService.Current);
 
             Initialized = true;
         }

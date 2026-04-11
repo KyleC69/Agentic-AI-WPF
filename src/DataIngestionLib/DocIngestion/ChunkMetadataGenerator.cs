@@ -35,9 +35,7 @@ public sealed class ChunkMetadataGenerator
 {
 
     private readonly IChatClient _chatClient;
-    private readonly IEmbeddingGenerator<string, Embedding<float>> _embedding;
     private readonly ILogger<ChunkMetadataGenerator> _logger;
-    private readonly IAgentFactory _agentFactory;
     private const int KeywordMaxOutputTokens = 128;
     private const int MaximumKeywordsLength = 500;
     private const int MaximumSummaryLength = 4000;
@@ -59,7 +57,6 @@ public sealed class ChunkMetadataGenerator
         Guard.IsNotNull(loggerFactory);
         Guard.IsNotNull(client);
         Guard.IsNotNull(factory);
-        _agentFactory = factory;
 
         _logger = loggerFactory.CreateLogger<ChunkMetadataGenerator>();
 

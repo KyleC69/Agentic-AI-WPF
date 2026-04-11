@@ -20,7 +20,6 @@ using DataIngestionLib.Providers;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 using OllamaSharp;
 
@@ -38,13 +37,13 @@ namespace DataIngestionLib.Agents;
 /// </summary>
 public class AgentFactory : IAgentFactory
 {
+    private readonly SqlChatHistoryProvider _chatHistoryProvider;
+    private readonly ILoggerFactory _factory;
     private readonly IHistoryIdentityService _historyIdentity;
-
-    private static SqlChatHistoryProvider? _chatHistoryProvider;
-    private static ILoggerFactory _factory = NullLoggerFactory.Instance;
-    private static AIContextRAGInjector? _ragContextInjector;
-    private static IAIToolCatalog? _toolCatalog;
-    private static readonly AppSettings settings = new();
+    private readonly AIContextRAGInjector _ragContextInjector;
+    private readonly IAppSettings _settings;
+    private readonly IAIToolCatalog _toolCatalog;
+    private readonly ILogger<AgentFactory> _logger;
 
 
 
@@ -71,25 +70,53 @@ public class AgentFactory : IAgentFactory
     /// <exception cref="ArgumentNullException">
     ///     Thrown when any of the provided parameters is <c>null</c>.
     /// </exception>
-    public AgentFactory(ILoggerFactory factory, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector, IAIToolCatalog toolCatalog, IHistoryIdentityService historyIdentityService)
+    public AgentFactory(ILoggerFactory factory, SqlChatHistoryProvider chatHistoryProvider, AIContextRAGInjector ragContextInjector, IAIToolCatalog toolCatalog, IHistoryIdentityService historyIdentityService, IAppSettings appSettings)
     {
         Guard.IsNotNull(factory);
         Guard.IsNotNull(chatHistoryProvider);
         Guard.IsNotNull(ragContextInjector);
         Guard.IsNotNull(toolCatalog);
         Guard.IsNotNull(historyIdentityService);
+        Guard.IsNotNull(appSettings);
 
         _historyIdentity = historyIdentityService;
+        _settings = appSettings;
         _factory = factory;
         _chatHistoryProvider = chatHistoryProvider;
         _ragContextInjector = ragContextInjector;
         _toolCatalog = toolCatalog;
+        _logger = factory.CreateLogger<AgentFactory>();
     }
 
 
 
 
-
+    // Middleware that catches exceptions and provides graceful fallback responses
+    private async Task<AgentResponse> ExceptionHandlingMiddleware(
+            IEnumerable<ChatMessage> messages,
+            AgentSession? session,
+            AgentRunOptions? options,
+            AIAgent innerAgent,
+            CancellationToken cancellationToken)
+    {
+        try
+        {
+            _logger.LogTrace("[ExceptionHandler] Executing agent run...");
+            return await innerAgent.RunAsync(messages, session, options, cancellationToken);
+        }
+        catch (TimeoutException ex)
+        {
+            _logger.LogTrace($"[ExceptionHandler] Caught timeout: {ex.Message}");
+            return new AgentResponse([new ChatMessage(ChatRole.Assistant,
+                    "Sorry, the request timed out. Please try again later.")]);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogTrace($"[ExceptionHandler] Caught error: {ex.Message}");
+            return new AgentResponse([new ChatMessage(ChatRole.Assistant,
+                    "An error occurred while processing your request.")]);
+        }
+    }
 
 
 
@@ -139,7 +166,7 @@ public class AgentFactory : IAgentFactory
             WarnOnChatHistoryProviderConflict = true,
             ThrowOnChatHistoryProviderConflict = true
         });
-        return outer.AsBuilder().UseLogging(_factory).Build();
+        return outer.AsBuilder().Use(this.ExceptionHandlingMiddleware, null).UseLogging(_factory).Build();
 
     }
 
@@ -169,7 +196,9 @@ public class AgentFactory : IAgentFactory
                 Tools = _toolCatalog.GetReadOnlyAiTools()
             }
         });
-        return outer.AsBuilder().UseLogging(_factory).Build();
+        return outer.AsBuilder()
+                .Use(this.ExceptionHandlingMiddleware, null)
+                .UseLogging(_factory).Build();
 
 
 
@@ -184,7 +213,7 @@ public class AgentFactory : IAgentFactory
 
     public IChatClient GetChatClient(string model)
     {
-        Uri ollamaUri = new UriBuilder(settings.RestEndpoint).Uri;
+        Uri ollamaUri = new UriBuilder(_settings.RestEndpoint).Uri;
         OllamaApiClient client = new(ollamaUri, model);
 
 
@@ -218,7 +247,7 @@ public class AgentFactory : IAgentFactory
     /// </exception>
     public IEmbeddingGenerator<string, Embedding<float>> GetEmbeddingClient()
     {
-        Uri ollamaUri = new(settings.RestEndpoint);
+        Uri ollamaUri = new(_settings.RestEndpoint);
 
         IEmbeddingGenerator<string, Embedding<float>> client = new OllamaApiClient(ollamaUri, AIModels.MXBAI);
 

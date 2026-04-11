@@ -24,6 +24,7 @@ using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using Newtonsoft.Json;
 
@@ -41,12 +42,16 @@ namespace DataIngestionLib.Services;
 
 public interface IWorkflowConversationService
 {
+    event EventHandler<bool>? BusyStateChanged;
+
+
     Task<bool> InitializeAsync();
 
 
-    Task<string?> ExecuteWorkflow(string UserTask, Func<object, object, Task> value);
-    event EventHandler<bool> BusyStateChanged;
+    Task<string?> ExecuteWorkflow(string UserTask);
 
+
+    Task<string?> ExecuteWorkflowAsync(Workflow workflow, string input);
 }
 
 
@@ -79,7 +84,7 @@ public interface IWorkflowConversationService
 public partial class WorkflowConversationService : IWorkflowConversationService
 {
     private readonly IAgentFactory _agentFactory;
-    private static ILogger<WorkflowConversationService>? _logger;
+    private static ILogger<WorkflowConversationService> _logger = NullLogger<WorkflowConversationService>.Instance;
     public const int MaxIterations = 5;
 
     private Workflow _workflow = default!;
@@ -167,7 +172,7 @@ public partial class WorkflowConversationService : IWorkflowConversationService
 
 
 
-    private async Task<string?> ExecuteWorkflowAsync(Workflow workflow, string input)
+    public async Task<string?> ExecuteWorkflowAsync(Workflow workflow, string input)
     {
         // Execute in streaming mode to see real-time progress
         await using StreamingRun run = await InProcessExecution.RunStreamingAsync(workflow, input);
@@ -187,9 +192,7 @@ public partial class WorkflowConversationService : IWorkflowConversationService
                     break;
 
                 case WorkflowOutputEvent output:
-                    return output.Data.ToString();
-
-                    break;
+                    return output.Data?.ToString();
             }
         }
 

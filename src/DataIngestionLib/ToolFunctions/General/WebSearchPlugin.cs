@@ -12,10 +12,12 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 
+using DataIngestionLib.ToolFunctions.Utils;
 
 
 
-namespace DataIngestionLib.ToolFunctions;
+
+namespace DataIngestionLib.ToolFunctions.General;
 
 
 
@@ -40,6 +42,56 @@ public sealed class WebSearchPlugin
         _httpClient = client.CreateClient(nameof(WebSearchPlugin));
         _httpClient.BaseAddress = new Uri("https://api.langsearch.com/");
         _httpClient.Timeout = TimeSpan.FromMinutes(3);
+    }
+
+
+
+
+
+
+
+
+
+    private static string CleanResponseText(string? value)
+    {
+        return DiagnosticsText.CleanModelText(value, 24000);
+    }
+
+
+
+
+
+
+
+
+
+    private static async Task<ToolResult<string>> CreateErrorResultAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        return ToolResult<string>.Fail($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {CleanResponseText(errorBody)}");
+    }
+
+
+
+
+
+
+
+
+
+    private static ToolResult<string> CreateJsonResponseResult(string responseText)
+    {
+        var cleanedText = CleanResponseText(responseText);
+
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(cleanedText);
+            return ToolResult<string>.Ok(CleanResponseText(JsonSerializer.Serialize(document, WriteOptions)));
+        }
+        catch (JsonException)
+        {
+            return ToolResult<string>.Ok(cleanedText);
+        }
     }
 
 
@@ -78,35 +130,11 @@ public sealed class WebSearchPlugin
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                return ToolResult<string>.Fail($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {errorBody}");
+                return await CreateErrorResultAsync(response, cancellationToken).ConfigureAwait(false);
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            string jsonNorm;
-            try
-            {
-                jsonNorm = jsonResponse.Normalize(NormalizationForm.FormKC);
-            }
-            catch (ArgumentException)
-            {
-                return ToolResult<string>.Fail("Invalid Unicode content in response.");
-            }
-
-            JsonDocument doc;
-            try
-            {
-                doc = JsonDocument.Parse(jsonNorm);
-            }
-            catch (JsonException)
-            {
-                return ToolResult<string>.Ok(jsonResponse);
-            }
-
-            // 3. Pretty-print
-            var pretty = JsonSerializer.Serialize(doc, WriteOptions);
-
-            return ToolResult<string>.Ok(pretty);
+            return CreateJsonResponseResult(jsonResponse);
 
 
         }
@@ -161,9 +189,9 @@ public sealed class WebSearchPlugin
 
 
     [Description("Search the web for information about a topic and return summarized results with links.")]
-    public async Task<ToolResult<string>> WebSearch(string strquery, int maxResults = 5, CancellationToken cancellationToken = default)
+    public async Task<ToolResult<string>> WebSearch([Description("The topic or query to search for.")] string query, [Description("Maximum number of results to request from the provider.")] int maxResults = 5, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(strquery))
+        if (string.IsNullOrWhiteSpace(query))
         {
             return ToolResult<string>.Fail("Query cannot be empty.");
         }
@@ -190,7 +218,7 @@ public sealed class WebSearchPlugin
             request.Headers.Authorization = new("Bearer", apiKey);
             request.Headers.Accept.ParseAdd("application/json");
 
-            var body = new { query = strquery, count = maxResults, freshness = "oneMonth", summary = false };
+            var body = new { query, count = maxResults, freshness = "oneMonth", summary = false };
 
 
             var jsonBody = JsonSerializer.Serialize(body, WriteOptions);
@@ -199,35 +227,11 @@ public sealed class WebSearchPlugin
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                return ToolResult<string>.Fail($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {errorBody}");
+                return await CreateErrorResultAsync(response, cancellationToken).ConfigureAwait(false);
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            string jsonNorm;
-            try
-            {
-                jsonNorm = jsonResponse.Normalize(NormalizationForm.FormKC);
-            }
-            catch (ArgumentException)
-            {
-                return ToolResult<string>.Fail("Invalid Unicode content in response.");
-            }
-
-            JsonDocument doc;
-            try
-            {
-                doc = JsonDocument.Parse(jsonNorm);
-            }
-            catch (JsonException)
-            {
-                return ToolResult<string>.Ok(jsonResponse);
-            }
-
-            // 3. Pretty-print
-            var pretty = JsonSerializer.Serialize(doc, WriteOptions);
-
-            return ToolResult<string>.Ok(pretty);
+            return CreateJsonResponseResult(jsonResponse);
 
         }
         catch (HttpRequestException ex)
@@ -237,6 +241,10 @@ public sealed class WebSearchPlugin
         catch (TaskCanceledException ex)
         {
             return ToolResult<string>.Fail($"Web search timed out or was canceled: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            return ToolResult<string>.Fail($"Web search failed: {ex.Message}");
         }
     }
 }

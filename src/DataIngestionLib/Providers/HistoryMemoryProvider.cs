@@ -164,17 +164,26 @@ public sealed class HistoryMemoryProvider : AIContextProvider
     protected override ValueTask<AIContext> ProvideAIContextAsync(InvokingContext context, CancellationToken cancellationToken = new CancellationToken())
     {
 
-        IEnumerable<ChatMessage> tagged = context.AIContext.Messages.Select(m => m.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, this.GetType().Name));
+        IEnumerable<ChatMessage> tagged = (context.AIContext.Messages ?? []).Select(m => m.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, this.GetType().Name)).ToArray();
 
-        if (tagged == null || !tagged.Any())
+        if (!tagged.Any())
         {
             return base.ProvideAIContextAsync(context, cancellationToken);
         }
 
-        HistoryIdentity state = _sessionState.GetOrInitializeState(context.Session);
+        AgentSession? session = context.Session;
+        if (session is null)
+        {
+            return base.ProvideAIContextAsync(context, cancellationToken);
+        }
+
+        HistoryIdentity state = _sessionState.GetOrInitializeState(session);
 
         //Make sure to include the instructions in the token count as well since they are part of the context
-        _currentTokenCount += this.ComputeTokenEstimate(context?.AIContext.Instructions!, cancellationToken);
+        if (!string.IsNullOrWhiteSpace(context.AIContext.Instructions))
+        {
+            _currentTokenCount += this.ComputeTokenEstimate(context.AIContext.Instructions, cancellationToken);
+        }
 
         foreach (ChatMessage m in tagged)
         {
@@ -193,8 +202,8 @@ public sealed class HistoryMemoryProvider : AIContextProvider
 
         }
 
-        context.Session.StateBag.SetValue("TokenCount", (object)_currentTokenCount);
-        _sessionState.SaveState(context.Session, state);
+        session.StateBag.SetValue("TokenCount", (object)_currentTokenCount);
+        _sessionState.SaveState(session, state);
 
         return base.ProvideAIContextAsync(context, cancellationToken);
     }

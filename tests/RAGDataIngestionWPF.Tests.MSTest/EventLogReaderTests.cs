@@ -1,4 +1,4 @@
-// Build Date: 2026/04/06
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         EventLogReaderTests.cs
@@ -7,7 +7,7 @@
 
 
 
-using DataIngestionLib.ToolFunctions;
+using DataIngestionLib.ToolFunctions.OSTools;
 
 
 

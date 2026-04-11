@@ -7,7 +7,7 @@
 
 
 
-using DataIngestionLib.ToolFunctions;
+using DataIngestionLib.ToolFunctions.Utils;
 
 
 
@@ -35,6 +35,7 @@ public class ToolResultTests
         // Assert
         Assert.IsFalse(result.Success);
         Assert.AreEqual("integer error", result.Error);
+        Assert.AreEqual("integer error", result.FailureReason);
         Assert.AreEqual(default, result.Value);
     }
 
@@ -49,10 +50,15 @@ public class ToolResultTests
     [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
-    public void FailWithNullOrWhitespaceMessageThrowsArgumentException(string message)
+    public void FailWithNullOrWhitespaceMessageReturnsDefaultFailureMessage(string message)
     {
-        // Arrange / Act / Assert
-        Assert.ThrowsExactly<ArgumentException>(() => ToolResult<string>.Fail(message!));
+        // Arrange / Act
+        var result = ToolResult<string>.Fail(message!);
+
+        // Assert
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("The tool operation failed.", result.Error);
+        Assert.AreEqual("The tool operation failed.", result.FailureReason);
     }
 
 
@@ -71,6 +77,7 @@ public class ToolResultTests
         // Assert
         Assert.IsFalse(result.Success);
         Assert.AreEqual("something went wrong", result.Error);
+        Assert.AreEqual("something went wrong", result.FailureReason);
         Assert.IsNull(result.Value);
     }
 
@@ -122,10 +129,14 @@ public class ToolResultTests
 
 
     [TestMethod]
-    public void OkWithNullValueThrowsArgumentNullException()
+    public void OkWithNullValueReturnsFailure()
     {
-        // Arrange / Act / Assert
-        Assert.ThrowsExactly<ArgumentNullException>(() => ToolResult<string>.Ok(null!));
+        // Arrange / Act
+        var result = ToolResult<string>.Ok(null!);
+
+        // Assert
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("The tool operation completed without a value.", result.Error);
     }
 
 
@@ -145,5 +156,6 @@ public class ToolResultTests
         Assert.IsTrue(result.Success);
         Assert.AreEqual("hello", result.Value);
         Assert.IsNull(result.Error);
+        Assert.IsNull(result.FailureReason);
     }
 }

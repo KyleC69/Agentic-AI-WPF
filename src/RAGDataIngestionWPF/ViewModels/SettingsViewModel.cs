@@ -25,8 +25,6 @@ using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.ViewModels;
 using RAGDataIngestionWPF.Models;
 
-using SystemConfigurationManager = System.Configuration.ConfigurationManager;
-
 
 
 
@@ -37,9 +35,10 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 // TODO: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
-public sealed partial class SettingsViewModel(ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService) : ObservableObject, INavigationAware
+public sealed partial class SettingsViewModel(ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IRuntimeAppSettingsService runtimeSettings) : ObservableObject, INavigationAware
 {
     private readonly IApplicationInfoService _applicationInfoService = applicationInfoService;
+    private readonly IRuntimeAppSettingsService _runtimeSettings = runtimeSettings;
 
     private readonly ISystemService _systemService = systemService;
     private readonly IUserDataService _userDataService = userDataService;
@@ -189,28 +188,28 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
     {
         VersionDescription = $"{Properties.Resources.AppDisplayName} - {_applicationInfoService.GetVersion()}";
         ApplicationId = GetApplicationId();
-        Theme = ParseTheme(GetAppSetting("Theme", "Dark"));
+        Theme = ParseTheme(_runtimeSettings.GetValue("Theme", "Dark"));
         if (Theme == AppTheme.Default)
         {
             Theme = AppTheme.Dark;
             ApplyTheme(Theme);
-            SetAppSetting("Theme", Theme.ToString());
+            _runtimeSettings.SetValue("Theme", Theme.ToString());
         }
 
         _userDataService.UserDataUpdated += OnUserDataUpdated;
         User = _userDataService.GetUser();
 
-        ChatModelName = GetAppSetting("ChatModelName", "gpt-oss:20b-cloud");
-        ChatHistoryConnectionString = GetAppSetting("ChatHistoryConnectionString", "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;");
-        EmbeddingsModelName = GetAppSetting("EmbeddingsModelName", "mxbai-embed-large-v1:latest");
-        MaxContextMessages = ParseInt(GetAppSetting("MaxContextMessages", "40"), 40, 1);
-        MaxContextTokens = ParseNullableInt(GetAppSetting("MaxContextTokens", "120000"), 120000);
-        OrchestrationMode = ParseOrchestrationMode(GetAppSetting("OrchestrationMode", OrchestrationMode.None.ToString()));
-        RAGKnowledgeEnabled = ParseBool(GetAppSetting("RagKnowledgeEnabled", bool.TrueString), true);
-        ChatHistoryContextEnabled = ParseBool(GetAppSetting("ChatHistoryContextEnabled", bool.TrueString), true);
+        ChatModelName = _runtimeSettings.GetValue("ChatModelName", "gpt-oss:20b-cloud");
+        ChatHistoryConnectionString = _runtimeSettings.GetValue("ChatHistoryConnectionString", "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;");
+        EmbeddingsModelName = _runtimeSettings.GetValue("EmbeddingsModelName", "mxbai-embed-large-v1:latest");
+        MaxContextMessages = ParseInt(_runtimeSettings.GetValue("MaxContextMessages", "40"), 40, 1);
+        MaxContextTokens = ParseNullableInt(_runtimeSettings.GetValue("MaxContextTokens", "120000"), 120000);
+        OrchestrationMode = ParseOrchestrationMode(_runtimeSettings.GetValue("OrchestrationMode", OrchestrationMode.None.ToString()));
+        RAGKnowledgeEnabled = ParseBool(_runtimeSettings.GetValue("RagKnowledgeEnabled", bool.TrueString), true);
+        ChatHistoryContextEnabled = ParseBool(_runtimeSettings.GetValue("ChatHistoryContextEnabled", bool.TrueString), true);
         ChatHistorySettingsStatus = string.Empty;
 
-        MinimumLogLevel = Enum.TryParse(GetAppSetting("MinimumLogLevel", LogLevel.Trace.ToString()), true, out LogLevel level) ? level : LogLevel.Trace;
+        MinimumLogLevel = Enum.TryParse(_runtimeSettings.GetValue("MinimumLogLevel", LogLevel.Trace.ToString()), true, out LogLevel level) ? level : LogLevel.Trace;
     }
 
 
@@ -243,16 +242,16 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
 
 
 
-    private static Guid GetApplicationId()
+    private Guid GetApplicationId()
     {
-        var raw = GetAppSetting("ApplicationId", string.Empty);
+        var raw = _runtimeSettings.GetValue("ApplicationId", string.Empty);
         if (Guid.TryParse(raw, out Guid applicationId))
         {
             return applicationId;
         }
 
         Guid created = Guid.NewGuid();
-        SetAppSetting("ApplicationId", created.ToString("D"));
+        _runtimeSettings.SetValue("ApplicationId", created.ToString("D"));
         return created;
     }
 
@@ -263,10 +262,9 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
 
 
 
-    private static string GetAppSetting(string key, string fallback)
+    private string GetAppSetting(string key, string fallback)
     {
-        var value = SystemConfigurationManager.AppSettings[key];
-        return string.IsNullOrWhiteSpace(value) ? fallback : value;
+        return _runtimeSettings.GetValue(key, fallback);
     }
 
 
@@ -428,10 +426,10 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
 
 
 
-    private static Guid RenewApplicationId()
+    private Guid RenewApplicationId()
     {
         Guid created = Guid.NewGuid();
-        SetAppSetting("ApplicationId", created.ToString("D"));
+        _runtimeSettings.SetValue("ApplicationId", created.ToString("D"));
         return created;
     }
 
@@ -442,20 +440,9 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
 
 
 
-    private static void SetAppSetting(string key, string value)
+    private void SetAppSetting(string key, string value)
     {
-        System.Configuration.Configuration config = SystemConfigurationManager.OpenExeConfiguration(System.Configuration.ConfigurationUserLevel.None);
-        if (config.AppSettings.Settings[key] is null)
-        {
-            config.AppSettings.Settings.Add(key, value);
-        }
-        else
-        {
-            config.AppSettings.Settings[key].Value = value;
-        }
-
-        config.Save(System.Configuration.ConfigurationSaveMode.Modified);
-        SystemConfigurationManager.RefreshSection("appSettings");
+        _runtimeSettings.SetValue(key, value);
     }
 
 

@@ -31,7 +31,6 @@ namespace RAGDataIngestionWPF.ViewModels;
 public sealed class DataGridViewModel : ObservableObject, INavigationAware
 {
     private readonly DocIngestionPipeline _docIngest;
-    private readonly ILogger<DataGridViewModel> _logger;
     private AsyncRelayCommand _startIngestionCommand;
 
     private CancellationTokenSource cts = new();
@@ -55,9 +54,8 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    public DataGridViewModel(ILogger<DataGridViewModel> logger)
+    private DataGridViewModel()
     {
-        _logger = logger;
     }
 
 

@@ -5,9 +5,7 @@
 // Author: Kyle L. Crowder
 // Build Num: 212923
 
-
-
-namespace DataIngestionLib.ToolFunctions;
+namespace DataIngestionLib.ToolFunctions.Utils;
 
 
 
@@ -25,7 +23,7 @@ public sealed class ToolResult<T>
     public string? Error { get; init; }
     public bool Success { get; init; }
     public T? Value { get; init; }
-
+    public string? FailureReason { get; init; }
 
 
 
@@ -35,7 +33,14 @@ public sealed class ToolResult<T>
 
     public static ToolResult<T> Fail(string message)
     {
-        return string.IsNullOrWhiteSpace(message) ? throw new ArgumentException("Failure message cannot be null or whitespace.", nameof(message)) : new() { Success = false, Error = message };
+        var normalizedMessage = string.IsNullOrWhiteSpace(message) ? "The tool operation failed." : message.Trim();
+
+        return new()
+        {
+            Success = false,
+            Error = normalizedMessage,
+            FailureReason = normalizedMessage
+        };
     }
 
 
@@ -47,7 +52,17 @@ public sealed class ToolResult<T>
 
     public static ToolResult<T> Ok(T value)
     {
-        ArgumentNullException.ThrowIfNull(value);
-        return new() { Success = true, Value = value };
+        if (value == null)
+        {
+            return Fail("The tool operation completed without a value.");
+        }
+
+        return new()
+        {
+            Success = true,
+            Value = value,
+            Error = null,
+            FailureReason = null
+        };
     }
 }

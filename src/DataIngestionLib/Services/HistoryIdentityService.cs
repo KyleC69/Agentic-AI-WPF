@@ -32,8 +32,6 @@ public sealed class HistoryIdentityService : IHistoryIdentityService, IAgentIden
     private readonly HistoryIdentity _current = new(GetConversationId());
     private readonly object _syncLock = new();
 
-    private readonly AppSettings settings = new();
-
 
 
 

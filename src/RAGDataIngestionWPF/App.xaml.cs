@@ -1,11 +1,9 @@
-﻿// Build Date: 2026/04/06
+// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
 // Build Num: 212950
-
-
 
 #nullable enable
 
@@ -15,13 +13,6 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 
-using DataIngestionLib.Agents;
-using DataIngestionLib.Contracts;
-using DataIngestionLib.EFModels;
-using DataIngestionLib.Providers;
-using DataIngestionLib.Services;
-using DataIngestionLib.ToolFunctions;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,23 +20,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Toolkit.Uwp.Notifications;
 
 using RAGDataIngestionWPF.Activation;
-using RAGDataIngestionWPF.Contracts.Activation;
-using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.Contracts.Views;
-using RAGDataIngestionWPF.Core.Contracts.Services;
-using RAGDataIngestionWPF.Core.Services;
 using RAGDataIngestionWPF.Services;
-using RAGDataIngestionWPF.ViewModels;
-using RAGDataIngestionWPF.Views;
-
-
-
 
 namespace RAGDataIngestionWPF;
-
-
-
-
 
 public sealed partial class App : Application
 {
@@ -57,20 +34,11 @@ public sealed partial class App : Application
         get { return (App)Current; }
     }
 
-
-
-
-
-
-
-
     private IHost BuildHost()
     {
-
         return Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c =>
                 {
-
                     IConfigurationBuilder unused4 = c.SetBasePath(Environment.CurrentDirectory);
                 })
                 .ConfigureServices(ConfigureServices)
@@ -89,33 +57,18 @@ public sealed partial class App : Application
                 .Build();
     }
 
-
-
-
-
-
-
-
     private void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(services);
 
-        RegisterHostServices(services);
-        RegisterAgentServices(services);
-        RegisterActivationHandlers(services);
-        RegisterCoreServices(services);
-        RegisterApplicationServices(services);
-        RegisterViewsAndViewModels(services);
-
+        _ = services.AddHostServicesModule();
+        _ = services.AddAgentServicesModule();
+        _ = services.AddActivationHandlersModule();
+        _ = services.AddCoreServicesModule();
+        _ = services.AddApplicationServicesModule();
+        _ = services.AddViewsAndViewModelsModule();
     }
-
-
-
-
-
-
-
 
     private async Task EnsureHostStartedAsync()
     {
@@ -123,7 +76,6 @@ public sealed partial class App : Application
         {
             return;
         }
-
 
         try
         {
@@ -137,7 +89,7 @@ public sealed partial class App : Application
         }
         catch (Exception ex)
         {
-            var logger = _host?.Services.GetService<ILogger<App>>();
+            ILogger<App>? logger = _host?.Services.GetService<ILogger<App>>();
             if (logger != null)
             {
                 LogUnhandledUiException(logger, ex);
@@ -145,27 +97,13 @@ public sealed partial class App : Application
         }
     }
 
-
-
-
-
-
-
-
     private static string GetAppLocation()
     {
-        var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
-        var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation) ? AppContext.BaseDirectory : Path.GetDirectoryName(entryAssemblyLocation);
+        string? entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
+        string? appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation) ? AppContext.BaseDirectory : Path.GetDirectoryName(entryAssemblyLocation);
 
         return string.IsNullOrWhiteSpace(appLocation) ? AppContext.BaseDirectory : appLocation;
     }
-
-
-
-
-
-
-
 
     private async Task HandleToastActivationAsync(string toastArgument)
     {
@@ -179,26 +117,12 @@ public sealed partial class App : Application
         await EnsureHostStartedAsync().ConfigureAwait(false);
     }
 
-
-
-
-
-
-
-
     [LoggerMessage(LogLevel.Error, "Unhandled UI exception.")]
     static partial void LogUnhandledUiException(ILogger<App> logger, Exception exception);
 
-
-
-
-
-
-
-
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        var logger = _host?.Services.GetService<ILogger<App>>();
+        ILogger<App>? logger = _host?.Services.GetService<ILogger<App>>();
         if (logger != null)
         {
             LogUnhandledUiException(logger, e.Exception);
@@ -207,13 +131,6 @@ public sealed partial class App : Application
         e.Handled = false;
     }
 
-
-
-
-
-
-
-
     private async void OnExit(object sender, ExitEventArgs e)
     {
         if (_host is null)
@@ -221,7 +138,7 @@ public sealed partial class App : Application
             return;
         }
 
-        var logger = _host.Services.GetService<ILogger<App>>();
+        ILogger<App>? logger = _host.Services.GetService<ILogger<App>>();
 
         try
         {
@@ -247,16 +164,8 @@ public sealed partial class App : Application
             _host.Dispose();
             _host = null;
             _isHostStarted = false;
-
         }
     }
-
-
-
-
-
-
-
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
@@ -276,134 +185,5 @@ public sealed partial class App : Application
         }
 
         await EnsureHostStartedAsync().ConfigureAwait(false);
-    }
-
-
-
-
-
-
-
-
-    private static void RegisterActivationHandlers(IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        _ = services.AddSingleton<IActivationHandler, ToastNotificationActivationHandler>();
-    }
-
-
-
-
-
-
-
-
-    private static void RegisterAgentServices(IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        _ = services.AddDbContextFactory<AIChatHistoryDb>();
-        _ = services.AddDbContextFactory<AIRemoteRagContext>();
-
-        _ = services.AddSingleton<HistoryIdentityService>();
-        _ = services.AddSingleton<IHistoryIdentityService>(provider => provider.GetRequiredService<HistoryIdentityService>());
-        _ = services.AddHttpClient<WebSearchPlugin>();
-        _ = services.AddSingleton<WebSearchPlugin>();
-        _ = services.AddSingleton<SandboxEventLogReader>();
-        _ = services.AddSingleton<InstalledUpdatesTool>();
-        _ = services.AddSingleton<NetworkConfigurationTool>();
-        _ = services.AddSingleton<PerformanceCounterTool>();
-        _ = services.AddSingleton<ProcessSnapshotTool>();
-        _ = services.AddSingleton<RegistryReaderTool>();
-        _ = services.AddSingleton<ReliabilityHistoryTool>();
-        _ = services.AddSingleton<SafeCommandRunner>(_ => new SafeCommandRunner(Environment.CurrentDirectory));
-        _ = services.AddSingleton<ServiceHealthTool>();
-        _ = services.AddSingleton<StartupInventoryTool>();
-        _ = services.AddSingleton<StorageHealthTool>();
-        _ = services.AddSingleton<WindowsEventChannelReaderTool>();
-        _ = services.AddSingleton<WindowsWmiReaderTool>();
-        _ = services.AddSingleton<ToolBuilder>();
-        _ = services.AddSingleton<IAIToolCatalog>(provider => provider.GetRequiredService<ToolBuilder>());
-        _ = services.AddSingleton<IRagDataService, RagDataService>();
-        _ = services.AddSingleton<SqlChatHistoryProvider>();
-        _ = services.AddSingleton<AIContextRAGInjector>();
-        _ = services.AddSingleton<IAgentFactory, AgentFactory>();
-        _ = services.AddSingleton<IWorkflowConversationService, WorkflowConversationService>();
-        _ = services.AddSingleton<ChatHistoryContextInjector>();
-    }
-
-
-
-
-
-
-
-
-    private static void RegisterApplicationServices(IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        _ = services.AddSingleton<IToastNotificationsService, ToastNotificationsService>();
-        _ = services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
-        _ = services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
-        _ = services.AddSingleton<ISystemService, SystemService>();
-        _ = services.AddSingleton<IChatConversationService, ChatConversationService>();
-        _ = services.AddSingleton<IPageService, PageService>();
-        _ = services.AddSingleton<INavigationService, NavigationService>();
-        _ = services.AddSingleton<IUserDataService, UserDataService>();
-    }
-
-
-
-
-
-
-
-
-    private static void RegisterCoreServices(IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        _ = services.AddSingleton<IIdentityService, IdentityService>();
-        _ = services.AddSingleton<IFileService, FileService>();
-    }
-
-
-
-
-
-
-
-
-    private static void RegisterHostServices(IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        _ = services.AddHostedService<ApplicationHostService>();
-    }
-
-
-
-
-
-
-
-
-    private static void RegisterViewsAndViewModels(IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        _ = services.AddTransient<IShellWindow, ShellWindow>();
-        _ = services.AddTransient<ShellViewModel>();
-        _ = services.AddTransient<MainViewModel>();
-        _ = services.AddTransient<MainPage>();
-        _ = services.AddTransient<BlankViewModel>();
-        _ = services.AddTransient<BlankPage>();
-        _ = services.AddTransient<ListDetailsViewModel>();
-        _ = services.AddTransient<ListDetailsPage>();
-        _ = services.AddTransient<DataGridViewModel>();
-        _ = services.AddTransient<DataGridPage>();
-        _ = services.AddTransient<WebViewViewModel>();
-        _ = services.AddTransient<WebViewPage>();
-        _ = services.AddTransient<SettingsViewModel>();
-        _ = services.AddTransient<SettingsPage>();
-        _ = services.AddTransient<ILogInWindow, LogInWindow>();
-        _ = services.AddTransient<LogInViewModel>();
     }
 }

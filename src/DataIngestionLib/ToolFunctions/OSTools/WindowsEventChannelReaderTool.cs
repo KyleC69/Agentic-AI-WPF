@@ -1,4 +1,4 @@
-// Build Date: 2026/04/06
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         WindowsEventChannelReaderTool.cs
@@ -10,10 +10,12 @@
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
 
+using DataIngestionLib.ToolFunctions.Utils;
 
 
 
-namespace DataIngestionLib.ToolFunctions;
+
+namespace DataIngestionLib.ToolFunctions.OSTools;
 
 
 

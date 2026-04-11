@@ -7,14 +7,29 @@
 		<UseWPF>true</UseWPF>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<AnalysisLevel>none</AnalysisLevel>
+		<AnalysisLevel>latest-minimum</AnalysisLevel>
 		<LangVersion>latest</LangVersion>
 		<RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
-		<EnableNETAnalyzers>False</EnableNETAnalyzers>
+		<EnableNETAnalyzers>True</EnableNETAnalyzers>
 		<RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
 		<DefineConstants>$(DefineConstants);SQL</DefineConstants>
-        <ReleaseCopyOutputDir>e:\Releases\</ReleaseCopyOutputDir>
+        <ReleaseCopyOutputDir>E:\Released\</ReleaseCopyOutputDir>
+        <ApplicationIcon>Assets\app-icon.ico</ApplicationIcon>
+        <PackageIcon>app-icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <NeutralLanguage>en</NeutralLanguage>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Include="Assets\app-icon.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\..\README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 
 
 	<ItemGroup>
@@ -56,6 +71,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Assets\app-icon.png">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+		</None>
 		<None Update="Properties\Settings.settings">
 			<Generator>PublicSettingsSingleFileGenerator</Generator>
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -68,10 +87,8 @@
 		</ItemGroup>
 
 		<MakeDir Directories="$(ReleaseCopyOutputDir)" />
-		<Copy SourceFiles="@(BuildOutputFiles)"
-			  DestinationFiles="@(BuildOutputFiles->'$(ReleaseCopyOutputDir)%(RecursiveDir)%(Filename)%(Extension)')"
-			  SkipUnchangedFiles="true" />
-		<Message Text="Build output copied to $(ReleaseCopyOutputDir)" Importance="High"  />	
+		<Copy SourceFiles="@(BuildOutputFiles)" DestinationFiles="@(BuildOutputFiles->'$(ReleaseCopyOutputDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+		<Message Text="Build output copied to $(ReleaseCopyOutputDir)" Importance="High" />	
 	</Target>
 
 

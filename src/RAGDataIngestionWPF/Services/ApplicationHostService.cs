@@ -22,8 +22,6 @@ using RAGDataIngestionWPF.Contracts.Views;
 using RAGDataIngestionWPF.Models;
 using RAGDataIngestionWPF.ViewModels;
 
-using SystemConfigurationManager = System.Configuration.ConfigurationManager;
-
 
 
 
@@ -41,6 +39,7 @@ public sealed class ApplicationHostService : IHostedService
     private readonly INavigationService _navigationService;
     private readonly IServiceProvider _serviceProvider;
     private IShellWindow _shellWindow;
+    private readonly IRuntimeAppSettingsService _runtimeSettings;
     private readonly IToastNotificationsService _toastNotificationsService;
     private readonly IUserDataService _userDataService;
     private const string HcDarkTheme = "pack://application:,,,/Styles/Themes/HC.Dark.Blue.xaml";
@@ -53,13 +52,14 @@ public sealed class ApplicationHostService : IHostedService
 
 
 
-    public ApplicationHostService(IServiceProvider serviceProvider, IEnumerable<IActivationHandler> activationHandlers, INavigationService navigationService, IToastNotificationsService toastNotificationsService, IUserDataService userDataService)
+    public ApplicationHostService(IServiceProvider serviceProvider, IEnumerable<IActivationHandler> activationHandlers, INavigationService navigationService, IToastNotificationsService toastNotificationsService, IUserDataService userDataService, IRuntimeAppSettingsService runtimeSettings)
     {
         _serviceProvider = serviceProvider;
         _activationHandlers = activationHandlers;
         _navigationService = navigationService;
         _toastNotificationsService = toastNotificationsService;
         _userDataService = userDataService;
+        _runtimeSettings = runtimeSettings;
     }
 
 
@@ -155,7 +155,7 @@ public sealed class ApplicationHostService : IHostedService
     {
         if (!_isInitialized)
         {
-            ApplyTheme(ParseTheme(SystemConfigurationManager.AppSettings["Theme"] ?? "Dark"));
+            ApplyTheme(ParseTheme(_runtimeSettings.GetValue("Theme", "Dark")));
             _userDataService.Initialize();
             await Task.CompletedTask.ConfigureAwait(false);
         }

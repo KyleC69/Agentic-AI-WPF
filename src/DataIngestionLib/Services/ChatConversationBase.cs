@@ -52,7 +52,18 @@ public class ChatConversationBase
     /// </summary>
     public string LastConversationIdValue { get; private set; } = string.Empty;
 
-    protected AppSettings Settings { get; } = new AppSettings();
+    protected IAppSettings Settings { get; }
+
+
+
+
+
+
+    protected ChatConversationBase(IAppSettings appSettings)
+    {
+        ArgumentNullException.ThrowIfNull(appSettings);
+        Settings = appSettings;
+    }
 
 
 

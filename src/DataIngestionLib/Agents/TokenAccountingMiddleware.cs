@@ -12,8 +12,10 @@
 
 
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.Text.Json;
 
+using DataIngestionLib.Models.Extensions;
 using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
@@ -82,11 +84,22 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = await this.OnRequestAsync(messages, cancellationToken).ConfigureAwait(false);
+        MiddlewareRequestContext requestContext = await this.OnRequestAsync(messages, cancellationToken).ConfigureAwait(false);
+        var estimatedStreamingOutputTokens = 0;
+        UsageDetails? lastUsage = null;
+        var sawAny = false;
 
         await foreach (ChatResponseUpdate update in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
         {
+            sawAny = true;
+            estimatedStreamingOutputTokens += EstimateStreamingUpdateTokens(update);
+            lastUsage = TryExtractUsageFromUpdate(update) ?? lastUsage;
             yield return update;
+        }
+
+        if (sawAny)
+        {
+            await this.OnStreamingCompletedAsync(requestContext, estimatedStreamingOutputTokens, lastUsage, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -129,6 +142,13 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
         {
             var tokenCount = EstimateMessageTokens(message);
             var role = message.Role.Value;
+            var sourceType = DataIngestionLib.Models.Extensions.ChatMessageExtensions.GetAgentRequestMessageSourceType(message);
+
+            if (sourceType == global::Microsoft.Agents.AI.AgentRequestMessageSourceType.AIContextProvider)
+            {
+                ragTokens += tokenCount;
+                continue;
+            }
 
             if (string.Equals(role, AIChatRole.System.Value, StringComparison.OrdinalIgnoreCase))
             {
@@ -215,6 +235,17 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
     private static int EstimateMessageTokens(ChatMessage message)
     {
         var serialized = JsonSerializer.Serialize(message, JsonOptions);
+        return Math.Max(1, (int)Math.Ceiling(serialized.Length / (double)CHARS_PER_TOKEN));
+    }
+
+
+
+
+
+
+    private static int EstimateStreamingUpdateTokens(ChatResponseUpdate update)
+    {
+        string serialized = JsonSerializer.Serialize(update, JsonOptions);
         return Math.Max(1, (int)Math.Ceiling(serialized.Length / (double)CHARS_PER_TOKEN));
     }
 
@@ -341,6 +372,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
         cancellationToken.ThrowIfCancellationRequested();
 
         UsageDetails usage = NormalizeUsage(requestContext.Messages, response);
+        int totalTokens = ClampToInt(usage.TotalTokenCount ?? 0);
 
         ContextBuckets contextBuckets = ClassifyContextBuckets(requestContext.Messages);
         Dictionary<string, long> additionalCounts = new(StringComparer.OrdinalIgnoreCase)
@@ -363,7 +395,52 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
             ["usage_system_tokens"] = GetAdditionalCount(usage, "usage_system_tokens", "system_tokens")
         };
 
-        TokenUsageSnapshot snapshot = new(TotalTokens: contextBuckets.Total, SessionTokens: contextBuckets.Session, RagTokens: contextBuckets.Rag, ToolTokens: contextBuckets.Tool, SystemTokens: contextBuckets.System, InputTokens: ClampToInt(usage.InputTokenCount ?? 0), OutputTokens: ClampToInt(usage.OutputTokenCount ?? 0), CachedInputTokens: ClampToInt(usage.CachedInputTokenCount ?? 0), ReasoningTokens: ClampToInt(usage.ReasoningTokenCount ?? 0), Source: "middleware.response", UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
+        TokenUsageSnapshot snapshot = new(TotalTokens: totalTokens, SessionTokens: contextBuckets.Session, RagTokens: contextBuckets.Rag, ToolTokens: contextBuckets.Tool, SystemTokens: contextBuckets.System, InputTokens: ClampToInt(usage.InputTokenCount ?? 0), OutputTokens: ClampToInt(usage.OutputTokenCount ?? 0), CachedInputTokens: ClampToInt(usage.CachedInputTokenCount ?? 0), ReasoningTokens: ClampToInt(usage.ReasoningTokenCount ?? 0), Source: "middleware.response", UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
+
+        _tokenSnapshotSink?.Invoke(snapshot);
+        PublishCategoryEvents(snapshot);
+
+        return Task.CompletedTask;
+    }
+
+
+
+
+
+
+    internal Task OnStreamingCompletedAsync(MiddlewareRequestContext requestContext, int estimatedStreamingOutputTokens, UsageDetails? usage, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        ContextBuckets contextBuckets = ClassifyContextBuckets(requestContext.Messages);
+
+        int inputTokens = ClampToInt(usage?.InputTokenCount ?? requestContext.EstimatedInputTokens);
+        int outputTokens = ClampToInt(usage?.OutputTokenCount ?? estimatedStreamingOutputTokens);
+        int cachedInputTokens = ClampToInt(usage?.CachedInputTokenCount ?? 0);
+        int reasoningTokens = ClampToInt(usage?.ReasoningTokenCount ?? 0);
+        int totalTokens = ClampToInt(usage?.TotalTokenCount ?? (inputTokens + outputTokens));
+
+        Dictionary<string, long> additionalCounts = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["turn_model_call_count"] = 1,
+            ["turn_nested_model_call_count"] = 0,
+            ["turn_estimated_input_tokens"] = requestContext.EstimatedInputTokens,
+            ["context_total_tokens"] = contextBuckets.Total,
+            ["context_session_tokens"] = contextBuckets.Session,
+            ["context_rag_tokens"] = contextBuckets.Rag,
+            ["context_tool_tokens"] = contextBuckets.Tool,
+            ["context_system_tokens"] = contextBuckets.System,
+            ["usage_total_tokens"] = totalTokens,
+            ["usage_input_tokens"] = inputTokens,
+            ["usage_output_tokens"] = outputTokens,
+            ["usage_cached_input_tokens"] = cachedInputTokens,
+            ["usage_reasoning_tokens"] = reasoningTokens,
+            ["usage_rag_tokens"] = usage is null ? 0 : GetAdditionalCount(usage, "usage_rag_tokens", "rag_tokens"),
+            ["usage_tool_tokens"] = usage is null ? 0 : GetAdditionalCount(usage, "usage_tool_tokens", "tool_tokens"),
+            ["usage_system_tokens"] = usage is null ? 0 : GetAdditionalCount(usage, "usage_system_tokens", "system_tokens")
+        };
+
+        TokenUsageSnapshot snapshot = new(TotalTokens: totalTokens, SessionTokens: contextBuckets.Session, RagTokens: contextBuckets.Rag, ToolTokens: contextBuckets.Tool, SystemTokens: contextBuckets.System, InputTokens: inputTokens, OutputTokens: outputTokens, CachedInputTokens: cachedInputTokens, ReasoningTokens: reasoningTokens, Source: "middleware.streaming_response", UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
 
         _tokenSnapshotSink?.Invoke(snapshot);
         PublishCategoryEvents(snapshot);
@@ -494,6 +571,22 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
 
     private readonly record struct CategoryCounts(int CachedInput, int Input, int Output, int Rag, int Reasoning, int Session, int System, int Tool, int Total);
+
+
+
+
+
+
+    private static UsageDetails? TryExtractUsageFromUpdate(ChatResponseUpdate update)
+    {
+        PropertyInfo? usageProperty = update.GetType().GetProperty("Usage");
+        if (usageProperty is null)
+        {
+            return null;
+        }
+
+        return usageProperty.GetValue(update) as UsageDetails;
+    }
 }
 public class TokenEventManager
 {

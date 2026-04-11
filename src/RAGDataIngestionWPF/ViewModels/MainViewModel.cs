@@ -39,7 +39,6 @@ namespace RAGDataIngestionWPF.ViewModels;
 public sealed partial class MainViewModel : ObservableObject, IDisposable, INavigationAware
 {
     private readonly IChatConversationService _chatConversationService;
-    private readonly IHistoryIdentityService _historyIdentity;
     private bool _historyLoaded;
     private CancellationTokenSource _tokenSource;
 
@@ -64,10 +63,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    public MainViewModel(IChatConversationService chatConversationService, IHistoryIdentityService historyIdentityService, IWorkflowConversationService workflowConversationService, ILogger<MainViewModel> logger)
+    public MainViewModel(IChatConversationService chatConversationService, IWorkflowConversationService workflowConversationService, ILogger<MainViewModel> logger)
     {
         Guard.IsNotNull(chatConversationService);
-        Guard.IsNotNull(historyIdentityService);
         Guard.IsNotNull(workflowConversationService);
         Guard.IsNotNull(logger);
         _logger = logger;
@@ -83,22 +81,15 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
         // Need to link this back to applicaion lifecycle
         _tokenSource = new CancellationTokenSource();
-        TokenAccountingMiddleware.TotalTokensChanged += (s, e) =>
-        {
-            RunOnUiThread(() => TotalTokenCount = e.CurrentValue);
-        };
-        TokenAccountingMiddleware.RagTokensChanged += (s, e) =>
-        {
-            RunOnUiThread(() => RagTokenCount = e.CurrentValue);
-        };
-        TokenAccountingMiddleware.ReasoningTokensChanged += (s, e) => { RunOnUiThread(() => ReasoningTokenCount = e.CurrentValue); };
-        TokenAccountingMiddleware.InputTokensChanged += (s, e) => { RunOnUiThread(() => InputTokenCount = e.CurrentValue); };
-        TokenAccountingMiddleware.OutputTokensChanged += (s, e) => { RunOnUiThread(() => OutputTokenCount = e.CurrentValue); };
-        TokenAccountingMiddleware.CachedInputTokensChanged += (s, e) => { RunOnUiThread(() => CachedInputTokenCount = e.CurrentValue); };
-        TokenAccountingMiddleware.SessionTokensChanged += (s, e) => { RunOnUiThread(() => SessionTokenCount = e.CurrentValue); };
-        TokenAccountingMiddleware.RagTokensChanged += (s, e) => { RunOnUiThread(() => RagTokenCount = e.CurrentValue); };
-        TokenAccountingMiddleware.ToolTokensChanged += (s, e) => { RunOnUiThread(() => ToolTokenCount = e.CurrentValue); };
-        TokenAccountingMiddleware.SystemTokensChanged += (s, e) => { RunOnUiThread(() => SystemTokenCount = e.CurrentValue); };
+        TokenAccountingMiddleware.TotalTokensChanged += OnTotalTokensChanged;
+        TokenAccountingMiddleware.RagTokensChanged += OnRagTokensChanged;
+        TokenAccountingMiddleware.ReasoningTokensChanged += OnReasoningTokensChanged;
+        TokenAccountingMiddleware.InputTokensChanged += OnInputTokensChanged;
+        TokenAccountingMiddleware.OutputTokensChanged += OnOutputTokensChanged;
+        TokenAccountingMiddleware.CachedInputTokensChanged += OnCachedInputTokensChanged;
+        TokenAccountingMiddleware.SessionTokensChanged += OnSessionTokensChanged;
+        TokenAccountingMiddleware.ToolTokensChanged += OnToolTokensChanged;
+        TokenAccountingMiddleware.SystemTokensChanged += OnSystemTokensChanged;
     }
 
 
@@ -157,6 +148,20 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     public void Dispose()
     {
+        _chatConversationService.BusyStateChanged -= OnBusyStateChange;
+        _workflow.BusyStateChanged -= OnBusyStateChange;
+
+        TokenAccountingMiddleware.TotalTokensChanged -= OnTotalTokensChanged;
+        TokenAccountingMiddleware.RagTokensChanged -= OnRagTokensChanged;
+        TokenAccountingMiddleware.ReasoningTokensChanged -= OnReasoningTokensChanged;
+        TokenAccountingMiddleware.InputTokensChanged -= OnInputTokensChanged;
+        TokenAccountingMiddleware.OutputTokensChanged -= OnOutputTokensChanged;
+        TokenAccountingMiddleware.CachedInputTokensChanged -= OnCachedInputTokensChanged;
+        TokenAccountingMiddleware.SessionTokensChanged -= OnSessionTokensChanged;
+        TokenAccountingMiddleware.ToolTokensChanged -= OnToolTokensChanged;
+        TokenAccountingMiddleware.SystemTokensChanged -= OnSystemTokensChanged;
+
+        _tokenSource?.Cancel();
         _tokenSource?.Dispose();
 
     }
@@ -211,7 +216,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
         try
         {
-            _chatConversationService.BusyStateChanged += OnBusyStateChange;
             await LoadConversationHistoryAsync().ConfigureAwait(false);
 
             _historyLoaded = true;
@@ -340,11 +344,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     private async Task StartWorkflowAsync()
     {
+        _tokenSource.Cancel();
+        _tokenSource.Dispose();
         _tokenSource = new CancellationTokenSource();
         IsBusy = true;
         var content = MessageInput.Trim();
         if (string.IsNullOrWhiteSpace(content))
         {
+            IsBusy = false;
             return;
         }
 
@@ -390,5 +397,95 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         // Clear the current conversation in the service, which should trigger the UI to clear as well.
         await _chatConversationService.StartNewConversationAsync(arg).ConfigureAwait(false);
         Messages.Clear();
+    }
+
+
+
+
+
+
+    private void OnCachedInputTokensChanged(object sender, TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
+    {
+        RunOnUiThread(() => CachedInputTokenCount = e.CurrentValue);
+    }
+
+
+
+
+
+
+    private void OnInputTokensChanged(object sender, TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
+    {
+        RunOnUiThread(() => InputTokenCount = e.CurrentValue);
+    }
+
+
+
+
+
+
+    private void OnOutputTokensChanged(object sender, TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
+    {
+        RunOnUiThread(() => OutputTokenCount = e.CurrentValue);
+    }
+
+
+
+
+
+
+    private void OnRagTokensChanged(object sender, TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
+    {
+        RunOnUiThread(() => RagTokenCount = e.CurrentValue);
+    }
+
+
+
+
+
+
+    private void OnReasoningTokensChanged(object sender, TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
+    {
+        RunOnUiThread(() => ReasoningTokenCount = e.CurrentValue);
+    }
+
+
+
+
+
+
+    private void OnSessionTokensChanged(object sender, TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
+    {
+        RunOnUiThread(() => SessionTokenCount = e.CurrentValue);
+    }
+
+
+
+
+
+
+    private void OnSystemTokensChanged(object sender, TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
+    {
+        RunOnUiThread(() => SystemTokenCount = e.CurrentValue);
+    }
+
+
+
+
+
+
+    private void OnToolTokensChanged(object sender, TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
+    {
+        RunOnUiThread(() => ToolTokenCount = e.CurrentValue);
+    }
+
+
+
+
+
+
+    private void OnTotalTokensChanged(object sender, TokenAccountingMiddleware.TokenCategoryChangedEventArgs e)
+    {
+        RunOnUiThread(() => TotalTokenCount = e.CurrentValue);
     }
 }

@@ -10,7 +10,7 @@
 using System.Net;
 using System.Text;
 
-using DataIngestionLib.ToolFunctions;
+using DataIngestionLib.ToolFunctions.General;
 
 using Moq;
 

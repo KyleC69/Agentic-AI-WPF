@@ -1,4 +1,4 @@
-// Build Date: 2026/04/06
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ToolBuilderTests.cs
@@ -7,9 +7,16 @@
 
 
 
-using System.Reflection;
+using DataIngestionLib.ToolFunctions;
+using DataIngestionLib.ToolFunctions.FileSystemReaders;
+using DataIngestionLib.ToolFunctions.FileSystemWriters;
+using DataIngestionLib.ToolFunctions.General;
+using DataIngestionLib.ToolFunctions.OSTools;
 
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+
+using Moq;
 
 
 
@@ -26,16 +33,50 @@ public class ToolBuilderTests
     [TestMethod]
     public void GetAiToolsReturnsExpectedToolCollection()
     {
-        Type toolBuilderType = Type.GetType("DataIngestionLib.ToolFunctions.ToolBuilder, DataIngestionLib");
-        Assert.IsNotNull(toolBuilderType);
+        var sandboxRoot = Path.Combine(Path.GetTempPath(), "tool-builder-tests", Guid.NewGuid().ToString("N"));
+        _ = Directory.CreateDirectory(sandboxRoot);
 
-        MethodInfo getAiTools = toolBuilderType.GetMethod("GetAiTools", BindingFlags.Public | BindingFlags.Static);
-        Assert.IsNotNull(getAiTools);
+        try
+        {
+            Mock<IHttpClientFactory> mockFactory = new();
+            mockFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
 
-        var result = getAiTools.Invoke(null, null);
+            using ILoggerFactory loggerFactory = LoggerFactory.Create(_ => { });
 
-        Assert.IsInstanceOfType<IList<AITool>>(result);
-        var tools = (IList<AITool>)result;
-        Assert.AreEqual(7, tools.Count);
+            ToolBuilder toolBuilder = new(
+                new WebSearchPlugin(mockFactory.Object),
+                new SandboxEventLogReader(),
+                new FileContentsReadingTool([sandboxRoot]),
+                new FileSystemWriterTool([sandboxRoot]),
+                new InstalledUpdatesTool(),
+                new ListFolderContentsTool([sandboxRoot]),
+                new LogFileLister([sandboxRoot]),
+                new LogFileReader([sandboxRoot]),
+                new NetworkConfigurationTool(),
+                new PerformanceCounterTool(),
+                new ProcessSnapshotTool(),
+                new RegistryReaderTool(loggerFactory),
+                new ReliabilityHistoryTool(),
+                new ServiceHealthTool(),
+                new StartupInventoryTool(),
+                new StorageHealthTool(),
+                new WindowsEventChannelReaderTool(),
+                new WindowsWmiReaderTool());
+
+            IList<AITool> readOnlyTools = toolBuilder.GetReadOnlyAiTools();
+            IList<AITool> allTools = toolBuilder.GetAiTools();
+            IList<AITool> writingTools = toolBuilder.GetWritingAiTools();
+
+            Assert.AreEqual(readOnlyTools.Count, allTools.Count);
+            Assert.AreEqual(17, readOnlyTools.Count);
+            Assert.AreEqual(1, writingTools.Count);
+        }
+        finally
+        {
+            if (Directory.Exists(sandboxRoot))
+            {
+                Directory.Delete(sandboxRoot, true);
+            }
+        }
     }
 }

@@ -44,12 +44,13 @@ public class DiAndHostServiceIntegrationTests
             Mock<INavigationService> navigation = new();
             Mock<IToastNotificationsService> toast = new();
             Mock<IUserDataService> userData = new();
+            Mock<IRuntimeAppSettingsService> runtimeSettings = new();
             Mock<IShellWindow> shellWindow = new();
             shellWindow.Setup(window => window.GetNavigationFrame()).Returns(new Frame());
 
             ServiceProvider provider = new ServiceCollection().AddSingleton(shellWindow.Object).BuildServiceProvider();
 
-            ApplicationHostService service = new(provider, Array.Empty<IActivationHandler>(), navigation.Object, toast.Object, userData.Object);
+            ApplicationHostService service = new(provider, Array.Empty<IActivationHandler>(), navigation.Object, toast.Object, userData.Object, runtimeSettings.Object);
 
             Exception captured = null;
             try

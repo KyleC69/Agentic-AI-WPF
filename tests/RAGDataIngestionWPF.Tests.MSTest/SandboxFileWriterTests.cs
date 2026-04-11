@@ -7,6 +7,8 @@
 
 
 
+using DataIngestionLib.ToolFunctions.FileSystemWriters;
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
 
 
@@ -17,6 +19,7 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 public class SandboxFileWriterTests
 {
     private string _sandboxRoot = string.Empty;
+    private FileSystemWriterTool _tool = null!;
 
 
 
@@ -46,5 +49,61 @@ public class SandboxFileWriterTests
     {
         _sandboxRoot = Path.Combine(Path.GetTempPath(), "writer-tool-tests", Guid.NewGuid().ToString("N"));
         _ = Directory.CreateDirectory(_sandboxRoot);
+        _tool = new FileSystemWriterTool([_sandboxRoot]);
+    }
+
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void WriteTextWithAllowedPathWritesFile()
+    {
+        var result = _tool.WriteText("sample.txt", "hello writer");
+
+        Assert.IsTrue(result.Success);
+        Assert.IsNotNull(result.Value);
+        Assert.AreEqual(Path.Combine(_sandboxRoot, "sample.txt"), result.Value.FullPath);
+        Assert.AreEqual(_sandboxRoot, result.Value.AllowedRoot);
+        Assert.AreEqual(12, result.Value.CharacterCount);
+        Assert.AreEqual("hello writer", File.ReadAllText(Path.Combine(_sandboxRoot, "sample.txt")));
+    }
+
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void WriteTextOutsideAllowedRootReturnsFailure()
+    {
+        var result = _tool.WriteText("..\\blocked.txt", "blocked");
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("Access denied: '..\\blocked.txt' is outside the configured allowlisted roots.", result.Error);
+    }
+
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void WriteTextWithEmptyPathReturnsFailure()
+    {
+        var result = _tool.WriteText("  ", "content");
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("Path cannot be empty.", result.Error);
     }
 }

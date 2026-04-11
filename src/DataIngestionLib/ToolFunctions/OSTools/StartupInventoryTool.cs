@@ -1,4 +1,4 @@
-// Build Date: 2026/04/06
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         StartupInventoryTool.cs
@@ -11,10 +11,12 @@ using System.ComponentModel;
 using System.Management;
 using System.Runtime.InteropServices;
 
+using DataIngestionLib.ToolFunctions.Utils;
 
 
 
-namespace DataIngestionLib.ToolFunctions;
+
+namespace DataIngestionLib.ToolFunctions.OSTools;
 
 
 
