@@ -46,6 +46,16 @@ public static class ServiceCollectionRegistrationExtensions
 
         _ = services.AddSingleton<HistoryIdentityService>();
         _ = services.AddSingleton<IHistoryIdentityService>(provider => provider.GetRequiredService<HistoryIdentityService>());
+        // Single shared executor instance
+        var executor = new CommandExecutor(defaultTimeoutMs: 30_000);
+
+        // Register all tools with DI container
+        services.AddSingleton(executor);
+        services.AddTransient<PsListTool>();
+        services.AddTransient<PsInfoTool>();
+        services.AddTransient<HandleTool>();
+        services.AddTransient<NetStatTool>();
+        services.AddTransient<NsLookupTool>();
         _ = services.AddHttpClient<WebSearchPlugin>();
         _ = services.AddSingleton<WebSearchPlugin>();
         _ = services.AddSingleton<SandboxEventLogReader>();
@@ -57,7 +67,6 @@ public static class ServiceCollectionRegistrationExtensions
         _ = services.AddSingleton<LogFileReader>(_ => new LogFileReader(OSWhitelist.AllowedPaths));
         _ = services.AddSingleton<NetworkConfigurationTool>();
         _ = services.AddSingleton<PerformanceCounterTool>();
-        _ = services.AddSingleton<ProcessSnapshotTool>();
         _ = services.AddSingleton<RegistryReaderTool>();
         _ = services.AddSingleton<ReliabilityHistoryTool>();
         _ = services.AddSingleton<ServiceHealthTool>();

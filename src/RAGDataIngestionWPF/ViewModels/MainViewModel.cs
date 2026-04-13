@@ -18,6 +18,7 @@ using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
+using DataIngestionLib.Models;
 using DataIngestionLib.Services;
 
 using Microsoft.Extensions.AI;
@@ -138,6 +139,32 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     public IAsyncRelayCommand NewConvoCommand { get; }
 
     public IAsyncRelayCommand SendMessageCommand { get; }
+
+
+    public AIModelDescriptor SelectedModel
+    {
+        get;
+        set
+        {
+            if (this.SetProperty(ref field, value) && value is not null)
+            {
+                _ = ApplyModelChangeAsync(value);
+            }
+        }
+    } = AIModels.Default;
+
+
+    private async Task ApplyModelChangeAsync(AIModelDescriptor descriptor)
+    {
+        try
+        {
+            await _chatConversationService.ChangeModelAsync(descriptor, _tokenSource.Token).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to switch active model to {ModelId}.", descriptor.ModelId);
+        }
+    }
 
 
 

@@ -119,7 +119,7 @@ public partial class WorkflowConversationService : IWorkflowConversationService
             return Task.FromResult(true);
         }
 
-        IChatClient chatClient = _agentFactory.GetChatClient(AIModels.GLM5);
+        IChatClient chatClient = _agentFactory.GetChatClient(AIModels.Default);
 
         // Create executors for content creation and review
         WriterExecutor writer = new(chatClient);

@@ -9,8 +9,9 @@
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     xmlns:templateSelectors="clr-namespace:RAGDataIngestionWPF.TemplateSelectors"
     Style="{StaticResource CustomMetroWindow}"
-    mc:Ignorable="d" Width="1500" Height="1100"
+    mc:Ignorable="d" Width="1475" Height="1080"
     Title="{x:Static properties:Resources.AppDisplayName}">
+
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding LoadedCommand}" />

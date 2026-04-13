@@ -14,6 +14,8 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
+using DataIngestionLib.Models;
+
 
 
 
@@ -58,4 +60,11 @@ public interface IAgentFactory
 
 
     IChatClient GetChatClient(string model);
+
+
+    /// <summary>
+    ///     Creates a <see cref="IChatClient" /> configured for the given model descriptor,
+    ///     allowing callers to work with typed model metadata rather than raw strings.
+    /// </summary>
+    IChatClient GetChatClient(AIModelDescriptor descriptor);
 }

@@ -224,6 +224,13 @@ public class AgentFactory : IAgentFactory
     }
 
 
+    public IChatClient GetChatClient(AIModelDescriptor descriptor)
+    {
+        Guard.IsNotNull(descriptor);
+        return GetChatClient(descriptor.ModelId);
+    }
+
+
 
 
 

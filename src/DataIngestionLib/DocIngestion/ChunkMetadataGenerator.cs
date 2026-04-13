@@ -60,8 +60,8 @@ public sealed class ChunkMetadataGenerator
 
         _logger = loggerFactory.CreateLogger<ChunkMetadataGenerator>();
 
-        Uri ollamaUri = new("http://localhost:11434");
-        _chatClient = new OllamaApiClient(ollamaUri, AIModels.GEMMA3);
+        Uri ollamaUri = new("http://192.168.50.4:11434");
+        _chatClient = new OllamaApiClient(ollamaUri, AIModels.MXBAI);
     }
 
 

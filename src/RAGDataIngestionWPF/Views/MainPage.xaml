@@ -7,6 +7,7 @@
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     xmlns:models="clr-namespace:RAGDataIngestionWPF.Models"
     xmlns:full="https://github.com/whistyun/MdXaml.Full"
+    xmlns:Models="clr-namespace:DataIngestionLib.Models;assembly=DataIngestionLib"
     x:Class="RAGDataIngestionWPF.Views.MainPage"
     Style="{DynamicResource MahApps.Styles.Page}"
     mc:Ignorable="d" Width="1400" Height="1000"
@@ -16,27 +17,41 @@
     <Grid DataContext="{Binding}">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
+            <RowDefinition Height="38" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBlock Style="{StaticResource PageTitleStyle}" Text="{x:Static properties:Resources.MainPageTitle}" />
-        <Grid Grid.Row="1" Margin="{StaticResource MediumLeftRightMargin}">
-            <Grid Margin="{StaticResource SmallTopBottomMargin}" ScrollViewer.VerticalScrollBarVisibility="Visible">
+        <Grid Grid.Row="1" Margin="4">
+            <Grid Margin="{StaticResource SmallTopBottomMargin}" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="933*" />
                     <ColumnDefinition Width="19*" />
                     <ColumnDefinition Width="124" />
-                    <ColumnDefinition MinWidth="120" />
+                    <ColumnDefinition MinWidth="135" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel MinWidth="120" Grid.Row="1" Grid.Column="3" Orientation="Vertical">
-                    <GroupBox Header="Options">
-                        <Button Content="New Convo" x:Name="convoBtn" Margin="8,20,0,8"
+                <StackPanel MinWidth="135" Grid.Row="1" Grid.Column="3" Orientation="Vertical" Margin="0">
+                    <GroupBox Header="Session" MinWidth="130" Padding="0">
+                        <Button Content="New Convo" x:Name="convoBtn" Margin="2,15,2,2"
                                 Command="{Binding NewConvoCommand}" />
+                    </GroupBox>
+                    <GroupBox Header="Models" MinWidth="130" Margin="0,20,0,0" Padding="0">
+                        <!-- Model selection combo box -->
+                        <ComboBox Margin="2,10,0,0" x:Name="ModelComboBox"
+                                  ItemsSource="{x:Static Models:AIModels.ChatModels}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedItem="{Binding SelectedModel}" />
+                    </GroupBox>
+                    <GroupBox Margin="0,20,0,0" Header="Orchestration" MinWidth="130">
+                        <StackPanel Orientation="Vertical">
+                            <CheckBox Margin="0,10,0,0" Content="Group"/>
+                            <CheckBox Content="Simple Single"  IsChecked="True" />
+                            <CheckBox Content="Coding Team"/>
+                        </StackPanel>
                     </GroupBox>
                 </StackPanel>
                 <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
@@ -61,20 +76,19 @@
                 </StackPanel>
                 <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
                          x:Name="MessagesListBox"
-                         Margin="6,0,6,0"
+                         Margin="2,0,2,0"
                          BorderThickness="0"
                          Background="Transparent"
                          ItemsSource="{Binding Messages}"
                          HorizontalContentAlignment="Stretch"
                          ScrollViewer.CanContentScroll="False"
-                         ScrollViewer.VerticalScrollBarVisibility="Hidden" IsManipulationEnabled="True"
-                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                         SelectionMode="Multiple">
+                         ScrollViewer.VerticalScrollBarVisibility="Visible" 
+                         ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:MessageDisplay}">
                             <Border
-                                Margin="0,4"
-                                Padding="10"
+                                Margin="0"
+                                Padding="8"
                                 MaxWidth="{Binding ActualWidth, ElementName=MessagesListBox}"
                                 HorizontalAlignment="Left"
                                 Background="LightBlue">

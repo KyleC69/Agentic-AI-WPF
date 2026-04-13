@@ -9,6 +9,8 @@
 
 using Microsoft.Extensions.AI;
 
+using DataIngestionLib.Models;
+
 
 
 
@@ -35,6 +37,13 @@ public interface IChatConversationService
 
 
     ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
+
+
+    /// <summary>
+    ///     Switches the active chat model to the given descriptor. The change takes effect
+    ///     on the next message send; the conversation history is preserved.
+    /// </summary>
+    Task ChangeModelAsync(AIModelDescriptor descriptor, CancellationToken token);
 
 
     Task StartNewConversationAsync(CancellationToken cancellationToken);

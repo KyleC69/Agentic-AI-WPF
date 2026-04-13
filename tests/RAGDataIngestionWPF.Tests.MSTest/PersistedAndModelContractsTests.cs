@@ -29,8 +29,8 @@ public class PersistedAndModelContractsTests
     public void AIModelsConstantsExposeExpectedValues()
     {
         var gpt4 = AIModels.GPT4;
-        var gptOss = AIModels.GPTOSS;
-        var llama1B = AIModels.LLAMA1_B;
+        var gptOss = AIModels.GPTOSS120;
+        var llama1B = AIModels.LLAMA1_8B;
         var mxbai = AIModels.MXBAI;
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(gpt4));
@@ -39,6 +39,58 @@ public class PersistedAndModelContractsTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(mxbai));
 
         CollectionAssert.AllItemsAreUnique(new object[] { gpt4, gptOss, llama1B, mxbai });
+    }
+
+
+
+
+
+
+
+    [TestMethod]
+    public void AIModels_ChatModels_ContainsOnlyNonEmptyUniqueDescriptors()
+    {
+        var models = AIModels.ChatModels;
+
+        Assert.IsTrue(models.Count > 0);
+        CollectionAssert.AllItemsAreNotNull(models.ToList());
+
+        var ids = models.Select(m => m.ModelId).ToList();
+        var names = models.Select(m => m.DisplayName).ToList();
+
+        CollectionAssert.AllItemsAreUnique(ids);
+        CollectionAssert.AllItemsAreUnique(names);
+        Assert.IsTrue(ids.All(id => !string.IsNullOrWhiteSpace(id)));
+        Assert.IsTrue(names.All(n => !string.IsNullOrWhiteSpace(n)));
+    }
+
+
+
+
+
+
+
+    [TestMethod]
+    public void AIModels_Default_IsFirstChatModel()
+    {
+        Assert.AreEqual(AIModels.ChatModels[0], AIModels.Default);
+    }
+
+
+
+
+
+
+
+    [TestMethod]
+    public void AIModelDescriptor_RecordEquality_IsValueBased()
+    {
+        var a = new AIModelDescriptor("Test Model", "test:1b");
+        var b = new AIModelDescriptor("Test Model", "test:1b");
+        var c = new AIModelDescriptor("Other Model", "test:1b");
+
+        Assert.AreEqual(a, b);
+        Assert.AreNotEqual(a, c);
     }
 
 

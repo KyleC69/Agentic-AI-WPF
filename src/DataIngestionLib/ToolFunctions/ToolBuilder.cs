@@ -48,6 +48,11 @@ public sealed class ToolBuilder : IAIToolCatalog
     private readonly AITool _webSearchTool;
     private readonly AITool _windowsEventChannelReadTool;
     private readonly AITool _windowsWmiReadTool;
+    private readonly PsInfoTool _psInfoTool;
+    private readonly PsListTool _psListTool;
+    private readonly NsLookupTool _nsLookupTool;
+    private readonly NetStatTool _netStatTool;
+    private readonly HandleTool _handleTool;
 
 
 
@@ -66,15 +71,20 @@ public sealed class ToolBuilder : IAIToolCatalog
             LogFileReader logFileReader,
             NetworkConfigurationTool networkConfigurationTool,
             PerformanceCounterTool performanceCounterTool,
-            ProcessSnapshotTool processSnapshotTool,
             RegistryReaderTool registryReaderTool,
             ReliabilityHistoryTool reliabilityHistoryTool,
             ServiceHealthTool serviceHealthTool,
             StartupInventoryTool startupInventoryTool,
             StorageHealthTool storageHealthTool,
             WindowsEventChannelReaderTool windowsEventChannelReaderTool,
-            WindowsWmiReaderTool windowsWmiReaderTool)
+            WindowsWmiReaderTool windowsWmiReaderTool,
+            PsInfoTool psInfoTool, PsListTool psListTool, NsLookupTool nsLookupTool, NetStatTool netStatTool, HandleTool handleTool)
     {
+        _psInfoTool = psInfoTool;
+        _psListTool = psListTool;
+        _nsLookupTool = nsLookupTool;
+        _netStatTool = netStatTool;
+        _handleTool = handleTool;
         _webSearchTool = AIFunctionFactory.Create(webSearchPlugin.WebSearch);
         _eventLogTool = AIFunctionFactory.Create(eventLogReader.ReadLog);
         _fileContentsReadingTool = AIFunctionFactory.Create(fileContentsReadingTool.ReadFileContents);
@@ -85,7 +95,6 @@ public sealed class ToolBuilder : IAIToolCatalog
         _logFileReaderTool = AIFunctionFactory.Create(logFileReader.LogFileReaderTool);
         _networkConfigurationReadTool = AIFunctionFactory.Create(networkConfigurationTool.ReadActiveAdapters);
         _performanceCounterReadTool = AIFunctionFactory.Create(performanceCounterTool.ReadSnapshot);
-        _processSnapshotReadTool = AIFunctionFactory.Create(processSnapshotTool.ReadTopProcesses);
         _windowsEventChannelReadTool = AIFunctionFactory.Create(windowsEventChannelReaderTool.ReadChannel);
         _registryReadTool = AIFunctionFactory.Create(registryReaderTool.ReadValue);
         _reliabilityHistoryReadTool = AIFunctionFactory.Create(reliabilityHistoryTool.ReadRecent);
@@ -127,14 +136,31 @@ public sealed class ToolBuilder : IAIToolCatalog
                 _logFileReaderTool,
                 _networkConfigurationReadTool,
                 _performanceCounterReadTool,
-                _processSnapshotReadTool,
                 _windowsEventChannelReadTool,
                 _registryReadTool,
                 _reliabilityHistoryReadTool,
                 _serviceHealthReadTool,
                 _startupInventoryReadTool,
                 _storageHealthReadTool,
-                _windowsWmiReadTool
+                _windowsWmiReadTool,
+                AIFunctionFactory.Create(_psInfoTool.GetSystemInfo),
+                AIFunctionFactory.Create(_psInfoTool.GetDetailedInfo),
+                AIFunctionFactory.Create(_psInfoTool.GetSystemInfoWithApps),
+                AIFunctionFactory.Create(_psListTool.ListAll),
+                AIFunctionFactory.Create(_psListTool.ListByMemory),
+                AIFunctionFactory.Create(_psListTool.ListByName),
+                AIFunctionFactory.Create(_psListTool.ListThreads),
+                AIFunctionFactory.Create(_nsLookupTool.Resolve),
+                AIFunctionFactory.Create(_nsLookupTool.ResolveWithServer),
+                AIFunctionFactory.Create(_nsLookupTool.ReverseLookup),
+                AIFunctionFactory.Create(_netStatTool.GetStatistics),
+                AIFunctionFactory.Create(_netStatTool.GetRoutingTable),
+                AIFunctionFactory.Create(_netStatTool.ListTcpConnections),
+                AIFunctionFactory.Create(_netStatTool.ListWithProcessIds),
+                AIFunctionFactory.Create(_handleTool.ListAll),
+                AIFunctionFactory.Create(_handleTool.ListForProcess),
+                AIFunctionFactory.Create(_handleTool.SearchHandles)
+
 
         ];
     }

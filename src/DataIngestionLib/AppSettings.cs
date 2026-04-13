@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         AppSettings.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 212926
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -57,7 +61,7 @@ public class AppSettings : IAppSettings
 
     public string RemoteRAGConnectionString { get; set; } = "REMOTE_RAG";
 
-    public string RestEndpoint { get; set; } = "http://127.0.0.1:11434";
+    public string RestEndpoint { get; set; } = "http://192.168.50.4:11434";
 
     public bool ResumeLast { get; set; } = true;
 
@@ -65,18 +69,18 @@ public class AppSettings : IAppSettings
 
     private static string GetAppSetting(string key, string fallback)
     {
-        string? value = SystemConfigurationManager.AppSettings[key];
+        var value = SystemConfigurationManager.AppSettings[key];
         return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
     }
 
     private static bool ParseBool(string value, bool fallback)
     {
-        return bool.TryParse(value, out bool parsed) ? parsed : fallback;
+        return bool.TryParse(value, out var parsed) ? parsed : fallback;
     }
 
     private static int ParseInt(string value, int fallback)
     {
-        return int.TryParse(value, out int parsed) && parsed > 0 ? parsed : fallback;
+        return int.TryParse(value, out var parsed) && parsed > 0 ? parsed : fallback;
     }
 
     private static OrchestrationMode ParseOrchestration(string value)
