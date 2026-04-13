@@ -219,7 +219,7 @@ public class AgentFactory : IAgentFactory
 
         IChatClient baseclient = new LoggingChatClient(client, _factory.CreateLogger<LoggingChatClient>());
         baseclient = new TokenAccountingMiddleware(baseclient, _factory.CreateLogger<TokenAccountingMiddleware>());
-        baseclient = new ForensicChatClient(baseclient, _factory.CreateLogger<ForensicChatClient>());
+      // baseclient = new ForensicChatClient(baseclient, _factory.CreateLogger<ForensicChatClient>());
         return baseclient;
     }
 

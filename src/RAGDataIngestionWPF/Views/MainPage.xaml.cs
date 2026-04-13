@@ -46,8 +46,8 @@ public sealed partial class MainPage
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         ReadMarkdownAndSetViewer();
-        
-        
+
+
 
     }
 
@@ -242,4 +242,6 @@ public sealed partial class MainPage
 
 
     }
+
+
 }

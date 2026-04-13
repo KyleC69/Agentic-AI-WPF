@@ -8,7 +8,9 @@
 
 
 using System.Collections.ObjectModel;
+using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -118,7 +120,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             if (this.SetProperty(ref field, value))
             {
                 SendMessageCommand.NotifyCanExecuteChanged();
-                CancelMessageCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -152,6 +153,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             }
         }
     } = AIModels.Default;
+
+
+
+
+
+
 
 
     private async Task ApplyModelChangeAsync(AIModelDescriptor descriptor)
@@ -393,7 +400,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             //  var result = await _workflow.ExecuteWorkflow(content).ConfigureAwait(true);
 
             var result = await _chatConversationService.SendRequestToModelAsync(content, _tokenSource.Token);
-
+            result = PreprocessMessage(result);
             Messages.Add(result);
             //  Messages.Add(new ChatMessage(ChatRole.Assistant, result));
         }
@@ -410,6 +417,79 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
 
     }
+
+
+
+
+
+
+
+
+    /// <summary>
+    /// Searchs for code blocks and wraps with copy controls
+    /// </summary>
+    /// <param name="result"></param>
+    private static ChatMessage PreprocessMessage(ChatMessage original)
+    {
+        Guard.IsNotNull(original);
+
+        var originalText = original.Text ?? string.Empty;
+        var rewrittenText = Regex.Replace(
+            originalText,
+            @"(?ms)^```[^\r\n]*\r?\n[\s\S]*?^```[ \t]*(?=\r?\n|$)",
+            static match => WrapCodeBlock(match.Value));
+
+        ChatMessage rewrittenMessage = new(original.Role, rewrittenText)
+        {
+            AuthorName = original.AuthorName,
+            CreatedAt = original.CreatedAt,
+            MessageId = original.MessageId,
+            RawRepresentation = original.RawRepresentation
+        };
+
+        if (original.AdditionalProperties is not null)
+        {
+            rewrittenMessage.AdditionalProperties = [];
+            foreach (var property in original.AdditionalProperties)
+            {
+                rewrittenMessage.AdditionalProperties[property.Key] = property.Value;
+            }
+        }
+
+        return rewrittenMessage;
+
+        static string WrapCodeBlock(string fencedBlock)
+        {
+            string codeToCopy = ExtractCodeContent(fencedBlock);
+            string encodedCode = WebUtility.HtmlEncode(codeToCopy);
+            StringBuilder builder = new();
+            _ = builder.AppendLine("<div class=\"chat-code-block\">");
+            _ = builder.AppendLine($"<button class=\"chat-code-copy-button\" data-copy=\"{encodedCode}\">Copy</button>");
+            _ = builder.AppendLine();
+            _ = builder.Append(fencedBlock);
+            _ = builder.AppendLine();
+            _ = builder.Append("</div>");
+            return builder.ToString();
+        }
+
+        static string ExtractCodeContent(string fencedBlock)
+        {
+            string normalizedBlock = fencedBlock.Replace("\r\n", "\n");
+            string[] lines = normalizedBlock.Split('\n');
+            if (lines.Length <= 2)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(Environment.NewLine, lines.Skip(1).Take(lines.Length - 2));
+        }
+    }
+
+
+
+
+
+
 
 
 

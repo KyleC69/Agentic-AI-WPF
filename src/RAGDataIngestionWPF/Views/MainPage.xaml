@@ -8,6 +8,7 @@
     xmlns:models="clr-namespace:RAGDataIngestionWPF.Models"
     xmlns:full="https://github.com/whistyun/MdXaml.Full"
     xmlns:Models="clr-namespace:DataIngestionLib.Models;assembly=DataIngestionLib"
+    xmlns:utils="clr-namespace:DataIngestionLib.Utils;assembly=DataIngestionLib"
     x:Class="RAGDataIngestionWPF.Views.MainPage"
     Style="{DynamicResource MahApps.Styles.Page}"
     mc:Ignorable="d" Width="1400" Height="1000"
@@ -89,7 +90,7 @@
                             <Border
                                 Margin="0"
                                 Padding="8"
-                                MaxWidth="{Binding ActualWidth, ElementName=MessagesListBox}"
+                                MaxWidth="1250"
                                 HorizontalAlignment="Left"
                                 Background="LightBlue">
                                 <Border.Style>
@@ -114,11 +115,14 @@
                                                                 HorizontalAlignment="Stretch"
                                                                 IsSelectionEnabled="True"
                                                                 Markdown="{Binding Text}"
+                                                                
                                                                 Foreground="DarkSlateGray"
                                                                 PreviewMouseWheel="OnPreviewMouseWheel"
                                                                 Background="BurlyWood"
                                                                 VerticalScrollBarVisibility="Visible"
-                                                                MarkdownStyleName="SasaBune" Syntax="MdXaml">
+                                                                MarkdownStyleName="SasaBune" Syntax="MdXaml" >
+                               
+
                                         <mdxam:MarkdownScrollViewer.Resources>
                                             <Style TargetType="{x:Type TableRowGroup}">
                                                 <Setter Property="Background" Value="DarkGray" />

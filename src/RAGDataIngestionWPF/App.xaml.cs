@@ -1,4 +1,4 @@
-// Build Date: 2026/04/06
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
@@ -84,7 +84,7 @@ public sealed partial class App : Application
                 return;
             }
 
-            await _host.StartAsync().ConfigureAwait(false);
+            await _host.StartAsync();
             _isHostStarted = true;
         }
         catch (Exception ex)
@@ -114,7 +114,7 @@ public sealed partial class App : Application
 
         IConfiguration configuration = _host.Services.GetRequiredService<IConfiguration>();
         configuration[ToastNotificationActivationHandler.ACTIVATION_ARGUMENTS] = toastArgument;
-        await EnsureHostStartedAsync().ConfigureAwait(false);
+        await EnsureHostStartedAsync();
     }
 
     [LoggerMessage(LogLevel.Error, "Unhandled UI exception.")]
@@ -144,7 +144,7 @@ public sealed partial class App : Application
         {
             if (_isHostStarted)
             {
-                await _host.StopAsync().ConfigureAwait(false);
+                await _host.StopAsync();
             }
         }
         catch (InvalidOperationException ex)
@@ -184,6 +184,6 @@ public sealed partial class App : Application
             return;
         }
 
-        await EnsureHostStartedAsync().ConfigureAwait(false);
+        await EnsureHostStartedAsync();
     }
 }

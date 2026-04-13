@@ -23,7 +23,7 @@ public record AIModels
 
     public const string GEMMA3_4B = "gemma3:4b-cloud";
 
-    public const string GLM5 = "glm-5:cloud";
+    public const string GLM5 = "glm-5.1:cloud";
 
     /// <summary>OpenAI GPT-4 cloud model identifier.</summary>
     public const string GPT4 = "gpt-4";
@@ -31,8 +31,8 @@ public record AIModels
     /// <summary>A locally-hosted GPT-family open-source model served through Ollama.</summary>
     public const string GPTOSS120 = "gpt-oss:120b-cloud";
 
-/// <summary>A smaller variant of the GPT-family open-source model served through Ollama, useful for testing and fallback scenarios.</summary>
-public const string GPTOSS20 = "gpt-oss:20b-cloud";
+    /// <summary>A smaller variant of the GPT-family open-source model served through Ollama, useful for testing and fallback scenarios.</summary>
+    public const string GPTOSS20 = "gpt-oss:20b-cloud";
 
 
     /// <summary>Meta Llama 3.1 8-billion parameter variant served through Ollama.</summary>

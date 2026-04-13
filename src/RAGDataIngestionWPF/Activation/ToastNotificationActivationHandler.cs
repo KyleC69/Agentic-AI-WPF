@@ -83,6 +83,6 @@ public sealed class ToastNotificationActivationHandler : IActivationHandler
 
         }
 
-        await Task.CompletedTask.ConfigureAwait(false);
+        await Task.CompletedTask;
     }
 }

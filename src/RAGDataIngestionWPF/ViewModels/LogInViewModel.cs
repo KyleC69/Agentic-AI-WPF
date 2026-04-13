@@ -73,7 +73,7 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
     {
         IsBusy = true;
         StatusMessage = string.Empty;
-        LoginResultType loginResult = await _identityService.LoginAsync().ConfigureAwait(false);
+        LoginResultType loginResult = await _identityService.LoginAsync();
         StatusMessage = GetStatusMessage(loginResult);
         IsBusy = false;
     }

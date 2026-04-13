@@ -71,12 +71,12 @@ public sealed class ApplicationHostService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await InitializeAsync().ConfigureAwait(false);
+        await InitializeAsync();
 
-        await HandleActivationAsync().ConfigureAwait(false);
+        await HandleActivationAsync();
 
         // Tasks after activation
-        await StartupAsync().ConfigureAwait(false);
+        await StartupAsync();
         _isInitialized = true;
     }
 
@@ -89,7 +89,7 @@ public sealed class ApplicationHostService : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await Task.CompletedTask.ConfigureAwait(false);
+        await Task.CompletedTask;
     }
 
 
@@ -128,10 +128,10 @@ public sealed class ApplicationHostService : IHostedService
 
         if (activationHandler != null)
         {
-            await activationHandler.HandleAsync().ConfigureAwait(false);
+            await activationHandler.HandleAsync();
         }
 
-        await Task.CompletedTask.ConfigureAwait(false);
+        await Task.CompletedTask;
 
         if (!Application.Current.Windows.OfType<IShellWindow>().Any())
         {
@@ -140,7 +140,7 @@ public sealed class ApplicationHostService : IHostedService
             _navigationService.Initialize(_shellWindow.GetNavigationFrame());
             _shellWindow.ShowWindow();
             var unused = _navigationService.NavigateTo(typeof(MainViewModel).FullName);
-            await Task.CompletedTask.ConfigureAwait(false);
+            await Task.CompletedTask;
         }
     }
 
@@ -157,7 +157,7 @@ public sealed class ApplicationHostService : IHostedService
         {
             ApplyTheme(ParseTheme(_runtimeSettings.GetValue("Theme", "Dark")));
             _userDataService.Initialize();
-            await Task.CompletedTask.ConfigureAwait(false);
+            await Task.CompletedTask;
         }
     }
 
@@ -185,7 +185,7 @@ public sealed class ApplicationHostService : IHostedService
         if (!_isInitialized)
         {
             _toastNotificationsService.ShowToastNotificationSample();
-            await Task.CompletedTask.ConfigureAwait(false);
+            await Task.CompletedTask;
         }
     }
 }
