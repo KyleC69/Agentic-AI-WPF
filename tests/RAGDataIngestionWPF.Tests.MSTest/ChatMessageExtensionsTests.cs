@@ -87,6 +87,8 @@ public class ChatMessageExtensionsTests
 
         ChatMessage result = DataIngestionLib.Models.Extensions.ChatMessageExtensions.WithAgentRequestMessageSource(source, AgentRequestMessageSourceType.External, "x");
 
-        Assert.AreSame(source, result);
+        Assert.AreNotSame(source, result);
+        Assert.AreEqual(DataIngestionLib.Models.Extensions.ChatMessageExtensions.GetAgentRequestMessageSourceType(source), DataIngestionLib.Models.Extensions.ChatMessageExtensions.GetAgentRequestMessageSourceType(result));
+        Assert.AreEqual(DataIngestionLib.Models.Extensions.ChatMessageExtensions.GetAgentRequestMessageSourceId(source), DataIngestionLib.Models.Extensions.ChatMessageExtensions.GetAgentRequestMessageSourceId(result));
     }
 }

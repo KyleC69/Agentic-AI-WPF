@@ -1,30 +1,30 @@
 ﻿#nullable enable
 
-using DataIngestionLib;
-using DataIngestionLib.Agents;
-using DataIngestionLib.Boundaries;
-using DataIngestionLib.Contracts;
-using DataIngestionLib.EFModels;
-using DataIngestionLib.Providers;
-using DataIngestionLib.Services;
-using DataIngestionLib.ToolFunctions;
-using DataIngestionLib.ToolFunctions.FileSystemReaders;
-using DataIngestionLib.ToolFunctions.FileSystemWriters;
-using DataIngestionLib.ToolFunctions.General;
-using DataIngestionLib.ToolFunctions.OSTools;
+using AgentAILib;
+using AgentAILib.Agents;
+using AgentAILib.Boundaries;
+using AgentAILib.Contracts;
+using AgentAILib.EFModels;
+using AgentAILib.Providers;
+using AgentAILib.Services;
+using AgentAILib.ToolFunctions;
+using AgentAILib.ToolFunctions.FileSystemReaders;
+using AgentAILib.ToolFunctions.FileSystemWriters;
+using AgentAILib.ToolFunctions.General;
+using AgentAILib.ToolFunctions.OSTools;
+
+using AgenticAIWPF.Activation;
+using AgenticAIWPF.Contracts.Activation;
+using AgenticAIWPF.Contracts.Services;
+using AgenticAIWPF.Contracts.Views;
+using AgenticAIWPF.Core.Contracts.Services;
+using AgenticAIWPF.Core.Services;
+using AgenticAIWPF.ViewModels;
+using AgenticAIWPF.Views;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using RAGDataIngestionWPF.Activation;
-using RAGDataIngestionWPF.Contracts.Activation;
-using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.Contracts.Views;
-using RAGDataIngestionWPF.Core.Contracts.Services;
-using RAGDataIngestionWPF.Core.Services;
-using RAGDataIngestionWPF.ViewModels;
-using RAGDataIngestionWPF.Views;
-
-namespace RAGDataIngestionWPF.Services;
+namespace AgenticAIWPF.Services;
 
 public static class ServiceCollectionRegistrationExtensions
 {
@@ -59,6 +59,8 @@ public static class ServiceCollectionRegistrationExtensions
         _ = services.AddHttpClient<WebSearchPlugin>();
         _ = services.AddSingleton<WebSearchPlugin>();
         _ = services.AddSingleton<SandboxEventLogReader>();
+        _ = services.AddSingleton<EventErrorsTool>();
+        _ = services.AddSingleton<PowerShellTool>();
         _ = services.AddSingleton<FileContentsReadingTool>(_ => new FileContentsReadingTool(HostWhitelist.AllowedRoots));
         _ = services.AddSingleton<FileSystemWriterTool>(_ => new FileSystemWriterTool(HostWhitelist.AllowedRoots));
         _ = services.AddSingleton<InstalledUpdatesTool>();

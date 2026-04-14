@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         ApplicationHostService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212934
@@ -16,16 +16,16 @@ using MahApps.Metro.Theming;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-using RAGDataIngestionWPF.Contracts.Activation;
-using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.Contracts.Views;
-using RAGDataIngestionWPF.Models;
-using RAGDataIngestionWPF.ViewModels;
+using AgenticAIWPF.Contracts.Activation;
+using AgenticAIWPF.Contracts.Services;
+using AgenticAIWPF.Contracts.Views;
+using AgenticAIWPF.Models;
+using AgenticAIWPF.ViewModels;
 
 
 
 
-namespace RAGDataIngestionWPF.Services;
+namespace AgenticAIWPF.Services;
 
 
 

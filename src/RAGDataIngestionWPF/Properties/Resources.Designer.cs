@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace RAGDataIngestionWPF.Properties {
+namespace AgenticAIWPF.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace RAGDataIngestionWPF.Properties {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("RAGDataIngestionWPF.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AgenticAIWPF.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,7 +61,7 @@ namespace RAGDataIngestionWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RAGDataIngestionWPF.
+        ///   Looks up a localized string similar to AgenticAIWPF.
         /// </summary>
         public static string AppDisplayName {
             get {

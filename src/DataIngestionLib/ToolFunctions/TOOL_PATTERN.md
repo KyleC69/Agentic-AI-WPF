@@ -9,7 +9,7 @@
 
 ## Path-bound tool rules
 
-- File and directory tools must accept at least one whitelist from `DataIngestionLib.Boundaries`.
+- File and directory tools must accept at least one whitelist from `AgentAILib.Boundaries`.
 - Do not inspect or validate paths inside the tool entry method.
 - Route all path normalization and boundary enforcement through `ToolFunctions/Utils/PathResolver.cs`.
 - Relative paths should be resolved within the configured allowlisted roots.
@@ -30,5 +30,5 @@
 ## Dependency pattern
 
 - Prefer constructor-provided configuration such as allowlisted roots.
-- Provide safe defaults from the appropriate class in `DataIngestionLib.Boundaries` when the tool touches filesystem
+- Provide safe defaults from the appropriate class in `AgentAILib.Boundaries` when the tool touches filesystem
 - Keep the WPF project as the composition root and register tool instances there.

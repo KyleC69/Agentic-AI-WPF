@@ -15,10 +15,10 @@ using System.Text.Json;
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Contracts;
-using DataIngestionLib.EFModels;
-using DataIngestionLib.HistoryModels;
-using DataIngestionLib.Services;
+using AgentAILib.Contracts;
+using AgentAILib.EFModels;
+using AgentAILib.HistoryModels;
+using AgentAILib.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +28,7 @@ using Microsoft.Extensions.Logging;
 
 
 
-namespace DataIngestionLib.Providers;
+namespace AgentAILib.Providers;
 
 
 

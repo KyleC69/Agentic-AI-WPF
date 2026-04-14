@@ -1,20 +1,20 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         ChatHistoryMessageExtensions.cs
 // Author: Kyle L. Crowder
 // Build Num: 212903
 
 
 
-using DataIngestionLib.Models;
+using AgentAILib.Models;
 
 using Microsoft.Extensions.AI;
 
 
 
 
-namespace DataIngestionLib.HistoryModels;
+namespace AgentAILib.HistoryModels;
 
 
 

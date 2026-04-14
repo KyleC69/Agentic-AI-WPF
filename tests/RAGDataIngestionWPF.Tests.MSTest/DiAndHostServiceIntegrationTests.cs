@@ -7,7 +7,6 @@
 
 
 
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -83,11 +82,11 @@ public class DiAndHostServiceIntegrationTests
     {
         ServiceCollection services = [];
 
-        InvokeAppRegistration("RegisterHostServices", services);
-        InvokeAppRegistration("RegisterActivationHandlers", services);
-        InvokeAppRegistration("RegisterCoreServices", services);
-        InvokeAppRegistration("RegisterApplicationServices", services);
-        InvokeAppRegistration("RegisterViewsAndViewModels", services);
+        _ = services.AddHostServicesModule();
+        _ = services.AddActivationHandlersModule();
+        _ = services.AddCoreServicesModule();
+        _ = services.AddApplicationServicesModule();
+        _ = services.AddViewsAndViewModelsModule();
 
         AssertHasSingleton<IHostedService>(services);
         AssertHasSingleton<IActivationHandler>(services);
@@ -119,12 +118,6 @@ public class DiAndHostServiceIntegrationTests
 
 
 
-    private static void InvokeAppRegistration(string methodName, IServiceCollection services)
-    {
-        MethodInfo method = typeof(App).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Static);
-        Assert.IsNotNull(method);
-        _ = method.Invoke(null, new object[] { services });
-    }
 
 
 

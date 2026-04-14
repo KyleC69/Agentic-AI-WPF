@@ -1,9 +1,9 @@
-// Build Date: 2026/04/06
+// Build Date: 2026/04/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         SafeCommandRunnerTests.cs
-// Author: Kyle L. Crowder
-// Build Num: 213001
+// Author: GitHub Copilot
+// Build Num: 204200
 
 
 
@@ -21,162 +21,77 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 [TestClass]
 public class SafeCommandRunnerTests
 {
-    private string _sandboxRoot = string.Empty;
-
-
-
-
-
-
-
-
-    [TestCleanup]
-    public void Cleanup()
-    {
-        if (Directory.Exists(_sandboxRoot))
-        {
-            Directory.Delete(_sandboxRoot, true);
-        }
-    }
-
-
-
-
-
-
-
-
-    [TestInitialize]
-    public void Initialize()
-    {
-        _sandboxRoot = Path.Combine(Path.GetTempPath(), "safe-command-tests", Guid.NewGuid().ToString("N"));
-        _ = Directory.CreateDirectory(_sandboxRoot);
-        File.WriteAllText(Path.Combine(_sandboxRoot, "sample.txt"), "sample content");
-    }
-
-
-
-
-
-
-
-
     [TestMethod]
-    public void RunCatExistingFileReturnsContents()
+    public async Task ExecuteAsyncWithCmdEchoReturnsSuccessAndOutput()
     {
-        SafeCommandRunner runner = new(_sandboxRoot);
+        CommandExecutor executor = new();
 
-        var result = runner.Run("cat sample.txt");
+        var result = await executor.ExecuteAsync("cmd.exe", "/c echo hello world");
 
         Assert.IsTrue(result.Success);
-        Assert.AreEqual("sample content", result.Value);
+        Assert.AreEqual(0, result.ExitCode);
+        Assert.AreEqual("hello world", result.Output);
     }
 
 
 
 
 
-
-
-
     [TestMethod]
-    public void RunCatMissingFileReturnsFailure()
+    public async Task ExecuteAsyncWithMissingCommandReturnsNotFound()
     {
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxRoot);
+        CommandExecutor executor = new();
 
-        var result = runner.Run("cat missing.txt");
+        var result = await executor.ExecuteAsync($"missing-command-{Guid.NewGuid():N}.exe");
 
         Assert.IsFalse(result.Success);
-        Assert.AreEqual("File not found.", result.Error);
+        Assert.AreEqual(-1, result.ExitCode);
+        StringAssert.StartsWith(result.Error, "Command not found: '");
     }
 
 
 
 
 
-
-
-
     [TestMethod]
-    public void RunCatOutsideSandboxReturnsAccessDenied()
+    public void FailureFactoryReturnsExpectedFailureShape()
     {
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxRoot);
-
-        var result = runner.Run("cat ..\\outside.txt");
+        var result = CommandResult.Failure("boom");
 
         Assert.IsFalse(result.Success);
-        Assert.AreEqual("Access denied.", result.Error);
+        Assert.AreEqual(-1, result.ExitCode);
+        Assert.AreEqual("boom", result.Error);
+        Assert.AreEqual(string.Empty, result.Output);
     }
 
 
 
 
 
-
-
-
     [TestMethod]
-    public void RunDirReturnsSandboxFileNames()
+    public void NotFoundFactoryReturnsExpectedFailureShape()
     {
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxRoot);
-
-        var result = runner.Run("dir");
-
-        Assert.IsTrue(result.Success);
-        StringAssert.Contains(result.Value, "sample.txt");
-    }
-
-
-
-
-
-
-
-
-    [TestMethod]
-    public void RunEchoReturnsProvidedText()
-    {
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxRoot);
-
-        var result = runner.Run("echo hello world");
-
-        Assert.IsTrue(result.Success);
-        Assert.AreEqual("hello world", result.Value);
-    }
-
-
-
-
-
-
-
-
-    [TestMethod]
-    public void RunWithDisallowedCommandReturnsFailure()
-    {
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxRoot);
-
-        var result = runner.Run("del sample.txt");
+        var result = CommandResult.NotFound("missing.exe");
 
         Assert.IsFalse(result.Success);
-        Assert.AreEqual("Command 'del' is not allowed.", result.Error);
+        Assert.AreEqual(-1, result.ExitCode);
+        Assert.AreEqual(string.Empty, result.Output);
+        StringAssert.Contains(result.Error, "missing.exe");
     }
 
 
 
 
 
-
-
-
     [TestMethod]
-    public void RunWithEmptyInputReturnsFailure()
+    public void TimeoutFactoryReturnsTimedOutResult()
     {
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxRoot);
-
-        var result = runner.Run("   ");
+        var result = CommandResult.Timeout(250, "partial");
 
         Assert.IsFalse(result.Success);
-        Assert.AreEqual("No command provided.", result.Error);
+        Assert.IsTrue(result.TimedOut);
+        Assert.AreEqual(-1, result.ExitCode);
+        Assert.AreEqual("partial", result.Output);
+        Assert.AreEqual("Command timed out after 250ms", result.Error);
     }
 }

@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
-		<RootNamespace>RAGDataIngestionWPF</RootNamespace>
+		<RootNamespace>AgenticAIWPF</RootNamespace>
 		<UseWPF>true</UseWPF>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -40,11 +40,11 @@
 		<PackageReference Include="MdXaml.Plugins" Version="2.0.0-pre202603081301" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />
-		<PackageReference Include="Markdig" Version="1.0.0" />
+		<PackageReference Include="Markdig" Version="1.1.2" />
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\DataIngestionLib\DataIngestionLib.csproj" />
-		<ProjectReference Include="..\RAGDataIngestionWPF.Core\RAGDataIngestionWPF.Core.csproj" />
+		<ProjectReference Include="..\DataIngestionLib\AgentAILib.csproj" />
+		<ProjectReference Include="..\RAGDataIngestionWPF.Core\AgenticAIWPF.Core.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<Resource Include="Assets\DefaultIcon.png" />

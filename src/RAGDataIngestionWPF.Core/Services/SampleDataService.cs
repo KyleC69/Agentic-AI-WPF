@@ -1,19 +1,19 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF.Core
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF.Core
 // File:         SampleDataService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212928
 
 
 
-using RAGDataIngestionWPF.Core.Contracts.Services;
-using RAGDataIngestionWPF.Core.Models;
+using AgenticAIWPF.Core.Contracts.Services;
+using AgenticAIWPF.Core.Models;
 
 
 
 
-namespace RAGDataIngestionWPF.Core.Services;
+namespace AgenticAIWPF.Core.Services;
 
 
 

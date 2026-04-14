@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         ShellViewModel.cs
 // Author: Kyle L. Crowder
 // Build Num: 212943
@@ -15,13 +15,13 @@ using CommunityToolkit.Mvvm.Input;
 
 using MahApps.Metro.Controls;
 
-using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.Properties;
+using AgenticAIWPF.Contracts.Services;
+using AgenticAIWPF.Properties;
 
 
 
 
-namespace RAGDataIngestionWPF.ViewModels;
+namespace AgenticAIWPF.ViewModels;
 
 
 

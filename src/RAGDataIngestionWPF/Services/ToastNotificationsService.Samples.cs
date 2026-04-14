@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         ToastNotificationsService.Samples.cs
 // Author: Kyle L. Crowder
 // Build Num: 212937
@@ -15,7 +15,7 @@ using Microsoft.Toolkit.Uwp.Notifications;
 
 
 
-namespace RAGDataIngestionWPF.Services;
+namespace AgenticAIWPF.Services;
 
 
 

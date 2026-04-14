@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         MenuItemTemplateSelector.cs
 // Author: Kyle L. Crowder
 // Build Num: 212938
@@ -15,7 +15,7 @@ using MahApps.Metro.Controls;
 
 
 
-namespace RAGDataIngestionWPF.TemplateSelectors;
+namespace AgenticAIWPF.TemplateSelectors;
 
 
 

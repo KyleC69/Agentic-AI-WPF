@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         ChatMessageExtensions.cs
 // Author: Kyle L. Crowder
 // Build Num: 212903
@@ -13,7 +13,7 @@ using Microsoft.Extensions.AI;
 
 
 
-namespace DataIngestionLib.Models.Extensions;
+namespace AgentAILib.Models.Extensions;
 
 
 

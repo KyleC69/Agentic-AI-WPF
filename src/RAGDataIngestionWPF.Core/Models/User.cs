@@ -1,13 +1,13 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF.Core
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF.Core
 // File:         User.cs
 // Author: Kyle L. Crowder
 // Build Num: 212927
 
 
 
-namespace RAGDataIngestionWPF.Core.Models;
+namespace AgenticAIWPF.Core.Models;
 
 
 

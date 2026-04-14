@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         ChatHistoryMessage.cs
 // Author: Kyle L. Crowder
 // Build Num: 212902
@@ -12,7 +12,7 @@ using Microsoft.Data.SqlTypes;
 
 
 
-namespace DataIngestionLib.HistoryModels;
+namespace AgentAILib.HistoryModels;
 
 
 

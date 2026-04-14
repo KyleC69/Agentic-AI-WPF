@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
 // Build Num: 212950
@@ -19,10 +19,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Toolkit.Uwp.Notifications;
 
-using RAGDataIngestionWPF.Activation;
-using RAGDataIngestionWPF.Services;
+using AgenticAIWPF.Activation;
+using AgenticAIWPF.Services;
 
-namespace RAGDataIngestionWPF;
+namespace AgenticAIWPF;
 
 public sealed partial class App : Application
 {

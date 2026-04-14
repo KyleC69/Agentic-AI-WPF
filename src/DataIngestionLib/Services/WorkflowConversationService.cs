@@ -17,8 +17,8 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.Json.Serialization;
 
-using DataIngestionLib.Agents;
-using DataIngestionLib.Models;
+using AgentAILib.Agents;
+using AgentAILib.Models;
 
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
@@ -34,7 +34,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 
 
-namespace DataIngestionLib.Services;
+namespace AgentAILib.Services;
 
 
 

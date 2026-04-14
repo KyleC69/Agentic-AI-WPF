@@ -13,9 +13,9 @@
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Contracts;
-using DataIngestionLib.Models;
-using DataIngestionLib.Providers;
+using AgentAILib.Contracts;
+using AgentAILib.Models;
+using AgentAILib.Providers;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -26,7 +26,7 @@ using OllamaSharp;
 
 
 
-namespace DataIngestionLib.Agents;
+namespace AgentAILib.Agents;
 
 
 

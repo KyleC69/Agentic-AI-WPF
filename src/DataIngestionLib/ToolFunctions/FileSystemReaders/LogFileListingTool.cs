@@ -12,9 +12,9 @@
 using System.ComponentModel;
 using System.IO;
 
-using DataIngestionLib.ToolFunctions.Utils;
+using AgentAILib.ToolFunctions.Utils;
 
-namespace DataIngestionLib.ToolFunctions.FileSystemReaders;
+namespace AgentAILib.ToolFunctions.FileSystemReaders;
 
 public sealed class LogFileListingTool
 {

@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         AIMessage.cs
 // Author: Kyle L. Crowder
 // Build Num: 212904
@@ -16,7 +16,7 @@ using Microsoft.Extensions.AI;
 
 
 
-namespace DataIngestionLib.Models;
+namespace AgentAILib.Models;
 
 
 

@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF.Core
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF.Core
 // File:         FileService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212927
@@ -11,12 +11,12 @@ using System.Text;
 
 using Newtonsoft.Json;
 
-using RAGDataIngestionWPF.Core.Contracts.Services;
+using AgenticAIWPF.Core.Contracts.Services;
 
 
 
 
-namespace RAGDataIngestionWPF.Core.Services;
+namespace AgenticAIWPF.Core.Services;
 
 
 

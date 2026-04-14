@@ -14,12 +14,12 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
-using DataIngestionLib.Models;
+using AgentAILib.Models;
 
 
 
 
-namespace DataIngestionLib.Agents;
+namespace AgentAILib.Agents;
 
 
 

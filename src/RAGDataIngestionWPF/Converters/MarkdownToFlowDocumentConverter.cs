@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         MarkdownToFlowDocumentConverter.cs
 // Author: Kyle L. Crowder
 // Build Num: 212931
@@ -11,12 +11,12 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Documents;
 
-using RAGDataIngestionWPF.Helpers;
+using AgenticAIWPF.Helpers;
 
 
 
 
-namespace RAGDataIngestionWPF.Converters;
+namespace AgenticAIWPF.Converters;
 
 
 

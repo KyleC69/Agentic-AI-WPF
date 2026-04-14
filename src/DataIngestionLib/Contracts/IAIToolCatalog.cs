@@ -1,6 +1,6 @@
-// Build Date: 2026/04/06
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         IAIToolCatalog.cs
 // Author: Kyle L. Crowder
 // Build Num: 212854
@@ -12,7 +12,7 @@ using Microsoft.Extensions.AI;
 
 
 
-namespace DataIngestionLib.Contracts;
+namespace AgentAILib.Contracts;
 
 
 

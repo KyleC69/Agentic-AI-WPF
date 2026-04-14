@@ -4,12 +4,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mdxam="clr-namespace:MdXaml;assembly=MdXaml"
-    xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
-    xmlns:models="clr-namespace:RAGDataIngestionWPF.Models"
+    xmlns:properties="clr-namespace:AgenticAIWPF.Properties"
+    xmlns:models="clr-namespace:AgenticAIWPF.Models"
     xmlns:full="https://github.com/whistyun/MdXaml.Full"
-    xmlns:Models="clr-namespace:DataIngestionLib.Models;assembly=DataIngestionLib"
-    xmlns:utils="clr-namespace:DataIngestionLib.Utils;assembly=DataIngestionLib"
-    x:Class="RAGDataIngestionWPF.Views.MainPage"
+    xmlns:Models="clr-namespace:AgentAILib.Models;assembly=AgentAILib"
+    xmlns:utils="clr-namespace:AgentAILib.Utils;assembly=AgentAILib"
+    xmlns:Models1="clr-namespace:AgentAILib.Models;assembly=AgentAILib"
+    x:Class="AgenticAIWPF.Views.MainPage"
     Style="{DynamicResource MahApps.Styles.Page}"
     mc:Ignorable="d" Width="1400" Height="1000"
     Background="{DynamicResource MahApps.Brushes.Window.Background.Backdrop.Acrylic}">
@@ -43,7 +44,7 @@
                     <GroupBox Header="Models" MinWidth="130" Margin="0,20,0,0" Padding="0">
                         <!-- Model selection combo box -->
                         <ComboBox Margin="2,10,0,0" x:Name="ModelComboBox"
-                                  ItemsSource="{x:Static Models:AIModels.ChatModels}"
+                                  ItemsSource="{x:Static Models1:AIModels.ChatModels}"
                                   DisplayMemberPath="DisplayName"
                                   SelectedItem="{Binding SelectedModel}" />
                     </GroupBox>

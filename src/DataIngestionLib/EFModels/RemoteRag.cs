@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Data.SqlTypes;
 
-namespace DataIngestionLib.EFModels;
+namespace AgentAILib.EFModels;
 
 public partial class RemoteRag
 {

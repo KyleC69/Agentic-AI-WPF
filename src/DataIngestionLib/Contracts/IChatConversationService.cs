@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         IChatConversationService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212853
@@ -9,12 +9,12 @@
 
 using Microsoft.Extensions.AI;
 
-using DataIngestionLib.Models;
+using AgentAILib.Models;
 
 
 
 
-namespace DataIngestionLib.Contracts;
+namespace AgentAILib.Contracts;
 
 
 

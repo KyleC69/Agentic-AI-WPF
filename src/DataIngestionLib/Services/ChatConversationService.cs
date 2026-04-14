@@ -13,12 +13,12 @@
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Agents;
-using DataIngestionLib.Contracts;
-using DataIngestionLib.EFModels;
-using DataIngestionLib.HistoryModels;
-using DataIngestionLib.Models;
-using DataIngestionLib.Providers;
+using AgentAILib.Agents;
+using AgentAILib.Contracts;
+using AgentAILib.EFModels;
+using AgentAILib.HistoryModels;
+using AgentAILib.Models;
+using AgentAILib.Providers;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -27,7 +27,7 @@ using Microsoft.Extensions.Logging;
 
 
 
-namespace DataIngestionLib.Services;
+namespace AgentAILib.Services;
 
 
 

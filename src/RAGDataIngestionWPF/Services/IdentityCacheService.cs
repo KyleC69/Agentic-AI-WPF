@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         IdentityCacheService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212935
@@ -11,12 +11,12 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 
-using RAGDataIngestionWPF.Core.Contracts.Services;
+using AgenticAIWPF.Core.Contracts.Services;
 
 
 
 
-namespace RAGDataIngestionWPF.Services;
+namespace AgenticAIWPF.Services;
 
 
 

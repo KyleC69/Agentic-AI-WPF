@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         ParserTools.cs
 // Author: Kyle L. Crowder
 // Build Num: 212925
@@ -12,7 +12,7 @@ using System.Text;
 
 
 
-namespace DataIngestionLib.Utils;
+namespace AgentAILib.Utils;
 
 
 

@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         MarkdownFlowDocumentFormatter.cs
 // Author: Kyle L. Crowder
 // Build Num: 212932
@@ -19,7 +19,7 @@ using Markdig.Syntax.Inlines;
 
 
 
-namespace RAGDataIngestionWPF.Helpers;
+namespace AgenticAIWPF.Helpers;
 
 
 

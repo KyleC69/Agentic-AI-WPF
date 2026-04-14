@@ -1,5 +1,5 @@
 ---
-name: agent-workflow-builder_ai_toolkit
+name: agent-workflow-ai
 description: Generates, enhances, develops, and deploys AI agent applications and workflows using Microsoft Agent Framework. Use when user asks to create, scaffold, build, modify, fix, trace, monitor, debug, evaluate, measure, or deploy AI apps, agents, or workflows.
 
 ---

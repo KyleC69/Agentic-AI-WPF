@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace DataIngestionLib.EFModels;
+namespace AgentAILib.EFModels;
 
 public partial class AIRemoteRagContext : DbContext
 {

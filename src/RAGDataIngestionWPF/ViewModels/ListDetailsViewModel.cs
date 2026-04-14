@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         ListDetailsViewModel.cs
 // Author: Kyle L. Crowder
 // Build Num: 212939
@@ -11,14 +11,14 @@ using System.Collections.ObjectModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
-using RAGDataIngestionWPF.Contracts.ViewModels;
-using RAGDataIngestionWPF.Core.Contracts.Services;
-using RAGDataIngestionWPF.Core.Models;
+using AgenticAIWPF.Contracts.ViewModels;
+using AgenticAIWPF.Core.Contracts.Services;
+using AgenticAIWPF.Core.Models;
 
 
 
 
-namespace RAGDataIngestionWPF.ViewModels;
+namespace AgenticAIWPF.ViewModels;
 
 
 

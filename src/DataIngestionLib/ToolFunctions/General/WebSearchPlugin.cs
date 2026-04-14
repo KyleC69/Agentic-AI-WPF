@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         WebSearchPlugin.cs
 // Author: Kyle L. Crowder
 // Build Num: 212923
@@ -12,12 +12,14 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 
-using DataIngestionLib.ToolFunctions.Utils;
+using AgentAILib.ToolFunctions.Utils;
+
+using Microsoft.Extensions.Logging;
 
 
 
 
-namespace DataIngestionLib.ToolFunctions.General;
+namespace AgentAILib.ToolFunctions.General;
 
 
 
@@ -32,11 +34,12 @@ public sealed class WebSearchPlugin
 
 
 
+    
+    private readonly ILogger _logger;
 
 
 
-
-    public WebSearchPlugin(IHttpClientFactory client)
+    public WebSearchPlugin(IHttpClientFactory client,ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(client);
         _httpClient = client.CreateClient(nameof(WebSearchPlugin));

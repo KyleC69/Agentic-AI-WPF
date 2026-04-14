@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         SettingsViewModel.cs
 // Author: Kyle L. Crowder
 // Build Num: 212942
@@ -15,20 +15,20 @@ using CommunityToolkit.Mvvm.Input;
 
 using ControlzEx.Theming;
 
-using DataIngestionLib;
+using AgentAILib;
 
 using MahApps.Metro.Theming;
 
 using Microsoft.Extensions.Logging;
 
-using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.Contracts.ViewModels;
-using RAGDataIngestionWPF.Models;
+using AgenticAIWPF.Contracts.Services;
+using AgenticAIWPF.Contracts.ViewModels;
+using AgenticAIWPF.Models;
 
 
 
 
-namespace RAGDataIngestionWPF.ViewModels;
+namespace AgenticAIWPF.ViewModels;
 
 
 

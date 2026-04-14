@@ -1,4 +1,4 @@
-// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
 // Solution: ${File.SolutionName}
 // Project:   ${File.ProjectName}
 // File:         ${File.FileName}
@@ -11,7 +11,7 @@
 
 
 
-namespace DataIngestionLib.Models;
+namespace AgentAILib.Models;
 
 
 

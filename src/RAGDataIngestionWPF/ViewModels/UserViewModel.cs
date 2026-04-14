@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         UserViewModel.cs
 // Author: Kyle L. Crowder
 // Build Num: 212944
@@ -14,7 +14,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 
 
-namespace RAGDataIngestionWPF.ViewModels;
+namespace AgenticAIWPF.ViewModels;
 
 
 

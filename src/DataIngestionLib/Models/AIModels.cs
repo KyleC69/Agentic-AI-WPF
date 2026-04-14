@@ -11,7 +11,7 @@
 
 
 
-namespace DataIngestionLib.Models;
+namespace AgentAILib.Models;
 
 
 
@@ -38,7 +38,7 @@ public record AIModels
     /// <summary>Meta Llama 3.1 8-billion parameter variant served through Ollama.</summary>
     public const string LLAMA1_8B = "llama3.1:8b";
 
-
+    public const string LLAMA3_3B = "llama3.2:3b";
     /// <summary>MixedBread AI large embedding model (<c>mxbai-embed-large</c>) served through Ollama.</summary>
     public const string MXBAI = "mxbai-embed-large:latest";
 
@@ -49,6 +49,7 @@ public record AIModels
         new("GPT-OSS 120B", GPTOSS120),
         new("GPT-OSS 20B", GPTOSS20),
         new("Llama 3.1 8B", LLAMA1_8B),
+        new("Llama 3.2 3B", LLAMA3_3B),
         new("GLM-5",        GLM5),
         new("Gemma3 4B",    GEMMA3_4B),
         new("GPT-4",        GPT4),
@@ -56,5 +57,5 @@ public record AIModels
     ];
 
     /// <summary>The default model used on startup and after resets.</summary>
-    public static readonly AIModelDescriptor Default = ChatModels[0];
+    public static readonly AIModelDescriptor Default = ChatModels[3];
 }

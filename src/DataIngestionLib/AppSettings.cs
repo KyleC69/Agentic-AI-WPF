@@ -13,7 +13,7 @@
 
 using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
-namespace DataIngestionLib;
+namespace AgentAILib;
 
 
 

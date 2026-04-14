@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         SqlTableMaint.cs
 // Author: Kyle L. Crowder
 // Build Num: 212859
@@ -10,7 +10,7 @@
 using System.Data;
 using System.Diagnostics;
 
-using DataIngestionLib.Utils;
+using AgentAILib.Utils;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 
 
 
-namespace DataIngestionLib.DocIngestion;
+namespace AgentAILib.DocIngestion;
 
 
 

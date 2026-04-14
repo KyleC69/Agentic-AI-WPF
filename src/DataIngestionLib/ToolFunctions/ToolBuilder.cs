@@ -11,18 +11,18 @@
 
 
 
-using DataIngestionLib.Contracts;
-using DataIngestionLib.ToolFunctions.FileSystemReaders;
-using DataIngestionLib.ToolFunctions.FileSystemWriters;
-using DataIngestionLib.ToolFunctions.General;
-using DataIngestionLib.ToolFunctions.OSTools;
+using AgentAILib.Contracts;
+using AgentAILib.ToolFunctions.FileSystemReaders;
+using AgentAILib.ToolFunctions.FileSystemWriters;
+using AgentAILib.ToolFunctions.General;
+using AgentAILib.ToolFunctions.OSTools;
 
 using Microsoft.Extensions.AI;
 
 
 
 
-namespace DataIngestionLib.ToolFunctions;
+namespace AgentAILib.ToolFunctions;
 
 
 
@@ -30,7 +30,9 @@ namespace DataIngestionLib.ToolFunctions;
 
 public sealed class ToolBuilder : IAIToolCatalog
 {
+    private readonly AITool _eventErrorsTool;
     private readonly AITool _eventLogTool;
+    private readonly AITool _powerShellTool;
     private readonly AITool _fileContentsReadingTool;
     private readonly AITool _fileSystemWriterTool;
     private readonly AITool _installedUpdatesReadTool;
@@ -39,7 +41,6 @@ public sealed class ToolBuilder : IAIToolCatalog
     private readonly AITool _logFileReaderTool;
     private readonly AITool _networkConfigurationReadTool;
     private readonly AITool _performanceCounterReadTool;
-    private readonly AITool _processSnapshotReadTool;
     private readonly AITool _registryReadTool;
     private readonly AITool _reliabilityHistoryReadTool;
     private readonly AITool _serviceHealthReadTool;
@@ -63,6 +64,8 @@ public sealed class ToolBuilder : IAIToolCatalog
 
     public ToolBuilder(WebSearchPlugin webSearchPlugin,
             SandboxEventLogReader eventLogReader,
+            EventErrorsTool eventErrorsTool,
+            PowerShellTool powerShellTool,
             FileContentsReadingTool fileContentsReadingTool,
             FileSystemWriterTool fileSystemWriterTool,
             InstalledUpdatesTool installedUpdatesTool,
@@ -86,6 +89,8 @@ public sealed class ToolBuilder : IAIToolCatalog
         _netStatTool = netStatTool;
         _handleTool = handleTool;
         _webSearchTool = AIFunctionFactory.Create(webSearchPlugin.WebSearch);
+        _eventErrorsTool = AIFunctionFactory.Create(eventErrorsTool.ReadRecentCriticalAndErrorEvents);
+        _powerShellTool = AIFunctionFactory.Create(powerShellTool.RunReadOnly);
         _eventLogTool = AIFunctionFactory.Create(eventLogReader.ReadLog);
         _fileContentsReadingTool = AIFunctionFactory.Create(fileContentsReadingTool.ReadFileContents);
         _fileSystemWriterTool = AIFunctionFactory.Create(fileSystemWriterTool.WriteText);
@@ -128,6 +133,8 @@ public sealed class ToolBuilder : IAIToolCatalog
         return
         [
                 _webSearchTool,
+            _eventErrorsTool,
+                _powerShellTool,
                 _eventLogTool,
                 _fileContentsReadingTool,
                 _installedUpdatesReadTool,

@@ -15,8 +15,8 @@ using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Text.Json;
 
-using DataIngestionLib.Models.Extensions;
-using DataIngestionLib.Models;
+using AgentAILib.Models.Extensions;
+using AgentAILib.Models;
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -24,7 +24,7 @@ using Microsoft.Extensions.Logging;
 
 
 
-namespace DataIngestionLib.Agents;
+namespace AgentAILib.Agents;
 
 
 
@@ -142,7 +142,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
         {
             var tokenCount = EstimateMessageTokens(message);
             var role = message.Role.Value;
-            var sourceType = DataIngestionLib.Models.Extensions.ChatMessageExtensions.GetAgentRequestMessageSourceType(message);
+            var sourceType = AgentAILib.Models.Extensions.ChatMessageExtensions.GetAgentRequestMessageSourceType(message);
 
             if (sourceType == global::Microsoft.Agents.AI.AgentRequestMessageSourceType.AIContextProvider)
             {

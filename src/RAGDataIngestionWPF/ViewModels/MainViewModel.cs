@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         MainViewModel.cs
 // Author: Kyle L. Crowder
 // Build Num: 212941
@@ -18,22 +18,22 @@ using CommunityToolkit.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using DataIngestionLib.Agents;
-using DataIngestionLib.Contracts;
-using DataIngestionLib.Models;
-using DataIngestionLib.Services;
+using AgentAILib.Agents;
+using AgentAILib.Contracts;
+using AgentAILib.Models;
+using AgentAILib.Services;
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
-using RAGDataIngestionWPF.Contracts.ViewModels;
+using AgenticAIWPF.Contracts.ViewModels;
 
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 
 
 
-namespace RAGDataIngestionWPF.ViewModels;
+namespace AgenticAIWPF.ViewModels;
 
 
 

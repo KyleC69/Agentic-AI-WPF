@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         ImageHelper.cs
 // Author: Kyle L. Crowder
 // Build Num: 212932
@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 
 
 
-namespace RAGDataIngestionWPF.Helpers;
+namespace AgenticAIWPF.Helpers;
 
 
 

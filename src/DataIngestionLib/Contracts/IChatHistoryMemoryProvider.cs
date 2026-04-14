@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         IChatHistoryMemoryProvider.cs
 // Author: Kyle L. Crowder
 // Build Num: 212853
@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 
 
-namespace DataIngestionLib.Contracts;
+namespace AgentAILib.Contracts;
 
 
 

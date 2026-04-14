@@ -13,9 +13,9 @@
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Agents;
-using DataIngestionLib.Models;
-using DataIngestionLib.Utils;
+using AgentAILib.Agents;
+using AgentAILib.Models;
+using AgentAILib.Utils;
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -25,7 +25,7 @@ using OllamaSharp;
 
 
 
-namespace DataIngestionLib.DocIngestion;
+namespace AgentAILib.DocIngestion;
 
 
 

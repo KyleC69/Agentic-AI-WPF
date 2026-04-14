@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataIngestionLib.Boundaries;
+namespace AgentAILib.Boundaries;
 
 internal class WorkspaceWhitelist
 {

@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel;
 
-using DataIngestionLib.ToolFunctions;
+using AgentAILib.ToolFunctions;
 
 
 
 
-namespace DataIngestionLib.ToolFunctions.OSTools;
+namespace AgentAILib.ToolFunctions.OSTools;
 
 
 

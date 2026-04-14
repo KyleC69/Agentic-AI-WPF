@@ -1,11 +1,11 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         DiagnosticsText.cs
 // Author: Kyle L. Crowder
 // Build Num: 212916
 
-namespace DataIngestionLib.ToolFunctions.Utils;
+namespace AgentAILib.ToolFunctions.Utils;
 
 using System.Text;
 

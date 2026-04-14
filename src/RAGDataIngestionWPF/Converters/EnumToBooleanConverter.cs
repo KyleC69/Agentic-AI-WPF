@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         EnumToBooleanConverter.cs
 // Author: Kyle L. Crowder
 // Build Num: 212930
@@ -13,7 +13,7 @@ using System.Windows.Data;
 
 
 
-namespace RAGDataIngestionWPF.Converters;
+namespace AgenticAIWPF.Converters;
 
 
 

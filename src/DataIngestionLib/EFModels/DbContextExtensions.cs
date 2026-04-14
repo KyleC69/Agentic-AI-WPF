@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataIngestionLib.EFModels
+namespace AgentAILib.EFModels
 {
     public static class DbContextExtensions
     {

@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         NavigationService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212935
@@ -10,14 +10,14 @@
 using System.Windows.Controls;
 using System.Windows.Navigation;
 
-using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.Contracts.ViewModels;
-using RAGDataIngestionWPF.Helpers;
+using AgenticAIWPF.Contracts.Services;
+using AgenticAIWPF.Contracts.ViewModels;
+using AgenticAIWPF.Helpers;
 
 
 
 
-namespace RAGDataIngestionWPF.Services;
+namespace AgenticAIWPF.Services;
 
 
 

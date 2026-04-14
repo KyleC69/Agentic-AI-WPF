@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         HistoryIdentityService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212913
@@ -11,14 +11,14 @@ using System.IO;
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Contracts;
+using AgentAILib.Contracts;
 
 using Microsoft.Agents.AI;
 
 
 
 
-namespace DataIngestionLib.Services;
+namespace AgentAILib.Services;
 
 
 

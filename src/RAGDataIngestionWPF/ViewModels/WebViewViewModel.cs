@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         WebViewViewModel.cs
 // Author: Kyle L. Crowder
 // Build Num: 212945
@@ -16,12 +16,12 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 
-using RAGDataIngestionWPF.Contracts.Services;
+using AgenticAIWPF.Contracts.Services;
 
 
 
 
-namespace RAGDataIngestionWPF.ViewModels;
+namespace AgenticAIWPF.ViewModels;
 
 
 

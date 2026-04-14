@@ -3,7 +3,7 @@
 
 
 
-namespace DataIngestionLib.ToolFunctions.OSTools;
+namespace AgentAILib.ToolFunctions.OSTools;
 
 /// <summary>
 /// Displays DNS resolution information.

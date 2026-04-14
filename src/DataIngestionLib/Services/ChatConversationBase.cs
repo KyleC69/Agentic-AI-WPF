@@ -1,15 +1,15 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         ChatConversationBase.cs
 // Author: Kyle L. Crowder
 // Build Num: 212915
 
 
 
-using DataIngestionLib.Agents;
-using DataIngestionLib.Contracts;
-using DataIngestionLib.Models;
+using AgentAILib.Agents;
+using AgentAILib.Contracts;
+using AgentAILib.Models;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.Logging;
@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 
 
 
-namespace DataIngestionLib.Services;
+namespace AgentAILib.Services;
 
 
 

@@ -8,6 +8,7 @@
 		<AnalysisLevel>preview</AnalysisLevel>
 		<LangVersion>preview</LangVersion>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<RootNamespace>AgentAILib</RootNamespace>
 	</PropertyGroup>
 
 

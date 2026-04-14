@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace DataIngestionLib.ToolFunctions;
+namespace AgentAILib.ToolFunctions;
 
 
 /// <summary>

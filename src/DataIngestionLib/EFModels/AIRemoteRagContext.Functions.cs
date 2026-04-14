@@ -4,9 +4,9 @@ using System;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using DataIngestionLib.EFModels;
+using AgentAILib.EFModels;
 
-namespace DataIngestionLib.EFModels
+namespace AgentAILib.EFModels
 {
     public partial class AIRemoteRagContext
     {

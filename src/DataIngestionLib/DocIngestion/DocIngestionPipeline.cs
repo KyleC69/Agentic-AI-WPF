@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         DocIngestionPipeline.cs
 // Author: Kyle L. Crowder
 // Build Num: 212857
@@ -14,7 +14,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using DataIngestionLib.Utils;
+using AgentAILib.Utils;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -22,7 +22,7 @@ using Microsoft.Extensions.Logging;
 
 
 
-namespace DataIngestionLib.DocIngestion;
+namespace AgentAILib.DocIngestion;
 
 
 

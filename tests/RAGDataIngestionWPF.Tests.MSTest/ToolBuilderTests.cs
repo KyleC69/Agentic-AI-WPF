@@ -42,33 +42,40 @@ public class ToolBuilderTests
             mockFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
 
             using ILoggerFactory loggerFactory = LoggerFactory.Create(_ => { });
+            CommandExecutor executor = new();
 
             ToolBuilder toolBuilder = new(
                 new WebSearchPlugin(mockFactory.Object),
                 new SandboxEventLogReader(),
+                new EventErrorsTool(),
+                new PowerShellTool(),
                 new FileContentsReadingTool([sandboxRoot]),
                 new FileSystemWriterTool([sandboxRoot]),
                 new InstalledUpdatesTool(),
                 new ListFolderContentsTool([sandboxRoot]),
-                new LogFileLister([sandboxRoot]),
+                new LogFileListingTool([sandboxRoot]),
                 new LogFileReader([sandboxRoot]),
                 new NetworkConfigurationTool(),
                 new PerformanceCounterTool(),
-                new ProcessSnapshotTool(),
                 new RegistryReaderTool(loggerFactory),
                 new ReliabilityHistoryTool(),
                 new ServiceHealthTool(),
                 new StartupInventoryTool(),
                 new StorageHealthTool(),
                 new WindowsEventChannelReaderTool(),
-                new WindowsWmiReaderTool());
+                new WindowsWmiReaderTool(),
+                new PsInfoTool(executor),
+                new PsListTool(executor),
+                new NsLookupTool(executor),
+                new NetStatTool(executor),
+                new HandleTool(executor));
 
             IList<AITool> readOnlyTools = toolBuilder.GetReadOnlyAiTools();
             IList<AITool> allTools = toolBuilder.GetAiTools();
             IList<AITool> writingTools = toolBuilder.GetWritingAiTools();
 
             Assert.AreEqual(readOnlyTools.Count, allTools.Count);
-            Assert.AreEqual(17, readOnlyTools.Count);
+            Assert.AreEqual(35, readOnlyTools.Count);
             Assert.AreEqual(1, writingTools.Count);
         }
         finally

@@ -1,18 +1,18 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         PersistAndRestoreService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212936
 
 
 
-using RAGDataIngestionWPF.Contracts.Services;
+using AgenticAIWPF.Contracts.Services;
 
 
 
 
-namespace RAGDataIngestionWPF.Services;
+namespace AgenticAIWPF.Services;
 
 
 

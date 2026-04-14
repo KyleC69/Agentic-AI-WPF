@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         PageService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212936
@@ -11,14 +11,14 @@ using System.Windows.Controls;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
-using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.ViewModels;
-using RAGDataIngestionWPF.Views;
+using AgenticAIWPF.Contracts.Services;
+using AgenticAIWPF.ViewModels;
+using AgenticAIWPF.Views;
 
 
 
 
-namespace RAGDataIngestionWPF.Services;
+namespace AgenticAIWPF.Services;
 
 
 

@@ -11,8 +11,8 @@
 
 
 
-using DataIngestionLib.Contracts;
-using DataIngestionLib.Services;
+using AgentAILib.Contracts;
+using AgentAILib.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -24,7 +24,7 @@ using AIContextProvider = Microsoft.Agents.AI.AIContextProvider;
 
 
 
-namespace DataIngestionLib.Providers;
+namespace AgentAILib.Providers;
 
 
 

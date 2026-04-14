@@ -1,10 +1,10 @@
-#nullable enable
+﻿#nullable enable
 
-using RAGDataIngestionWPF.Contracts.Services;
+using AgenticAIWPF.Contracts.Services;
 
 using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
-namespace RAGDataIngestionWPF.Services;
+namespace AgenticAIWPF.Services;
 
 public sealed class RuntimeAppSettingsService : IRuntimeAppSettingsService
 {

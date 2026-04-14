@@ -1,12 +1,12 @@
 ﻿// Build Date: 2026/04/10
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         PathResolver.cs
 // Author: GitHub Copilot
 
 using System.IO;
 
-namespace DataIngestionLib.ToolFunctions.Utils;
+namespace AgentAILib.ToolFunctions.Utils;
 
 internal enum ResolvedPathKind
 {

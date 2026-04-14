@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         MessageDisplay.cs
 // Author: Kyle L. Crowder
 // Build Num: 212933
@@ -12,7 +12,7 @@ using Microsoft.Extensions.AI;
 
 
 
-namespace RAGDataIngestionWPF.Models;
+namespace AgenticAIWPF.Models;
 
 
 

@@ -13,13 +13,13 @@
 
 using System.Windows;
 
-using DataIngestionLib.Agents;
+using AgentAILib.Agents;
 
 using MahApps.Metro.Controls;
 
-using RAGDataIngestionWPF.ViewModels;
+using AgenticAIWPF.ViewModels;
 
-namespace RAGDataIngestionWPF.Views;
+namespace AgenticAIWPF.Views;
 /// <summary>
 /// Interaction logic for AddAgent.xaml
 /// </summary>

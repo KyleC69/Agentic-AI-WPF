@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         PersistedChatMessage.cs
 // Author: Kyle L. Crowder
 // Build Num: 212905
@@ -12,7 +12,7 @@ using System.Text.Json;
 
 
 
-namespace DataIngestionLib.Models;
+namespace AgentAILib.Models;
 
 
 

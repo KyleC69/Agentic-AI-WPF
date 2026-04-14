@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DataIngestionLib.EFModels
+namespace AgentAILib.EFModels
 {
     public partial class Search_RAG_AdvancedResult
     {

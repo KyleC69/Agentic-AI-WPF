@@ -18,7 +18,7 @@ using Microsoft.Extensions.AI;
 
 
 
-namespace DataIngestionLib.Services;
+namespace AgentAILib.Services;
 
 
 

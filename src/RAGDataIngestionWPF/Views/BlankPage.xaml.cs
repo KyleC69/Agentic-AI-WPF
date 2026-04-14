@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         BlankPage.xaml.cs
 // Author: Kyle L. Crowder
 // Build Num: 212945
@@ -9,12 +9,12 @@
 
 using System.Windows;
 
-using RAGDataIngestionWPF.ViewModels;
+using AgenticAIWPF.ViewModels;
 
 
 
 
-namespace RAGDataIngestionWPF.Views;
+namespace AgenticAIWPF.Views;
 
 
 

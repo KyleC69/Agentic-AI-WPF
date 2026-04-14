@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         DataGridViewModel.cs
 // Author: Kyle L. Crowder
 // Build Num: 212939
@@ -12,17 +12,17 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using DataIngestionLib.DocIngestion;
-using DataIngestionLib.EFModels;
+using AgentAILib.DocIngestion;
+using AgentAILib.EFModels;
 
 using Microsoft.Extensions.Logging;
 
-using RAGDataIngestionWPF.Contracts.ViewModels;
+using AgenticAIWPF.Contracts.ViewModels;
 
 
 
 
-namespace RAGDataIngestionWPF.ViewModels;
+namespace AgenticAIWPF.ViewModels;
 
 
 

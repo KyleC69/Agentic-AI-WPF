@@ -14,9 +14,9 @@
 using System.ComponentModel;
 using System.IO;
 
-using DataIngestionLib.ToolFunctions.Utils;
+using AgentAILib.ToolFunctions.Utils;
 
-namespace DataIngestionLib.ToolFunctions.FileSystemReaders;
+namespace AgentAILib.ToolFunctions.FileSystemReaders;
 
 [Description("Lists files and subfolders from configured allowlisted roots.")]
 public sealed class ListFolderContentsTool

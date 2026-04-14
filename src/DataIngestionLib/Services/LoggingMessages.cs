@@ -1,20 +1,20 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         LoggingMessages.cs
 // Author: Kyle L. Crowder
 // Build Num: 212914
 
 
 
-using DataIngestionLib.ToolFunctions.OSTools;
+using AgentAILib.ToolFunctions.OSTools;
 
 using Microsoft.Extensions.Logging;
 
 
 
 
-namespace DataIngestionLib.Services;
+namespace AgentAILib.Services;
 
 
 

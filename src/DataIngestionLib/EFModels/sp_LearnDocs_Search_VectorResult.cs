@@ -1,13 +1,13 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         sp_LearnDocs_Search_VectorResult.cs
 // Author: Kyle L. Crowder
 // Build Num: 212900
 
 
 
-namespace DataIngestionLib.EFModels;
+namespace AgentAILib.EFModels;
 
 
 

@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         ChatHistoryContextInjector.cs
 // Author: Kyle L. Crowder
 // Build Num: 212907
@@ -9,9 +9,9 @@
 
 using System.Diagnostics;
 
-using DataIngestionLib.Contracts;
-using DataIngestionLib.EFModels;
-using DataIngestionLib.Services;
+using AgentAILib.Contracts;
+using AgentAILib.EFModels;
+using AgentAILib.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 
 
-namespace DataIngestionLib.Providers;
+namespace AgentAILib.Providers;
 
 
 

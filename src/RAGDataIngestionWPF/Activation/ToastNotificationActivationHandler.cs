@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         ToastNotificationActivationHandler.cs
 // Author: Kyle L. Crowder
 // Build Num: 212929
@@ -11,13 +11,13 @@ using System.Windows;
 
 using Microsoft.Extensions.Configuration;
 
-using RAGDataIngestionWPF.Contracts.Activation;
-using RAGDataIngestionWPF.Contracts.Views;
+using AgenticAIWPF.Contracts.Activation;
+using AgenticAIWPF.Contracts.Views;
 
 
 
 
-namespace RAGDataIngestionWPF.Activation;
+namespace AgenticAIWPF.Activation;
 
 
 

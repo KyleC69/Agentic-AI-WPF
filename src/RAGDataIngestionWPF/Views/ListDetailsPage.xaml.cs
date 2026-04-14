@@ -1,18 +1,18 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         ListDetailsPage.xaml.cs
 // Author: Kyle L. Crowder
 // Build Num: 212946
 
 
 
-using RAGDataIngestionWPF.ViewModels;
+using AgenticAIWPF.ViewModels;
 
 
 
 
-namespace RAGDataIngestionWPF.Views;
+namespace AgenticAIWPF.Views;
 
 
 

@@ -11,8 +11,8 @@
 
 
 
-using DataIngestionLib.History.HistoryModels;
-using DataIngestionLib.HistoryModels;
+using AgentAILib.History.HistoryModels;
+using AgentAILib.HistoryModels;
 
 using Microsoft.Data.SqlTypes;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +21,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 
 
-namespace DataIngestionLib.EFModels;
+namespace AgentAILib.EFModels;
 
 
 

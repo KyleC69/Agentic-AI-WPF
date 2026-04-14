@@ -1,39 +1,39 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         IChatHistoryProvider.cs
 // Author: Kyle L. Crowder
 // Build Num: 212853
 
 // Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         IChatHistoryProvider.cs
 // Author: Kyle L. Crowder
 // Build Num: 095140
 
 // Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         IChatHistoryProvider.cs
 // Author: Kyle L. Crowder
 // Build Num: 095140
 
 // Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         IChatHistoryProvider.cs
 // Author: Kyle L. Crowder
 // Build Num: 095140
 
 
 
-using DataIngestionLib.Models;
+using AgentAILib.Models;
 
 
 
 
-namespace DataIngestionLib.Contracts;
+namespace AgentAILib.Contracts;
 
 
 

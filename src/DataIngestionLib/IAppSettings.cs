@@ -1,13 +1,13 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         IAppSettings.cs
 // Author: Kyle L. Crowder
 // Build Num: 212926
 
 
 
-namespace DataIngestionLib;
+namespace AgentAILib;
 
 
 

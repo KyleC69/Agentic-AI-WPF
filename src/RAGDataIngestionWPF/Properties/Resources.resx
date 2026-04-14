@@ -257,7 +257,7 @@
     <value>Open or close navigation</value>
   </data>
   <data name="AppDisplayName" xml:space="preserve">
-    <value>RAGDataIngestionWPF</value>
+    <value>AgenticAIWPF</value>
   </data>
   <data name="SettingsPageChatHistoryGroupBoxTitle" xml:space="preserve">
     <value>AI Settings</value>

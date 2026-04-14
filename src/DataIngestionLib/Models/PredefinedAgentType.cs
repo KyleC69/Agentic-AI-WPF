@@ -11,7 +11,7 @@
 
 
 
-namespace DataIngestionLib.Models;
+namespace AgentAILib.Models;
 
 
 

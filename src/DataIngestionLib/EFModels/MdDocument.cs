@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DataIngestionLib.EFModels;
+namespace AgentAILib.EFModels;
 
 public partial class MdDocument
 {

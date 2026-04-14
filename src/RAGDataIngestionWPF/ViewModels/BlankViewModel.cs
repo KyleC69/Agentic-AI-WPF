@@ -1,20 +1,20 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         BlankViewModel.cs
 // Author: Kyle L. Crowder
 // Build Num: 212938
 
 
 
+using AgentAILib.Agents;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 
-using DataIngestionLib.Agents;
 
 
 
-
-namespace RAGDataIngestionWPF.ViewModels;
+namespace AgenticAIWPF.ViewModels;
 
 
 

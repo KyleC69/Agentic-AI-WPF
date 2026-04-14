@@ -1,4 +1,4 @@
-namespace RAGDataIngestionWPF.Contracts.Services;
+﻿namespace AgenticAIWPF.Contracts.Services;
 
 public interface IRuntimeAppSettingsService
 {

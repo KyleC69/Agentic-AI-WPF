@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         IPageService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212930
@@ -12,7 +12,7 @@ using System.Windows.Controls;
 
 
 
-namespace RAGDataIngestionWPF.Contracts.Services;
+namespace AgenticAIWPF.Contracts.Services;
 
 
 

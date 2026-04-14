@@ -1,13 +1,13 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         INavigationAware.cs
 // Author: Kyle L. Crowder
 // Build Num: 212930
 
 
 
-namespace RAGDataIngestionWPF.Contracts.ViewModels;
+namespace AgenticAIWPF.Contracts.ViewModels;
 
 
 

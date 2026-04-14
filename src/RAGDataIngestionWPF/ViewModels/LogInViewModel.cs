@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         LogInViewModel.cs
 // Author: Kyle L. Crowder
 // Build Num: 212940
@@ -10,14 +10,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using RAGDataIngestionWPF.Core.Contracts.Services;
-using RAGDataIngestionWPF.Core.Helpers;
-using RAGDataIngestionWPF.Properties;
+using AgenticAIWPF.Core.Contracts.Services;
+using AgenticAIWPF.Core.Helpers;
+using AgenticAIWPF.Properties;
 
 
 
 
-namespace RAGDataIngestionWPF.ViewModels;
+namespace AgenticAIWPF.ViewModels;
 
 
 

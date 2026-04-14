@@ -1,6 +1,6 @@
-// Build Date: 2026/04/06
+﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         RagDataService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212914
@@ -9,8 +9,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-using DataIngestionLib.Contracts;
-using DataIngestionLib.EFModels;
+using AgentAILib.Contracts;
+using AgentAILib.EFModels;
 
 using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
@@ -23,7 +23,7 @@ using Newtonsoft.Json;
 
 
 
-namespace DataIngestionLib.Services;
+namespace AgentAILib.Services;
 
 
 

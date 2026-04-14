@@ -9,7 +9,7 @@
 //
 //
 
-namespace DataIngestionLib.Boundaries;
+namespace AgentAILib.Boundaries;
 
 public class HostWhitelist
 {

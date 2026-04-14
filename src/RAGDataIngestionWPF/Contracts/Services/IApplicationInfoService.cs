@@ -1,13 +1,13 @@
 ﻿// Build Date: 2026/04/06
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
 // File:         IApplicationInfoService.cs
 // Author: Kyle L. Crowder
 // Build Num: 212929
 
 
 
-namespace RAGDataIngestionWPF.Contracts.Services;
+namespace AgenticAIWPF.Contracts.Services;
 
 
 

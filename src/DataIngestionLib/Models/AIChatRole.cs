@@ -1,6 +1,6 @@
 ﻿// Build Date: 2026/04/06
 // Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
+// Project:   AgentAILib
 // File:         AIChatRole.cs
 // Author: Kyle L. Crowder
 // Build Num: 212903
@@ -20,7 +20,7 @@ using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 
 
-namespace DataIngestionLib.Models;
+namespace AgentAILib.Models;
 
 
 

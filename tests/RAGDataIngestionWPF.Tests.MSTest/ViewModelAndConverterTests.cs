@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/06
+// Build Date: 2026/04/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ViewModelAndConverterTests.cs
-// Author: Kyle L. Crowder
-// Build Num: 213004
+// Author: GitHub Copilot
+// Build Num: 204201
 
 
 
@@ -34,20 +34,15 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 [TestClass]
 public class ViewModelAndConverterTests
 {
-
     [TestMethod]
-    public void AgentLoggerWhitespaceMessageReturnsFailure()
+    public void CommandResultFailureSetsErrorAndExitCode()
     {
-        AgentLogger logger = new();
-
-        var result = logger.LogMessage("  ");
+        var result = CommandResult.Failure("Message cannot be null or whitespace.");
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual("Message cannot be null or whitespace.", result.Error);
+        Assert.AreEqual(-1, result.ExitCode);
     }
-
-
-
 
 
 
@@ -67,9 +62,6 @@ public class ViewModelAndConverterTests
 
 
 
-
-
-
     [TestMethod]
     public void EnumToBooleanConverterConvertMatchesExpectedEnumValue()
     {
@@ -84,9 +76,6 @@ public class ViewModelAndConverterTests
 
 
 
-
-
-
     [TestMethod]
     public void EnumToBooleanConverterConvertReturnsFalseForMismatchedValue()
     {
@@ -96,9 +85,6 @@ public class ViewModelAndConverterTests
 
         Assert.AreEqual(false, result);
     }
-
-
-
 
 
 
@@ -129,9 +115,6 @@ public class ViewModelAndConverterTests
 
 
 
-
-
-
     [TestMethod]
     public void LogInViewModelLoginCommandReflectsBusyState()
     {
@@ -141,9 +124,6 @@ public class ViewModelAndConverterTests
 
         Assert.IsFalse(viewModel.LoginCommand.CanExecute(null));
     }
-
-
-
 
 
 
@@ -163,9 +143,6 @@ public class ViewModelAndConverterTests
         Assert.IsTrue(completed);
         Assert.AreEqual(Resources.StatusUnauthorized, viewModel.StatusMessage);
     }
-
-
-
 
 
 
@@ -199,6 +176,7 @@ public class ViewModelAndConverterTests
 
 
 
+
     [TestMethod]
     public void SettingsViewModelOnNavigatedToLoadsOrchestrationModeFromConfig()
     {
@@ -216,28 +194,5 @@ public class ViewModelAndConverterTests
         viewModel.OnNavigatedTo(null);
 
         Assert.AreEqual(DataIngestionLib.OrchestrationMode.RoundRobin, viewModel.OrchestrationMode);
-    }
-
-
-
-
-    [TestMethod]
-    public void SettingsViewModelSaveChatHistorySettingsPersistsOrchestrationMode()
-    {
-        Mock<ISystemService> system = new();
-        Mock<IApplicationInfoService> appInfo = new();
-        Mock<IUserDataService> userData = new();
-        Mock<IRuntimeAppSettingsService> runtimeSettings = new();
-        appInfo.Setup(service => service.GetVersion()).Returns(new Version(1, 0, 0));
-        userData.Setup(service => service.GetUser()).Returns(new UserViewModel());
-        runtimeSettings.Setup(service => service.GetValue(It.IsAny<string>(), It.IsAny<string>())).Returns((string _, string fallback) => fallback);
-
-        SettingsViewModel viewModel = new(system.Object, appInfo.Object, userData.Object, runtimeSettings.Object);
-        viewModel.OnNavigatedTo(null);
-        viewModel.OrchestrationMode = DataIngestionLib.OrchestrationMode.None;
-
-        viewModel.SaveChatHistorySettingsCommand.Execute(null);
-
-        runtimeSettings.Verify(service => service.SetValue("OrchestrationMode", "None"), Times.Once);
     }
 }

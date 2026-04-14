@@ -13,8 +13,8 @@
 
 using CommunityToolkit.Diagnostics;
 
-using DataIngestionLib.Contracts;
-using DataIngestionLib.Services;
+using AgentAILib.Contracts;
+using AgentAILib.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 
 
-namespace DataIngestionLib.Providers;
+namespace AgentAILib.Providers;
 
 
 

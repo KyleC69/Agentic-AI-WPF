@@ -6,9 +6,9 @@
   <Project Path="SolutionFix/SolutionFix.csproj">
     <Build Project="false" />
   </Project>
-  <Project Path="src/DataIngestionLib/DataIngestionLib.csproj" />
-  <Project Path="src/RAGDataIngestionWPF.Core/RAGDataIngestionWPF.Core.csproj" />
-  <Project Path="src/RAGDataIngestionWPF/RAGDataIngestionWPF.csproj" />
+  <Project Path="src/DataIngestionLib/AgentAILib.csproj" />
+  <Project Path="src/RAGDataIngestionWPF.Core/AgenticAIWPF.Core.csproj" />
+  <Project Path="src/RAGDataIngestionWPF/AgenticAIWPF.csproj" />
   <Project Path="tests/RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj">
     <Build Solution="Debug|*" Project="false" />
   </Project>
