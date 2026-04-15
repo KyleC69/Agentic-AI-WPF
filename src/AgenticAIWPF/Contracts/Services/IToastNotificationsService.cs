@@ -22,6 +22,8 @@ public interface IToastNotificationsService
 {
     void ShowToastNotification(ToastNotification toastNotification);
 
+    void ShowToastNotification(string title, string message);
+
 
     void ShowToastNotificationSample();
 }

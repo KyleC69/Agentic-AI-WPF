@@ -15,8 +15,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 
 using AgenticAIWPF.ViewModels;
-
-using MdXaml;
+using AgenticAIWPF.Helpers;
 
 
 
@@ -45,11 +44,9 @@ public sealed partial class MainPage
         DataContext = viewModel;
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
-        ReadMarkdownAndSetViewer();
-
-
-
     }
+
+
 
 
 
@@ -174,10 +171,6 @@ public sealed partial class MainPage
 
 
 
-    private void ReadMarkdownAndSetViewer()
-    {
-        Markdown.DoText("");
-    }
 
 
 

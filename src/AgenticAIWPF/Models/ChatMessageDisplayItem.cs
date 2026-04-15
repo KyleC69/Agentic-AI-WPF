@@ -24,6 +24,11 @@ namespace AgenticAIWPF.Models;
 /// </summary>
 public sealed record ChatMessageDisplayItem(string Text, string Role, DateTime CreateAt)
 {
+    public bool IsUser
+    {
+        get { return string.Equals(Role, ChatRole.User.ToString(), StringComparison.OrdinalIgnoreCase); }
+    }
+
     /// <summary>
     ///     Creates a display item from an AI chat role and message text so the UI can bind to stable, presentation-focused
     ///     values.

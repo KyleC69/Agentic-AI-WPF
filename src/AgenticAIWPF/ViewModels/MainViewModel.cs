@@ -20,6 +20,7 @@ using AgentAILib.Models;
 using AgentAILib.Services;
 
 using AgenticAIWPF.Contracts.ViewModels;
+using AgenticAIWPF.Models;
 
 using CommunityToolkit.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -136,7 +137,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
     } = string.Empty;
 
-    public ObservableCollection<ChatMessage> Messages { get; }
+    public ObservableCollection<ChatMessageDisplayItem> Messages { get; }
     public IAsyncRelayCommand NewConvoCommand { get; }
 
     public AIModelDescriptor SelectedModel
@@ -320,7 +321,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             var history = await _chatConversationService.LoadConversationHistoryAsync(_tokenSource.Token).ConfigureAwait(false);
             foreach (ChatMessage chatMessage in history)
             {
-                Messages.Add(chatMessage);
+                AddMessage(chatMessage);
             }
         }
         catch (OperationCanceledException)
@@ -462,62 +463,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    /// <summary>
-    ///     Searchs for code blocks and wraps with copy controls
-    /// </summary>
-    /// <param name="result"></param>
-    private static ChatMessage PreprocessMessage(ChatMessage original)
-    {
-        Guard.IsNotNull(original);
-
-        var originalText = original.Text ?? string.Empty;
-        var rewrittenText = Regex.Replace(originalText, @"(?ms)^```[^\r\n]*\r?\n[\s\S]*?^```[ \t]*(?=\r?\n|$)", static match => WrapCodeBlock(match.Value));
-
-        ChatMessage rewrittenMessage = new(original.Role, rewrittenText) { AuthorName = original.AuthorName, CreatedAt = original.CreatedAt, MessageId = original.MessageId, RawRepresentation = original.RawRepresentation };
-
-        if (original.AdditionalProperties is not null)
-        {
-            rewrittenMessage.AdditionalProperties = [];
-            foreach (var property in original.AdditionalProperties)
-            {
-                rewrittenMessage.AdditionalProperties[property.Key] = property.Value;
-            }
-        }
-
-        return rewrittenMessage;
-
-
-
-        static string WrapCodeBlock(string fencedBlock)
-        {
-            var codeToCopy = ExtractCodeContent(fencedBlock);
-            var encodedCode = WebUtility.HtmlEncode(codeToCopy);
-            StringBuilder builder = new();
-            _ = builder.AppendLine("<div class=\"chat-code-block\">");
-            _ = builder.AppendLine($"<button class=\"chat-code-copy-button\" data-copy=\"{encodedCode}\">Copy</button>");
-            _ = builder.AppendLine();
-            _ = builder.Append(fencedBlock);
-            _ = builder.AppendLine();
-            _ = builder.Append("</div>");
-            return builder.ToString();
-        }
-
-
-
-        static string ExtractCodeContent(string fencedBlock)
-        {
-            var normalizedBlock = fencedBlock.Replace("\r\n", "\n");
-            var lines = normalizedBlock.Split('\n');
-            if (lines.Length <= 2)
-            {
-                return string.Empty;
-            }
-
-            return string.Join(Environment.NewLine, lines.Skip(1).Take(lines.Length - 2));
-        }
-    }
-
-
 
 
 
@@ -536,6 +481,18 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
 
         _ = dispatcher.InvokeAsync(updateAction);
+    }
+
+    private void AddMessage(ChatMessage chatMessage)
+    {
+        ArgumentNullException.ThrowIfNull(chatMessage);
+
+        Messages.Add(ChatMessageDisplayItem.Create(chatMessage.Role, chatMessage.Text ?? string.Empty, DateTime.Now));
+    }
+
+    private void AddMessage(ChatRole role, string text)
+    {
+        Messages.Add(ChatMessageDisplayItem.Create(role, text, DateTime.Now));
     }
 
 
@@ -573,7 +530,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
 
         //Add Users message to UI collection
-        Messages.Add(new ChatMessage(ChatRole.User, content));
+        AddMessage(ChatRole.User, content);
 
         //Clear UI input
         MessageInput = string.Empty;
@@ -583,20 +540,19 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             //  var result = await _workflow.ExecuteWorkflow(content).ConfigureAwait(true);
 
             ChatMessage result = await _chatConversationService.SendRequestToModelAsync(content, _tokenSource.Token);
-            result = PreprocessMessage(result);
-            Messages.Add(result);
+            AddMessage(result);
             //  Messages.Add(new ChatMessage(ChatRole.Assistant, result));
         }
         catch (OperationCanceledException e)
         {
             _logger.LogError(e, "Error running workflow");
-            Messages.Add(new ChatMessage(ChatRole.Assistant, $"Error running workflow: {e.Message}"));
+            AddMessage(ChatRole.Assistant, $"Error running workflow: {e.Message}");
 
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error running workflow");
-            Messages.Add(new ChatMessage(ChatRole.Assistant, $"Error running workflow: {ex.Message}"));
+            AddMessage(ChatRole.Assistant, $"Error running workflow: {ex.Message}");
         }
 
     }

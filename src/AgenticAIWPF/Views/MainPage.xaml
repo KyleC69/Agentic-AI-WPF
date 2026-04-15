@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mdxam="clr-namespace:MdXaml;assembly=MdXaml"
+    xmlns:controls="clr-namespace:AgenticAIWPF.Controls"
     xmlns:properties="clr-namespace:AgenticAIWPF.Properties"
     xmlns:models="clr-namespace:AgenticAIWPF.Models"
     xmlns:Models1="clr-namespace:AgentAILib.Models;assembly=AgentAILib"
@@ -11,6 +11,14 @@
     Style="{DynamicResource MahApps.Styles.Page}"
     mc:Ignorable="d" Width="1400" Height="1000"
     Background="{DynamicResource MahApps.Brushes.Window.Background.Backdrop.Acrylic}">
+
+    <Page.Resources>
+        <models:MarkdownRenderOptions
+            x:Key="ChatMarkdownRenderOptions"
+            ShowCopyToast="True"
+            CopyToastTitle="Clipboard Updated"
+            CopyToastMessageFormat="{}{0} sent to clipboard." />
+    </Page.Resources>
 
 
     <Grid DataContext="{Binding}">
@@ -84,7 +92,7 @@
                          ScrollViewer.VerticalScrollBarVisibility="Visible"
                          ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                     <ListBox.ItemTemplate>
-                        <DataTemplate DataType="{x:Type models:MessageDisplay}">
+                        <DataTemplate DataType="{x:Type models:ChatMessageDisplayItem}">
                             <Border
                                 Margin="0"
                                 Padding="8"
@@ -108,37 +116,12 @@
                                     <TextBlock
                                         FontWeight="SemiBold"
                                         Text="{Binding Role}" />
-                                    <mdxam:MarkdownScrollViewer x:Name="mdScroller"
-                                                                Margin="0,6,0,0"
-                                                                HorizontalAlignment="Stretch"
-                                                                IsSelectionEnabled="True"
-                                                                Markdown="{Binding Text}"
-
-                                                                Foreground="DarkSlateGray"
-                                                                PreviewMouseWheel="OnPreviewMouseWheel"
-                                                                Background="BurlyWood"
-                                                                VerticalScrollBarVisibility="Visible"
-                                                                MarkdownStyleName="SasaBune" Syntax="MdXaml">
-
-
-                                        <mdxam:MarkdownScrollViewer.Resources>
-                                            <Style TargetType="{x:Type TableRowGroup}">
-                                                <Setter Property="Background" Value="DarkGray" />
-                                            </Style>
-                                            <Style TargetType="{x:Type TableCell}">
-                                                <Setter Property="BorderThickness" Value="0.5" />
-                                                <Setter Property="BorderBrush" Value="Gray" />
-                                                <Setter Property="Padding" Value="2" />
-                                                <Style.Triggers>
-                                                    <DataTrigger
-                                                        Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType={x:Type TableRow}, Mode=FindAncestor}}"
-                                                        Value="EvenTableRow">
-                                                        <Setter Property="Background" Value="#AAFFAA" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </mdxam:MarkdownScrollViewer.Resources>
-                                    </mdxam:MarkdownScrollViewer>
+                                    <controls:MarkdownRendererControl
+                                        Margin="0,6,0,0"
+                                        HorizontalAlignment="Stretch"
+                                        Markdown="{Binding Text}"
+                                        RenderOptions="{StaticResource ChatMarkdownRenderOptions}"
+                                        PreviewMouseWheel="OnPreviewMouseWheel" />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

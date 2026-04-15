@@ -17,6 +17,7 @@ using System.Windows.Documents;
 using AgentAILib.History.HistoryModels;
 using AgentAILib.HistoryModels;
 
+using AgenticAIWPF.Controls;
 using AgenticAIWPF.Converters;
 using AgenticAIWPF.Core.Models;
 using AgenticAIWPF.Helpers;
@@ -103,6 +104,49 @@ public class CoverageBoostMiscTests
 
             Assert.IsTrue(rich.Blocks.Count >= 5);
             Assert.AreSame(Binding.DoNothing, converter.ConvertBack(rich, typeof(string), null, System.Globalization.CultureInfo.InvariantCulture));
+        });
+    }
+
+
+
+
+
+
+    [TestMethod]
+    public void MarkdownConverterRendersFencedCodeBlocksAsInteractiveControls()
+    {
+        StaTestHelper.Run(() =>
+        {
+            const string markdown = "```csharp\nConsole.WriteLine(\"x\");\n```";
+
+            FlowDocument document = MarkdownToFlowDocumentConverter.ConvertToFlowDocument(markdown);
+            BlockUIContainer codeBlock = document.Blocks.OfType<BlockUIContainer>().Single();
+            MarkdownCodeBlockControl control = (MarkdownCodeBlockControl)codeBlock.Child;
+
+            Assert.AreEqual("csharp", control.CodeLanguage);
+            StringAssert.Contains(control.Code, "Console.WriteLine");
+        });
+    }
+
+
+
+
+
+
+    [TestMethod]
+    public void MarkdownConverterRendersHtmlAnchorTextWithoutTypeNames()
+    {
+        StaTestHelper.Run(() =>
+        {
+            const string markdown = "Paragraph with <a href=\"https://example.com\">Example Link</a>.";
+
+            FlowDocument document = MarkdownToFlowDocumentConverter.ConvertToFlowDocument(markdown);
+            string renderedText = new TextRange(document.ContentStart, document.ContentEnd).Text;
+            Paragraph paragraph = document.Blocks.OfType<Paragraph>().Single();
+
+            StringAssert.Contains(renderedText, "Example Link");
+            StringAssert.DoesNotContain(renderedText, "HtmlInline");
+            Assert.IsTrue(paragraph.Inlines.OfType<Hyperlink>().Any());
         });
     }
 

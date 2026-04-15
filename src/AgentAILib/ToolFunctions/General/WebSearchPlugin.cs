@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
-// Project:   AgentAILib
-// File:         WebSearchPlugin.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 194510
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -13,8 +17,6 @@ using System.Text;
 using System.Text.Json;
 
 using AgentAILib.ToolFunctions.Utils;
-
-using Microsoft.Extensions.Logging;
 
 
 
@@ -29,7 +31,6 @@ public sealed class WebSearchPlugin
 {
     private readonly HttpClient _httpClient;
 
-    private readonly ILogger _logger;
 
     private static readonly JsonSerializerOptions WriteOptions = new() { PropertyNameCaseInsensitive = true, WriteIndented = true };
 
@@ -40,7 +41,7 @@ public sealed class WebSearchPlugin
 
 
 
-    public WebSearchPlugin(IHttpClientFactory client, ILogger logger)
+    public WebSearchPlugin(IHttpClientFactory client)
     {
         ArgumentNullException.ThrowIfNull(client);
         _httpClient = client.CreateClient(nameof(WebSearchPlugin));
@@ -165,19 +166,24 @@ public sealed class WebSearchPlugin
     public static string SanitizeControlCharacters(string input)
     {
         if (string.IsNullOrEmpty(input))
+        {
             return input;
+        }
 
         StringBuilder sb = new(input.Length);
 
         foreach (var c in input)
+        {
             if (char.IsControl(c) && c != '\t' && c != '\n' && c != '\r')
             {
-                sb.Append(' '); // Replace with space
+                _ = sb.Append(' ');
+                // Replace with space
             }
             else
             {
-                sb.Append(c);
+                _ = sb.Append(c);
             }
+        }
 
         return sb.ToString();
     }

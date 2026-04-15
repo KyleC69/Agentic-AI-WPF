@@ -43,6 +43,11 @@ public sealed partial class App : Application
         get { return (App)Current; }
     }
 
+    public IServiceProvider Services
+    {
+        get { return _host?.Services ?? throw new InvalidOperationException("The application host is not available."); }
+    }
+
 
 
 

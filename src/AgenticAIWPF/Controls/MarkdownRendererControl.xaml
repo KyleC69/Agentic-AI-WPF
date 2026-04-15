@@ -1,0 +1,21 @@
+﻿<UserControl
+    x:Class="AgenticAIWPF.Controls.MarkdownRendererControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="240"
+    d:DesignWidth="720">
+
+    <RichTextBox Width="1200"
+        x:Name="DocumentViewer"
+        Background="Transparent"
+        BorderThickness="0"
+        HorizontalScrollBarVisibility="Disabled"
+        IsDocumentEnabled="True"
+        IsReadOnly="True"
+        IsReadOnlyCaretVisible="True"
+        Padding="0"
+        VerticalScrollBarVisibility="Disabled" />
+</UserControl>
