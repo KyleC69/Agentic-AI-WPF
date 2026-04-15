@@ -42,8 +42,6 @@ public sealed class PageService : IPageService
         Configure<MainViewModel, MainPage>();
         Configure<BlankViewModel, BlankPage>();
         Configure<ListDetailsViewModel, ListDetailsPage>();
-        Configure<DataGridViewModel, DataGridPage>();
-        Configure<WebViewViewModel, WebViewPage>();
         Configure<SettingsViewModel, SettingsPage>();
     }
 

@@ -185,10 +185,6 @@ public static class ServiceCollectionRegistrationExtensions
         _ = services.AddTransient<BlankPage>();
         _ = services.AddTransient<ListDetailsViewModel>();
         _ = services.AddTransient<ListDetailsPage>();
-        _ = services.AddTransient<DataGridViewModel>();
-        _ = services.AddTransient<DataGridPage>();
-        _ = services.AddTransient<WebViewViewModel>();
-        _ = services.AddTransient<WebViewPage>();
         _ = services.AddTransient<SettingsViewModel>();
         _ = services.AddTransient<SettingsPage>();
         _ = services.AddTransient<ILogInWindow, LogInWindow>();

@@ -31,6 +31,8 @@
 
 		<Compile Remove="Agents\GroupCodingAgent.cs" />
 
+		<Compile Remove="DocIngestion\DocIngestionPipeline.cs" />
+
 		<Compile Remove="DocIngestion\IngestQualityControl.cs" />
 	</ItemGroup>
 
