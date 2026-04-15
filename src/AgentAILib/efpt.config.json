@@ -1,0 +1,102 @@
+﻿{
+   "CodeGenerationMode": 6,
+   "ContextClassName": "AIRemoteRagContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "IrregularWords": null,
+   "MinimumProductVersion": "2.6.1382",
+   "ModelNamespace": null,
+   "OutputContextPath": "EFModels",
+   "OutputPath": "EFModels",
+   "PluralRules": null,
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "AgentAILib",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "SingularRules": null,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[md_document_chunks]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[md_documents]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RemoteRAG]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Search_FullText]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Search_Hybrid]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Search_RAG_Advanced]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Search_SemanticKeyPhrases]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[sp_Generate_Embeddings]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[sp_GenerateKeywords]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[sp_LearnDocs_Search_Vector]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[sp_Remote_Search_Vector]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[sp_Update_md_Embeddings]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[usp_MDVectorSearch]",
+         "ObjectType": 1
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": false,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": true,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false,
+   "UseTypedTvpParameters": true
+}

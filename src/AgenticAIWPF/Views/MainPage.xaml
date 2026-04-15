@@ -1,0 +1,217 @@
+﻿<Page
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mdxam="clr-namespace:MdXaml;assembly=MdXaml"
+    xmlns:properties="clr-namespace:AgenticAIWPF.Properties"
+    xmlns:models="clr-namespace:AgenticAIWPF.Models"
+    xmlns:Models1="clr-namespace:AgentAILib.Models;assembly=AgentAILib"
+    x:Class="AgenticAIWPF.Views.MainPage"
+    Style="{DynamicResource MahApps.Styles.Page}"
+    mc:Ignorable="d" Width="1400" Height="1000"
+    Background="{DynamicResource MahApps.Brushes.Window.Background.Backdrop.Acrylic}">
+
+
+    <Grid DataContext="{Binding}">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="38" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Style="{StaticResource PageTitleStyle}" Text="{x:Static properties:Resources.MainPageTitle}" />
+        <Grid Grid.Row="1" Margin="4">
+            <Grid Margin="{StaticResource SmallTopBottomMargin}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="933*" />
+                    <ColumnDefinition Width="19*" />
+                    <ColumnDefinition Width="124" />
+                    <ColumnDefinition MinWidth="135" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel MinWidth="135" Grid.Row="1" Grid.Column="3" Orientation="Vertical" Margin="0">
+                    <GroupBox Header="Session" MinWidth="130" Padding="0">
+                        <Button Content="New Convo" x:Name="convoBtn" Margin="2,15,2,2"
+                                Command="{Binding NewConvoCommand}" />
+                    </GroupBox>
+                    <GroupBox Header="Models" MinWidth="130" Margin="0,20,0,0" Padding="0">
+                        <!-- Model selection combo box -->
+                        <ComboBox Margin="2,10,0,0" x:Name="ModelComboBox"
+                                  ItemsSource="{x:Static Models1:AIModels.ChatModels}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedItem="{Binding SelectedModel}" />
+                    </GroupBox>
+                    <GroupBox Margin="0,20,0,0" Header="Orchestration" MinWidth="130">
+                        <StackPanel Orientation="Vertical">
+                            <CheckBox Margin="0,10,0,0" Content="Group" />
+                            <CheckBox Content="Simple Single" IsChecked="True" />
+                            <CheckBox Content="Coding Team" />
+                        </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+                <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding TotalTokenCount, StringFormat=Total tokens: \{0\} / 130000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding SessionTokenCount, StringFormat=Chat tokens: \{0\} / 100000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding SystemTokenCount, StringFormat=System tokens: \{0\} / 5000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding RagTokenCount, StringFormat=Rag tokens: \{0\} / 10000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding ToolTokenCount, StringFormat=Tool tokens: \{0\} / 3000}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding InputTokenCount, StringFormat=Input tokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding OutputTokenCount, StringFormat=Outputtokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding CachedInputTokenCount, StringFormat=Cached tokens: \{0\}}" />
+                    <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding ReasoningTokenCount, StringFormat=Reasoning tokens: \{0\}}" />
+                </StackPanel>
+                <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                         x:Name="MessagesListBox"
+                         Margin="2,0,2,0"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ItemsSource="{Binding Messages}"
+                         HorizontalContentAlignment="Stretch"
+                         ScrollViewer.CanContentScroll="False"
+                         ScrollViewer.VerticalScrollBarVisibility="Visible"
+                         ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:MessageDisplay}">
+                            <Border
+                                Margin="0"
+                                Padding="8"
+                                MaxWidth="1250"
+                                HorizontalAlignment="Left"
+                                Background="LightBlue">
+                                <Border.Style>
+                                    <Style TargetType="{x:Type Border}">
+                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                        <Setter Property="Background" Value="BurlyWood" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsUser}" Value="True">
+                                                <Setter Property="HorizontalAlignment" Value="Right" />
+                                                <Setter Property="Background"
+                                                        Value="BurlyWood" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <TextBlock
+                                        FontWeight="SemiBold"
+                                        Text="{Binding Role}" />
+                                    <mdxam:MarkdownScrollViewer x:Name="mdScroller"
+                                                                Margin="0,6,0,0"
+                                                                HorizontalAlignment="Stretch"
+                                                                IsSelectionEnabled="True"
+                                                                Markdown="{Binding Text}"
+
+                                                                Foreground="DarkSlateGray"
+                                                                PreviewMouseWheel="OnPreviewMouseWheel"
+                                                                Background="BurlyWood"
+                                                                VerticalScrollBarVisibility="Visible"
+                                                                MarkdownStyleName="SasaBune" Syntax="MdXaml">
+
+
+                                        <mdxam:MarkdownScrollViewer.Resources>
+                                            <Style TargetType="{x:Type TableRowGroup}">
+                                                <Setter Property="Background" Value="DarkGray" />
+                                            </Style>
+                                            <Style TargetType="{x:Type TableCell}">
+                                                <Setter Property="BorderThickness" Value="0.5" />
+                                                <Setter Property="BorderBrush" Value="Gray" />
+                                                <Setter Property="Padding" Value="2" />
+                                                <Style.Triggers>
+                                                    <DataTrigger
+                                                        Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType={x:Type TableRow}, Mode=FindAncestor}}"
+                                                        Value="EvenTableRow">
+                                                        <Setter Property="Background" Value="#AAFFAA" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </mdxam:MarkdownScrollViewer.Resources>
+                                    </mdxam:MarkdownScrollViewer>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <Grid Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" Grid.ColumnSpan="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBox Grid.Row="0"
+                             Grid.Column="0"
+                             MinHeight="82"
+                             Margin="0,0,8,0"
+                             AcceptsReturn="True"
+                             VerticalContentAlignment="Top"
+                             KeyDown="UIElement_OnKeyDown"
+                             PreviewKeyDown="UIElement_OnPreviewKeyDown"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+
+                             Text="{Binding MessageInput, UpdateSourceTrigger=PropertyChanged}"
+                             Effect="{DynamicResource DropShadowBrush}"
+                             Style="{DynamicResource MahApps.Styles.TextBox}" />
+
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="1"
+                                Orientation="Vertical">
+                        <Button
+                            x:Name="SendBtn"
+                            Margin="8,0,0,8"
+                            MinWidth="96"
+                            Command="{Binding SendMessageCommand}"
+                            Content="Send" />
+                        <Button
+                            Margin="8,0,0,0"
+                            MinWidth="96"
+                            IsCancel="True"
+                            Command="{Binding CancelMessageCommand}"
+                            Content="Cancel" />
+                    </StackPanel>
+
+                    <ProgressBar
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Margin="0,8,0,0"
+                        Height="35"
+                        HorizontalAlignment="Stretch"
+                        IsIndeterminate="True"
+                        Orientation="Horizontal">
+                        <ProgressBar.Style>
+                            <Style TargetType="{x:Type ProgressBar}" BasedOn="{StaticResource {x:Type ProgressBar}}">
+                                <!-- Default state -->
+                                <Setter Property="Visibility" Value="Visible" />
+
+                                <Style.Triggers>
+                                    <!-- Hide when IsBusy is false -->
+                                    <DataTrigger Binding="{Binding IsBusy}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ProgressBar.Style>
+                    </ProgressBar>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="SolutionFix/SolutionFix.csproj">
+    <Build Project="false" />
+  </Project>
+  <Project Path="src/AgentAILib/AgentAILib.csproj" />
+  <Project Path="src/AgenticAIWPF.Core/AgenticAIWPF.Core.csproj" />
+  <Project Path="src/AgenticAIWPF/AgenticAIWPF.csproj" />
+  <Project Path="tests/AgenticAIWPF.Tests.MSTest/AgenticAIWPF.Tests.MSTest.csproj" />
+</Solution>

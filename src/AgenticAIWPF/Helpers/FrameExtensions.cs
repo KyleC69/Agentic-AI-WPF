@@ -1,0 +1,47 @@
+﻿// Build Date: 2026/04/14
+// Solution: AgenticAIWPF
+// Project:   AgenticAIWPF
+// File:         FrameExtensions.cs
+// Author: Kyle L. Crowder
+// Build Num: 194529
+
+
+
+using System.Diagnostics.CodeAnalysis;
+using System.Windows;
+using System.Windows.Controls;
+
+
+
+
+namespace AgenticAIWPF.Helpers;
+
+
+
+
+
+public static class FrameExtensions
+{
+
+    public static void CleanNavigation([NotNull] this Frame frame)
+    {
+        while (frame.CanGoBack)
+        {
+            _ = frame.RemoveBackEntry();
+        }
+    }
+
+
+
+
+
+
+
+
+    [return: MaybeNull]
+    public static object GetDataContext([NotNull] this Frame frame)
+    {
+        return frame.Content is FrameworkElement element ? element.DataContext : null;
+
+    }
+}
