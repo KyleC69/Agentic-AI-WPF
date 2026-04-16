@@ -1,22 +1,22 @@
 ﻿---
-
 name: README.md
 description: README for AgenticAIWPF repository
-updated: 2026-04-02
-
+updated: 2026-04-16
 ---
 
 Last Update: 4/2/2026
 
 # AgenticAIWPF
 
-A WPF desktop application and supporting libraries demonstrates creating Agentic AI's with Microsoft's Agent Framework using local models, including tool function calling. The current implementation includes a SQL Server-based chat history provider and context enhancement injectors that can leverage new SQL Server 2025 features for vector search and vector embeddings to enhance the context retrieval capabilities. The project is designed to be extensible and adaptable, allowing for different configurations of context management and retrieval strategies as needed. Agent tools are designed as individual sets of functions Readonly diagnostic tools, and a set of more powerful tools that can modify the system state. The powerful tools are gated behind configuration settings and clearly marked in the UI to prevent accidental use, and the repository includes documentation and comments to highlight the potential risks associated with these tools.
+## Introduction
 
-**Hard limit to .Net10 by design to target Windows 10 at minimum.**
+    This is a WPF desktop application and chat library demonstrating the versatility and power of Microsoft's Agent Framework. The framework is desinged to be lightweight, but the flexibilty in agent creation and orchestration makes this extremely powerfull. Some of the features demonstrated here include SQL Server backed chat history, Context enrichment through middleware. I am using ollama as the inference provider and use both local models or cloud based with a control in the UI to select a different model for every task round. I have also tested preview model capabilities in Sql Server with fantastic results. I sent the model calls from SQL to reverse proxy, to ollama client on different machine and off to the model. Current features in SQL are small but the possibilities are very promising.
 
-*Status: active development. The current solution targets .NET 10 Windows TFMs and `AgentAILib` currently references Microsoft Agent Framework `1.0.0-rc4` packages.*
+    The default agent was designed to be a Windows System expert to investigate and identify system anomalies. The tools are sets of readonly diagnostic tools, and a set of more powerful tools that can modify the system state. This application was started before the agent framework was completed so some of the patterns used may no longer be valid or greatly expanded upon. To say the team has been working night and day doesn't quite tell the whole story, 20 or more comits a day is hard to keep up with. They just released version 1.00 of the framework, I urge anyone interested in creating their own AI app, whether for fun or for production to take the time and read the docs on the framework.
+    
+    **Warning** DO NOT enable potentially destructive tools without understanding the risks involved. This system lacks many of the safegaurds and recovery options built into mainstream AI Assistants. Use at your own risk, I accept no responsibility for stupidity.
 
-Project is not cross-platform nor intended to be. The focus is Agentic AI diagnostics of Windows systems, Windows 0 and above.
+
 
 ---
 ![Agentic Chat](src/AgenticAIWPF/Assets/AgenticChat.png)
@@ -116,7 +116,7 @@ The repository currently includes the following observable implementation areas:
 
 | Component | Package / Version |
 | --- | --- |
-| AI Agent Framework | `Microsoft.Agents.AI` 1.0.0-rc4 |
+| AI Agent Framework | `Microsoft.Agents.AI` 1.0.0 |
 | Agent Builder | `Microsoft.Agents.Builder` 1.5.60-beta |
 | AI Abstractions | `Microsoft.Extensions.AI` 10.4.1 |
 | LLM Provider | [OllamaSharp](https://github.com/awaescher/OllamaSharp) 5.4.24 |
