@@ -3,7 +3,7 @@
     <File Path=".editorconfig" />
     <File Path="README.md" />
   </Folder>
-  <Project Path="AgentConsole/AgentConsole.csproj" Id="2098b12c-701c-409f-ab82-45e3861c1e06" />
+  <Project Path="AgentConsole/AgentConsole.csproj" />
   <Project Path="SolutionFix/SolutionFix.csproj">
     <Build Project="false" />
   </Project>

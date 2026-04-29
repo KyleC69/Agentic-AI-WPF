@@ -25,7 +25,6 @@ using Microsoft.Extensions.AI;
 
 public sealed class ToolBuilder : IAIToolCatalog
 {
-    private readonly AITool _eventErrorsTool;
     private readonly AITool _eventLogSweepTool;
     private readonly AITool _fileContentsReadingTool;
     private readonly AITool _fileSystemWriterTool;
@@ -150,7 +149,6 @@ public sealed class ToolBuilder : IAIToolCatalog
         [
                 // Single-function tools
                 _webSearchTool,
-                _eventErrorsTool,
                 _powerShellTool,
                 _fileContentsReadingTool,
                 _installedUpdatesReadTool,

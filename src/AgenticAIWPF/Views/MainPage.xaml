@@ -4,16 +4,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:properties="clr-namespace:AgenticAIWPF.Properties"
-    xmlns:md="clr-namespace:Markdig.Wpf;assembly=Markdig.Wpf"
+    xmlns:md="MarkdownViewer.Wpf;assembly=MarkdownViewer"
     xmlns:models="clr-namespace:AgenticAIWPF.Models"
     xmlns:Models1="clr-namespace:AgentAILib.Models;assembly=AgentAILib"
+    xmlns:wpf="clr-namespace:MarkdownViewer.Wpf;assembly=MarkdownViewer.Wpf"
     x:Class="AgenticAIWPF.Views.MainPage"
     Style="{DynamicResource MahApps.Styles.Page}"
     mc:Ignorable="d" Width="1400" Height="1000"
     Background="{DynamicResource MahApps.Brushes.Window.Background.Backdrop.Acrylic}">
 
     <Page.Resources>
-        <Style TargetType="{x:Type md:MarkdownViewer}">
+        <Style TargetType="{x:Type wpf:MarkdownView}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -132,12 +133,17 @@
                                     <TextBlock
                                         FontWeight="SemiBold"
                                         Text="{Binding Role}" />
-                                    <md:MarkdownViewer
+                                    <wpf:MarkdownView
+                                        IsHitTestVisible="True"
+                                        IsEnabled="True"
+                                        IsManipulationEnabled="True"
+
                                         Margin="0,6,0,0"
                                         HorizontalAlignment="Stretch"
                                         Foreground="DimGray"
                                         Markdown="{Binding Text}"
-                                        PreviewMouseWheel="OnPreviewMouseWheel" />
+                                        PreviewMouseWheel="OnPreviewMouseWheel"
+                                          />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

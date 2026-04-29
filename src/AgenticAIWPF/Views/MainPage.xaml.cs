@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/14
+﻿// Build Date: 2026/04/29
 // Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         MainPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 194547
+// Build Num: 131302
 
 
 
@@ -15,7 +15,6 @@ using System.Windows.Media;
 using System.Windows.Threading;
 
 using AgenticAIWPF.ViewModels;
-using AgenticAIWPF.Helpers;
 
 
 
@@ -53,8 +52,6 @@ public sealed partial class MainPage
 
 
 
-
-
     public MainViewModel ViewModel { get; }
 
 
@@ -71,7 +68,9 @@ public sealed partial class MainPage
         while (parent != null)
         {
             if (parent is ScrollViewer scrollViewer)
+            {
                 return scrollViewer;
+            }
 
             parent = VisualTreeHelper.GetParent(parent);
         }
@@ -171,14 +170,6 @@ public sealed partial class MainPage
 
 
 
-
-
-
-
-
-
-
-
     private void ScrollMessagesToBottom()
     {
         if (MessagesListBox.Items.Count == 0)
@@ -223,7 +214,9 @@ public sealed partial class MainPage
 
         // Shift+Enter → allow newline
         if (e.Key == Key.Enter && Keyboard.Modifiers == ModifierKeys.Shift)
+        {
             return;
+        }
 
         // Enter alone → send
         if (e.Key == Key.Enter)

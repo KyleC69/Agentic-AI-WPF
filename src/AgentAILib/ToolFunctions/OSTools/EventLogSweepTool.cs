@@ -65,8 +65,14 @@ public sealed class EventLogSweepTool
             {
                 try
                 {
+                    using EventLogConfiguration? logConfiguration = TryReadLogConfiguration(session, logName);
+                    if (logConfiguration is not null && !logConfiguration.IsEnabled)
+                    {
+                        continue;
+                    }
                     
                     EventLogQuery query = new(logName, PathType.LogName, $"*[System[(Level=1 or Level=2 or Level=3) and TimeCreated[timediff(@SystemTime) <= {msWindow}]]]");
+                    query.TolerateQueryErrors = true;
 
                     using EventLogReader reader = new(query);
 
@@ -128,6 +134,22 @@ public sealed class EventLogSweepTool
         catch (Exception ex)
         {
             return ToolResult<List<EventSummary>>.Fail($"Failed to enumerate event logs: {ex.Message}");
+        }
+
+        static EventLogConfiguration? TryReadLogConfiguration(EventLogSession session, string logName)
+        {
+            try
+            {
+                return new EventLogConfiguration(logName, session);
+            }
+            catch (EventLogException)
+            {
+                return null;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return null;
+            }
         }
     }
 }

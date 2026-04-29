@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Net.Http;
 
 using AgentAILib.Models;
 
@@ -34,10 +35,13 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
     private readonly ILogger<TokenAccountingMiddleware> _logger;
 
     private readonly Action<TokenUsageSnapshot>? _tokenSnapshotSink;
+    private readonly Uri? _providerBaseUri;
     private const int CHARS_PER_TOKEN = 4;
     private const int MAX_JSON_DEPTH = 32;
+    private const int CONNECTION_GATE_TIMEOUT_SECONDS = 3;
 
     private static readonly object CategoryEventsGate = new();
+    private static readonly HttpClient ConnectivityHttpClient = new() { Timeout = TimeSpan.FromSeconds(CONNECTION_GATE_TIMEOUT_SECONDS) };
     private static readonly JsonSerializerOptions StrictJsonOptions = new() { MaxDepth = MAX_JSON_DEPTH };
     private static readonly JsonSerializerOptions CycleSafeJsonOptions = new() { MaxDepth = MAX_JSON_DEPTH, ReferenceHandler = ReferenceHandler.IgnoreCycles };
     private static CategoryCounts LastPublishedCounts;
@@ -49,12 +53,13 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
 
 
-    public TokenAccountingMiddleware(IChatClient innerClient, ILogger<TokenAccountingMiddleware> logger, Action<TokenUsageSnapshot>? tokenSnapshotSink = null) : base(innerClient)
+    public TokenAccountingMiddleware(IChatClient innerClient, ILogger<TokenAccountingMiddleware> logger, Uri? providerBaseUri = null, Action<TokenUsageSnapshot>? tokenSnapshotSink = null) : base(innerClient)
     {
         ArgumentNullException.ThrowIfNull(innerClient);
         ArgumentNullException.ThrowIfNull(logger);
 
         _logger = logger;
+        _providerBaseUri = providerBaseUri;
         _tokenSnapshotSink = tokenSnapshotSink;
     }
 
@@ -68,6 +73,11 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
     public override async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         MiddlewareRequestContext requestContext = await OnRequestAsync(messages, cancellationToken).ConfigureAwait(false);
+        (bool isReachable, string? failureReason) = await CheckProviderReachabilityAsync(cancellationToken).ConfigureAwait(false);
+        if (!isReachable)
+        {
+            throw new TimeoutException($"Model endpoint is unavailable before request execution. {failureReason}");
+        }
 
         ChatResponse response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
 
@@ -86,6 +96,12 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         MiddlewareRequestContext requestContext = await OnRequestAsync(messages, cancellationToken).ConfigureAwait(false);
+        (bool isReachable, string? failureReason) = await CheckProviderReachabilityAsync(cancellationToken).ConfigureAwait(false);
+        if (!isReachable)
+        {
+            throw new TimeoutException($"Model endpoint is unavailable before streaming request execution. {failureReason}");
+        }
+
         var estimatedStreamingOutputTokens = 0;
         UsageDetails? lastUsage = null;
         var sawAny = false;
@@ -420,6 +436,41 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
         PublishCategoryEvents(snapshot);
 
         return Task.CompletedTask;
+    }
+
+
+
+
+
+    private async Task<(bool IsReachable, string? FailureReason)> CheckProviderReachabilityAsync(CancellationToken cancellationToken)
+    {
+        if (_providerBaseUri is null)
+        {
+            return (true, null);
+        }
+
+        try
+        {
+            using HttpRequestMessage request = new(HttpMethod.Get, new Uri(_providerBaseUri, "/api/tags"));
+            using HttpResponseMessage response = await ConnectivityHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, null);
+            }
+
+            var reason = $"Status code {(int)response.StatusCode} ({response.StatusCode}) from {_providerBaseUri}.";
+            _logger.LogWarning("Model endpoint gate failed before request execution. {Reason}", reason);
+            return (false, reason);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Model endpoint gate failed before request execution. Endpoint: {Endpoint}", _providerBaseUri);
+            return (false, $"Endpoint {_providerBaseUri} is unreachable.");
+        }
     }
 
 
