@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/14
+﻿// Build Date: 2026/04/29
 // Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 194551
+// Build Num: 002916
 
 
 
@@ -37,15 +37,16 @@ public sealed partial class App : Application
 {
     private IHost? _host;
     private bool _isHostStarted;
+    private TerminalLogForwarder? _terminalLogForwarder;
 
     public static App CurrentApp
     {
-        get { return (App)Current; }
+        get => (App)Current;
     }
 
     public IServiceProvider Services
     {
-        get { return _host?.Services ?? throw new InvalidOperationException("The application host is not available."); }
+        get => _host?.Services ?? throw new InvalidOperationException("The application host is not available.");
     }
 
 
@@ -57,6 +58,8 @@ public sealed partial class App : Application
 
     private IHost BuildHost()
     {
+        _terminalLogForwarder = new TerminalLogForwarder(GetAppLocation());
+
         return Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c =>
                 {
@@ -67,6 +70,10 @@ public sealed partial class App : Application
                 {
                     ILoggingBuilder unused3 = logging.AddDebug();
                     ILoggingBuilder unused2 = logging.AddConsole();
+                    if (_terminalLogForwarder != null)
+                    {
+                        ILoggingBuilder unused0 = logging.AddProvider(new TerminalLoggerProvider(_terminalLogForwarder));
+                    }
                     // Set the host-level minimum to Trace so every message reaches
                     // the dynamic filter below. The LoggingLevelSwitch controls the
                     // effective minimum at runtime and is user-configurable from the
@@ -234,6 +241,8 @@ public sealed partial class App : Application
             _host.Dispose();
             _host = null;
             _isHostStarted = false;
+            _terminalLogForwarder?.Dispose();
+            _terminalLogForwarder = null;
         }
     }
 

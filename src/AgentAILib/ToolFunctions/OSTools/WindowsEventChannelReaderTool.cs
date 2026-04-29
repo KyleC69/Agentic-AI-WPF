@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
-// Project:   AgentAILib
-// File:         WindowsEventChannelReaderTool.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 194519
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -37,19 +41,10 @@ public sealed class WindowsEventChannelEntryDto
 
 public sealed class WindowsEventChannelReaderTool
 {
-    private const int DefaultMaxEvents = 20;
-    private const int MaxAllowedEvents = 50;
+    private const int DefaultMaxEvents = 50;
+    private const int MaxAllowedEvents = 100;
     private const int MaxMessageLength = 1200;
 
-    private static readonly HashSet<string> AllowedChannels =
-    [
-            "Application",
-            "System",
-            "Setup",
-            "Microsoft-Windows-Diagnostics-Performance/Operational",
-            "Microsoft-Windows-WMI-Activity/Operational",
-            "Microsoft-Windows-WindowsUpdateClient/Operational"
-    ];
 
 
 
@@ -57,9 +52,8 @@ public sealed class WindowsEventChannelReaderTool
 
 
 
-
-    [Description("Read recent entries from an allowlisted Windows event channel for local diagnostics.")]
-    public ToolResult<IReadOnlyList<WindowsEventChannelEntryDto>> ReadChannel([Description("Allowed event channel name, for example 'System' or 'Microsoft-Windows-Diagnostics-Performance/Operational'.")] string channelName, [Description("Maximum number of recent events to return. Range: 1 to 50.")] int maxEvents = DefaultMaxEvents)
+    [Description("Reads recent entries from a single event log on the Windows Host machine for local diagnostics.")]
+    public ToolResult<IReadOnlyList<WindowsEventChannelEntryDto>> ReadEventLogChannel([Description("Enter an event log name, for example 'System' or 'Microsoft-Windows-Diagnostics-Performance/Operational'.")] string channelName, [Description("Maximum number of recent events to return. Range: 1 to 50.")] int maxEvents = DefaultMaxEvents)
     {
         if (string.IsNullOrWhiteSpace(channelName))
         {
@@ -68,18 +62,18 @@ public sealed class WindowsEventChannelReaderTool
 
         if (!OperatingSystem.IsWindows())
         {
-            return ToolResult<IReadOnlyList<WindowsEventChannelEntryDto>>.Fail("Windows event channels are only supported on Windows.");
+            return ToolResult<IReadOnlyList<WindowsEventChannelEntryDto>>.Fail("Application only supports Windows clients.");
         }
 
-        if (maxEvents < 1 || maxEvents > MaxAllowedEvents)
+        if (maxEvents is < 1 or > MaxAllowedEvents)
         {
             return ToolResult<IReadOnlyList<WindowsEventChannelEntryDto>>.Fail($"maxEvents must be between 1 and {MaxAllowedEvents}.");
         }
 
-        var normalizedChannelName = AllowedChannels.FirstOrDefault(channel => string.Equals(channel, channelName.Trim(), StringComparison.OrdinalIgnoreCase));
-        if (normalizedChannelName == null)
+        var normalizedChannelName = channelName.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedChannelName))
         {
-            return ToolResult<IReadOnlyList<WindowsEventChannelEntryDto>>.Fail("Channel is not allowlisted for diagnostics.");
+            return ToolResult<IReadOnlyList<WindowsEventChannelEntryDto>>.Fail("Channel name cannot be empty.");
         }
 
         try
@@ -102,12 +96,12 @@ public sealed class WindowsEventChannelReaderTool
                 {
                     entries.Add(new WindowsEventChannelEntryDto
                     {
-                            EventId = record.Id,
-                            Level = record.LevelDisplayName ?? record.Level?.ToString() ?? "Unknown",
-                            LogName = availableChannel,
-                            Message = Truncate(TryFormatMessage(record)),
-                            ProviderName = Truncate(record.ProviderName ?? string.Empty, 128),
-                            TimeCreated = record.TimeCreated
+                        EventId = record.Id,
+                        Level = record.LevelDisplayName ?? record.Level?.ToString() ?? "Unknown",
+                        LogName = availableChannel,
+                        Message = Truncate(TryFormatMessage(record)),
+                        ProviderName = Truncate(record.ProviderName ?? string.Empty, 128),
+                        TimeCreated = record.TimeCreated
                     });
                 }
             }
@@ -137,12 +131,7 @@ public sealed class WindowsEventChannelReaderTool
 
     private static string Truncate(string value, int maxLength = MaxMessageLength)
     {
-        if (value.Length <= maxLength)
-        {
-            return value;
-        }
-
-        return value[..maxLength] + "...";
+        return value.Length <= maxLength ? value : value[..maxLength] + "...";
     }
 
 

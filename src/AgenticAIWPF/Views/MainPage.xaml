@@ -3,8 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:controls="clr-namespace:AgenticAIWPF.Controls"
     xmlns:properties="clr-namespace:AgenticAIWPF.Properties"
+    xmlns:md="clr-namespace:Markdig.Wpf;assembly=Markdig.Wpf"
     xmlns:models="clr-namespace:AgenticAIWPF.Models"
     xmlns:Models1="clr-namespace:AgentAILib.Models;assembly=AgentAILib"
     x:Class="AgenticAIWPF.Views.MainPage"
@@ -13,11 +13,27 @@
     Background="{DynamicResource MahApps.Brushes.Window.Background.Backdrop.Acrylic}">
 
     <Page.Resources>
-        <models:MarkdownRenderOptions
-            x:Key="ChatMarkdownRenderOptions"
-            ShowCopyToast="True"
-            CopyToastTitle="Clipboard Updated"
-            CopyToastMessageFormat="{}{0} sent to clipboard." />
+        <Style TargetType="{x:Type md:MarkdownViewer}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+
+        <Style TargetType="{x:Type FlowDocument}">
+            <Setter Property="PagePadding" Value="0" />
+            <Setter Property="TextAlignment" Value="Left" />
+        </Style>
+
+        <Style TargetType="{x:Type Paragraph}">
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style TargetType="{x:Type Hyperlink}">
+            <Setter Property="TextDecorations" Value="{x:Null}" />
+        </Style>
     </Page.Resources>
 
 
@@ -116,11 +132,11 @@
                                     <TextBlock
                                         FontWeight="SemiBold"
                                         Text="{Binding Role}" />
-                                    <controls:MarkdownRendererControl
+                                    <md:MarkdownViewer
                                         Margin="0,6,0,0"
                                         HorizontalAlignment="Stretch"
+                                        Foreground="DimGray"
                                         Markdown="{Binding Text}"
-                                        RenderOptions="{StaticResource ChatMarkdownRenderOptions}"
                                         PreviewMouseWheel="OnPreviewMouseWheel" />
                                 </StackPanel>
                             </Border>

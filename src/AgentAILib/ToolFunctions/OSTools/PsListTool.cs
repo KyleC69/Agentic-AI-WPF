@@ -1,9 +1,13 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
-// Project:   AgentAILib
-// File:         PsListTool.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 194516
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
 
 
 
@@ -24,7 +28,7 @@ namespace AgentAILib.ToolFunctions.OSTools;
 [Description("Lists all running processes with memory, CPU, and thread counts. Equivalent to Task Manager process list.")]
 public class PsListTool(CommandExecutor executor)
 {
-    private const string Command = "pslist.exe";
+    private const string Command = "pslist.exe -nobanner";
 
 
 
@@ -46,7 +50,7 @@ public class PsListTool(CommandExecutor executor)
 
 
 
-    [Description("Lists processes sorted by memory usage.")]
+    [Description("Lists processes memory usage details.")]
     public async Task<CommandResult> ListByMemory()
     {
         return await executor.ExecuteAsync(Command, "-m");
@@ -59,8 +63,8 @@ public class PsListTool(CommandExecutor executor)
 
 
 
-    [Description("Lists processes matching a name pattern.")]
-    public async Task<CommandResult> ListByName([Description("Process name to filter (e.g., 'chrome', 'svchost')")] string processName)
+    [Description("Shows the thread details for the given processName")]
+    public async Task<CommandResult> ListByName([Description("Process name to query (e.g., 'chrome', 'svchost')")] string processName)
     {
         return await executor.ExecuteAsync(Command, $"-d {processName}");
     }
@@ -72,9 +76,22 @@ public class PsListTool(CommandExecutor executor)
 
 
 
-    [Description("Shows detailed thread information for a process.")]
-    public async Task<CommandResult> ListThreads([Description("Process name or PID")] string process)
+    [Description("Shows process tree information for a process.")]
+    public async Task<CommandResult> ListProcessTree([Description("Process name or PID")] string process)
     {
         return await executor.ExecuteAsync(Command, $"-t {process}");
+    }
+
+
+
+
+
+
+
+
+    [Description("Shows processes, memory and thread information.")]
+    public async Task<CommandResult> ListThreads([Description("Process name or PID")] string process)
+    {
+        return await executor.ExecuteAsync(Command, $"-x {process}");
     }
 }

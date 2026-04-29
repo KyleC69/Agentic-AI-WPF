@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/14
+﻿// Build Date: 2026/04/28
 // Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         ServiceCollectionRegistrationExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: 194534
+// Build Num: 231935
 
 
 
@@ -70,7 +70,7 @@ public static class ServiceCollectionRegistrationExtensions
         _ = services.AddSingleton<HistoryIdentityService>();
         _ = services.AddSingleton<IHistoryIdentityService>(provider => provider.GetRequiredService<HistoryIdentityService>());
         // Single shared executor instance
-        CommandExecutor executor = new(defaultTimeoutMs: 30_000);
+        CommandExecutor executor = new();
 
         // Register all tools with DI container
         services.AddSingleton(executor);
@@ -81,8 +81,6 @@ public static class ServiceCollectionRegistrationExtensions
         services.AddTransient<NsLookupTool>();
         _ = services.AddHttpClient<WebSearchPlugin>();
         _ = services.AddSingleton<WebSearchPlugin>();
-        _ = services.AddSingleton<SandboxEventLogReader>();
-        _ = services.AddSingleton<EventErrorsTool>();
         _ = services.AddSingleton<PowerShellTool>();
         _ = services.AddSingleton<FileContentsReadingTool>(_ => new FileContentsReadingTool(HostWhitelist.AllowedRoots));
         _ = services.AddSingleton<FileSystemWriterTool>(_ => new FileSystemWriterTool(HostWhitelist.AllowedRoots));
@@ -97,6 +95,7 @@ public static class ServiceCollectionRegistrationExtensions
         _ = services.AddSingleton<ServiceHealthTool>();
         _ = services.AddSingleton<StartupInventoryTool>();
         _ = services.AddSingleton<StorageHealthTool>();
+        _ = services.AddSingleton<EventLogSweepTool>();
         _ = services.AddSingleton<WindowsEventChannelReaderTool>();
         _ = services.AddSingleton<WindowsWmiReaderTool>();
         _ = services.AddSingleton<ToolBuilder>();
@@ -183,8 +182,6 @@ public static class ServiceCollectionRegistrationExtensions
         _ = services.AddTransient<MainPage>();
         _ = services.AddTransient<BlankViewModel>();
         _ = services.AddTransient<BlankPage>();
-        _ = services.AddTransient<ListDetailsViewModel>();
-        _ = services.AddTransient<ListDetailsPage>();
         _ = services.AddTransient<SettingsViewModel>();
         _ = services.AddTransient<SettingsPage>();
         _ = services.AddTransient<ILogInWindow, LogInWindow>();

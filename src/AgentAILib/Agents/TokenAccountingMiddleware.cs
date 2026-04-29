@@ -10,6 +10,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using AgentAILib.Models;
 
@@ -34,9 +35,11 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
     private readonly Action<TokenUsageSnapshot>? _tokenSnapshotSink;
     private const int CHARS_PER_TOKEN = 4;
+    private const int MAX_JSON_DEPTH = 32;
 
     private static readonly object CategoryEventsGate = new();
-    private static readonly JsonSerializerOptions JsonOptions = new();
+    private static readonly JsonSerializerOptions StrictJsonOptions = new() { MaxDepth = MAX_JSON_DEPTH };
+    private static readonly JsonSerializerOptions CycleSafeJsonOptions = new() { MaxDepth = MAX_JSON_DEPTH, ReferenceHandler = ReferenceHandler.IgnoreCycles };
     private static CategoryCounts LastPublishedCounts;
 
 
@@ -229,8 +232,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
     private static int EstimateMessageTokens(ChatMessage message)
     {
-        var serialized = JsonSerializer.Serialize(message, JsonOptions);
-        return Math.Max(1, (int)Math.Ceiling(serialized.Length / (double)CHARS_PER_TOKEN));
+        return EstimateSerializedTokens(message);
     }
 
 
@@ -242,8 +244,30 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
     private static int EstimateStreamingUpdateTokens(ChatResponseUpdate update)
     {
-        var serialized = JsonSerializer.Serialize(update, JsonOptions);
-        return Math.Max(1, (int)Math.Ceiling(serialized.Length / (double)CHARS_PER_TOKEN));
+        return EstimateSerializedTokens(update);
+    }
+
+
+
+
+
+
+    private static int EstimateSerializedTokens<T>(T value)
+    {
+        try
+        {
+            var serialized = JsonSerializer.Serialize(value, StrictJsonOptions);
+            return Math.Max(1, (int)Math.Ceiling(serialized.Length / (double)CHARS_PER_TOKEN));
+        }
+        catch (JsonException)
+        {
+            var serialized = JsonSerializer.Serialize(value, CycleSafeJsonOptions);
+            return Math.Max(1, (int)Math.Ceiling(serialized.Length / (double)CHARS_PER_TOKEN));
+        }
+        catch
+        {
+            return 1;
+        }
     }
 
 

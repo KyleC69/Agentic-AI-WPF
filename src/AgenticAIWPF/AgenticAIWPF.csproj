@@ -24,29 +24,21 @@
 	  <Content Include="Assets\app-icon.ico" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <None Include="..\..\README.md">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
-	</ItemGroup>
-
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
 		<PackageReference Include="MahApps.Metro" Version="3.0.0-rc0529" />
-		<PackageReference Include="MdXaml" Version="2.0.0-pre202603081301" />
-		<PackageReference Include="MdXaml.Full" Version="2.0.0-pre202603081301" />
-		<PackageReference Include="MdXaml.Plugins" Version="2.0.0-pre202603081301" />
+		<PackageReference Include="Markdig.Wpf" Version="0.5.0.1" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />
-		<PackageReference Include="Markdig" Version="1.1.2" />
+		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
 	</ItemGroup>
 
 
 	<ItemGroup>
 	  <ProjectReference Include="..\AgentAILib\AgentAILib.csproj" />
 	  <ProjectReference Include="..\AgenticAIWPF.Core\AgenticAIWPF.Core.csproj" />
+      <ProjectReference Include="..\..\AgentConsole\AgentConsole.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 	<ItemGroup>
 		<Resource Include="Assets\DefaultIcon.png" />
@@ -91,6 +83,21 @@
 		<MakeDir Directories="$(ReleaseCopyOutputDir)" />
 		<Copy SourceFiles="@(BuildOutputFiles)" DestinationFiles="@(BuildOutputFiles->'$(ReleaseCopyOutputDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
 		<Message Text="Build output copied to $(ReleaseCopyOutputDir)" Importance="High" />	
+	</Target>
+
+	<Target Name="CopyAgentConsoleToOutput" AfterTargets="Build" DependsOnTargets="ResolveReferences">
+		<PropertyGroup>
+			<AgentConsoleProjectPath>$(MSBuildProjectDirectory)\..\..\AgentConsole\AgentConsole.csproj</AgentConsoleProjectPath>
+            <AgentConsoleOutputDir>$(MSBuildProjectDirectory)\..\..\AgentConsole\bin\$(Configuration)\net10.0\</AgentConsoleOutputDir>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<AgentConsoleOutputFiles Include="$(AgentConsoleOutputDir)AgentConsole.*" />
+		</ItemGroup>
+
+		<MSBuild Projects="$(AgentConsoleProjectPath)" Targets="Build" Properties="Configuration=$(Configuration)" />
+
+     <Copy SourceFiles="@(AgentConsoleOutputFiles)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
 	</Target>
 
 

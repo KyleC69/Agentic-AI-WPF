@@ -8,6 +8,7 @@
 
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using AgentAILib.Contracts;
 using AgentAILib.EFModels;
@@ -38,7 +39,11 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
     private readonly ILogger<SqlChatHistoryProvider> _logger;
     private readonly ProviderSessionState<HistoryIdentity> _sessionState;
 
-    private static readonly JsonSerializerOptions JsonOptions = new() { MaxDepth = 4, WriteIndented = true, IndentSize = 2 };
+    private const int CHARS_PER_TOKEN = 4;
+    private const int MAX_JSON_DEPTH = 32;
+
+    private static readonly JsonSerializerOptions StrictJsonOptions = new() { MaxDepth = MAX_JSON_DEPTH, WriteIndented = true, IndentSize = 2 };
+    private static readonly JsonSerializerOptions CycleSafeJsonOptions = new() { MaxDepth = MAX_JSON_DEPTH, WriteIndented = true, IndentSize = 2, ReferenceHandler = ReferenceHandler.IgnoreCycles };
 
 
 
@@ -139,8 +144,27 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
     private int EstimateTokenCount(ChatMessage message)
     {
-        var serialized = JsonSerializer.Serialize(message, JsonOptions);
-        return Math.Max(1, (int)Math.Ceiling(serialized.Length / (double)_charsPerToken));
+        try
+        {
+            var serialized = JsonSerializer.Serialize(message, StrictJsonOptions);
+            return Math.Max(1, (int)Math.Ceiling(serialized.Length / (double)CHARS_PER_TOKEN));
+        }
+        catch (JsonException exception)
+        {
+            _logger.LogWarning(exception, "Cycle or deep graph detected while estimating chat message token count. Falling back to cycle-safe serialization.");
+
+            try
+            {
+                var serialized = JsonSerializer.Serialize(message, CycleSafeJsonOptions);
+                return Math.Max(1, (int)Math.Ceiling(serialized.Length / (double)CHARS_PER_TOKEN));
+            }
+            catch (Exception fallbackException)
+            {
+                _logger.LogDebug(fallbackException, "Cycle-safe serialization failed during token estimation. Falling back to text-length estimate.");
+                var textLength = message.Text?.Length ?? 0;
+                return Math.Max(1, (int)Math.Ceiling(textLength / (double)CHARS_PER_TOKEN));
+            }
+        }
     }
 
 
@@ -240,11 +264,45 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
         try
         {
-            return JsonSerializer.Serialize(additionalProperties);
+            return JsonSerializer.Serialize(additionalProperties, StrictJsonOptions);
+        }
+        catch (JsonException exception)
+        {
+            _logger.LogWarning(exception, "Detected a metadata object graph cycle or depth overflow. Persisting sanitized metadata payload.");
+            return SerializeMetadataFallback(additionalProperties);
         }
         catch (Exception exception)
         {
             _logger.LogDebug(exception, "Chat message metadata could not be serialized and will be skipped.");
+            return null;
+        }
+    }
+
+
+
+
+
+
+    private string? SerializeMetadataFallback(IReadOnlyDictionary<string, object?> additionalProperties)
+    {
+        try
+        {
+            Dictionary<string, object?> safeMetadata = new(StringComparer.OrdinalIgnoreCase)
+            {
+                    ["_serializationWarning"] = "CycleOrDepthDetected",
+                    ["_propertyCount"] = additionalProperties.Count
+            };
+
+            foreach (KeyValuePair<string, object?> property in additionalProperties)
+            {
+                safeMetadata[property.Key] = property.Value?.ToString();
+            }
+
+            return JsonSerializer.Serialize(safeMetadata, CycleSafeJsonOptions);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogDebug(exception, "Metadata fallback serialization failed and metadata will be skipped.");
             return null;
         }
     }

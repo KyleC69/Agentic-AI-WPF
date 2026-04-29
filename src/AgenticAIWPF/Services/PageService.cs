@@ -41,7 +41,6 @@ public sealed class PageService : IPageService
         _serviceProvider = serviceProvider;
         Configure<MainViewModel, MainPage>();
         Configure<BlankViewModel, BlankPage>();
-        Configure<ListDetailsViewModel, ListDetailsPage>();
         Configure<SettingsViewModel, SettingsPage>();
     }
 

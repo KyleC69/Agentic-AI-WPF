@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/04/14
+﻿// Build Date: 2026/04/29
 // Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         CommandExecutor.cs
 // Author: Kyle L. Crowder
-// Build Num: 194522
+// Build Num: 022731
 
 
 
@@ -22,8 +22,8 @@ namespace AgentAILib.ToolFunctions;
 
 
 /// <summary>
-///     Core command execution engine. Handles process spawning, output capture,
-///     timeouts, and error handling. All tools use this single implementation.
+///     Core command execution engine. Encapsulates command execution logic and error handling etc. into a reusable
+///     component. Any tool can use this single implementation if it needs to.
 /// </summary>
 public sealed class CommandExecutor
 {
@@ -82,7 +82,7 @@ public sealed class CommandExecutor
 
         try
         {
-            using Process process = new();
+            using Process process = new Process();
             process.StartInfo = BuildStartInfo(command, arguments);
 
             var unused = process.Start();
@@ -90,7 +90,7 @@ public sealed class CommandExecutor
             var outputTask = process.StandardOutput.ReadToEndAsync();
             var errorTask = process.StandardError.ReadToEndAsync();
 
-            using CancellationTokenSource cts = new(timeout);
+            using CancellationTokenSource cts = new CancellationTokenSource(timeout);
 
             try
             {
@@ -102,7 +102,7 @@ public sealed class CommandExecutor
                 return CommandResult.Timeout(timeout, await outputTask);
             }
 
-            return CommandResult.FromExitCode(exitCode: process.ExitCode, output: (await outputTask).TrimEnd(), error: (await errorTask).TrimEnd());
+            return CommandResult.FromExitCode(process.ExitCode, (await outputTask).TrimEnd(), (await errorTask).TrimEnd());
         }
         catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
         {
@@ -121,6 +121,16 @@ public sealed class CommandExecutor
 
 
 
+    /// <summary>
+    ///     Retrieves a safe working directory for temporary operations.
+    /// </summary>
+    /// <remarks>
+    ///     This method creates a unique temporary directory for the current process
+    ///     to ensure isolation and avoid conflicts with other processes.
+    /// </remarks>
+    /// <returns>
+    ///     The full path to the safe working directory.
+    /// </returns>
     private static string GetSafeWorkingDirectory()
     {
         var temp = Path.GetTempPath();
@@ -140,7 +150,7 @@ public sealed class CommandExecutor
     {
         try
         {
-            process.Kill(entireProcessTree: true);
+            process.Kill(true);
         }
         catch
         {
