@@ -1,12 +1,14 @@
 ﻿---
 name: README.md
-description: README for AgenticAIWPF repository
-updated: 2026-04-16
+description: Agentic-AI-WPF is a WPF desktop application and chat library demonstrating the versatility and power of Microsoft's Agent Framework, featuring SQL Server backed chat history, context enrichment through middleware, and integration with Ollama for local and cloud-based model inference.
+updated: 2026-05-22
 ---
 
-Last Update: 4/2/2026
+# Agentic-AI-WPF
 
-# AgenticAIWPF
+## **STATUS:** I am currently replacing ad-hoc routines with the new Agent Framework patterns and features. This project was started before the framework was completed and patterns developed. I am looking for a few volunteers to help with the UI work on this project and the new next-generation Agentic project codename: SentinelCore. If you are interested in contributing to either project please reach out to me on GitHub or email me directly at kcrowdergoog@gmail.com. I am also looking for feedback on the current implementation, I will continue to fix any bugs in this version but new features will not be added without some justification. I am trying to focus on SentinelCore. If you have any questions about the current implementation or how to use it, please don't hesitate to ask
+
+Last Update: 5/22/2026
 
 ## Introduction
 
@@ -19,6 +21,7 @@ Last Update: 4/2/2026
 
 
 ---
+
 ![Agentic Chat](src/AgenticAIWPF/Assets/AgenticChat.png)
 ---
 
