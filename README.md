@@ -1,8 +1,3 @@
-﻿---
-name: README.md
-description: Agentic-AI-WPF is a WPF desktop application and chat library demonstrating the versatility and power of Microsoft's Agent Framework, featuring SQL Server backed chat history, context enrichment through middleware, and integration with Ollama for local and cloud-based model inference.
-updated: 2026-05-22
----
 
 # Agentic-AI-WPF
 
