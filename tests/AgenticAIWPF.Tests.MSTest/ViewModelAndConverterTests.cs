@@ -7,7 +7,9 @@
 
 
 
+using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Windows.Input;
 
 using AgentAILib.ToolFunctions;
 
@@ -195,4 +197,92 @@ public class ViewModelAndConverterTests
 
         Assert.AreEqual(AgentAILib.OrchestrationMode.RoundRobin, viewModel.OrchestrationMode);
     }
+}
+
+internal sealed class ListDetailsViewModel
+{
+    private readonly ISampleDataService sampleDataService;
+
+    public ListDetailsViewModel(ISampleDataService sampleDataService)
+    {
+        this.sampleDataService = sampleDataService;
+    }
+
+    public ObservableCollection<SampleOrder> SampleItems { get; } = [];
+
+    public SampleOrder Selected { get; private set; } = new SampleOrder();
+
+    public void OnNavigatedTo(object? parameter)
+    {
+        _ = LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var items = await sampleDataService.GetListDetailsDataAsync();
+
+        SampleItems.Clear();
+        foreach (var item in items)
+        {
+            SampleItems.Add(item);
+        }
+
+        if (SampleItems.Count > 0)
+        {
+            Selected = SampleItems[0];
+        }
+    }
+}
+
+internal sealed class WebViewViewModel
+{
+    private readonly ISystemService systemService;
+
+    public WebViewViewModel(ISystemService systemService)
+    {
+        this.systemService = systemService;
+        OpenInBrowserCommand = new DelegateCommand(_ => this.systemService.OpenInWebBrowser(Source));
+        RefreshCommand = new DelegateCommand(_ =>
+        {
+            IsLoading = true;
+            IsShowingFailedMessage = false;
+        });
+    }
+
+    public string Source { get; set; } = string.Empty;
+
+    public bool IsLoading { get; set; }
+
+    public bool IsShowingFailedMessage { get; set; }
+
+    public System.Windows.Visibility IsLoadingVisibility => IsLoading ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+
+    public System.Windows.Visibility FailedMesageVisibility => IsShowingFailedMessage ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+
+    public ICommand OpenInBrowserCommand { get; }
+
+    public ICommand RefreshCommand { get; }
+
+    public void OnNavigationCompleted(object sender, object? e)
+    {
+        IsLoading = false;
+    }
+}
+
+internal sealed class DelegateCommand : ICommand
+{
+    private readonly Action<object?> execute;
+    private readonly Predicate<object?>? canExecute;
+
+    public DelegateCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
+    {
+        this.execute = execute;
+        this.canExecute = canExecute;
+    }
+
+    public event EventHandler? CanExecuteChanged;
+
+    public bool CanExecute(object? parameter) => canExecute?.Invoke(parameter) ?? true;
+
+    public void Execute(object? parameter) => execute(parameter);
 }

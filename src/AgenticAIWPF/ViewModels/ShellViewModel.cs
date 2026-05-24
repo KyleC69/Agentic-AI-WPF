@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         ShellViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 194544
+// Build Date: 2026/05/24
 
 
 
@@ -75,7 +74,7 @@ public sealed partial class ShellViewModel : ObservableObject
     public ObservableCollection<HamburgerMenuItem> MenuItems { get; } =
     [
             new HamburgerMenuGlyphItem { Label = Resources.ShellMainPage, Glyph = "\uE804", TargetPageType = typeof(MainViewModel) },
-            new HamburgerMenuGlyphItem { Label = Resources.ShellBlankPage, Glyph = "\uE82F", TargetPageType = typeof(BlankViewModel) },
+            new HamburgerMenuGlyphItem { Label = Resources.ShellBlankPage, Glyph = "\uE82F", TargetPageType = typeof(BlankViewModel) }
     ];
 
     public ObservableCollection<HamburgerMenuItem> OptionMenuItems { get; } =

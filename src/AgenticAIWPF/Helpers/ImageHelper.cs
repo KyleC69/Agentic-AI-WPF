@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         ImageHelper.cs
 // Author: Kyle L. Crowder
-// Build Num: 194530
+// Build Date: 2026/05/24
 
 
 

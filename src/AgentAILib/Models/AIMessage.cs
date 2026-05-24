@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         AIMessage.cs
 // Author: Kyle L. Crowder
-// Build Num: 194455
+// Build Date: 2026/05/24
 
 
 
@@ -101,8 +100,8 @@ public class AIMessage
     /// <summary>Gets or sets the name of the author of the message.</summary>
     public string? AuthorName
     {
-        get { return _authorName; }
-        set { _authorName = string.IsNullOrWhiteSpace(value) ? null : value; }
+        get => _authorName;
+        set => _authorName = string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     /// <summary>Gets a <see cref="AIContent" /> object to display in the debugger display.</summary>
@@ -121,7 +120,7 @@ public class AIMessage
     public IList<AIContent> Contents
     {
         get { return _contents ??= []; }
-        set { _contents = value; }
+        set => _contents = value;
     }
 
     /// <summary>Gets or sets a timestamp for the chat message.</summary>
@@ -131,7 +130,7 @@ public class AIMessage
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string EllipsesForDebuggerDisplay
     {
-        get { return _contents is { Count: > 1 } ? ", ..." : string.Empty; }
+        get => _contents is { Count: > 1 } ? ", ..." : string.Empty;
     }
 
     /// <summary>Gets or sets the ID of the chat message.</summary>

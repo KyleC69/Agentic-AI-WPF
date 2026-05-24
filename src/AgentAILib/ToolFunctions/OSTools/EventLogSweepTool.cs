@@ -1,13 +1,8 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Solution: AgenticAIWPF
+// Project:   AgentAILib
+// File:         EventLogSweepTool.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Date: 2026/05/24
 
 
 
@@ -70,7 +65,7 @@ public sealed class EventLogSweepTool
                     {
                         continue;
                     }
-                    
+
                     EventLogQuery query = new(logName, PathType.LogName, $"*[System[(Level=1 or Level=2 or Level=3) and TimeCreated[timediff(@SystemTime) <= {msWindow}]]]");
                     query.TolerateQueryErrors = true;
 
@@ -87,10 +82,11 @@ public sealed class EventLogSweepTool
                         }
 
                         var level = record.Level switch
-                        {   1 => "Critical",
-                            2 => "Error",
-                            3 => "Warning",
-                            _ => "Unknown"
+                        {
+                                1 => "Critical",
+                                2 => "Error",
+                                3 => "Warning",
+                                _ => "Unknown"
                         };
 
                         var message = string.Empty;
@@ -105,11 +101,11 @@ public sealed class EventLogSweepTool
 
                         results.Add(new EventSummary
                         {
-                            LogName = logName,
-                            EventId = record.Id,
-                            Level = level,
-                            TimeCreated = record.TimeCreated,
-                            Message = message
+                                LogName = logName,
+                                EventId = record.Id,
+                                Level = level,
+                                TimeCreated = record.TimeCreated,
+                                Message = message
                         });
 
                         count++;
@@ -120,11 +116,11 @@ public sealed class EventLogSweepTool
                     // Per-log failure is isolated; we continue scanning others.
                     results.Add(new EventSummary
                     {
-                        LogName = logName,
-                        EventId = -1,
-                        Level = "Error",
-                        TimeCreated = DateTime.UtcNow,
-                        Message = $"Failed to read log '{logName}': {ex.Message}"
+                            LogName = logName,
+                            EventId = -1,
+                            Level = "Error",
+                            TimeCreated = DateTime.UtcNow,
+                            Message = $"Failed to read log '{logName}': {ex.Message}"
                     });
                 }
             }
@@ -135,6 +131,8 @@ public sealed class EventLogSweepTool
         {
             return ToolResult<List<EventSummary>>.Fail($"Failed to enumerate event logs: {ex.Message}");
         }
+
+
 
         static EventLogConfiguration? TryReadLogConfiguration(EventLogSession session, string logName)
         {

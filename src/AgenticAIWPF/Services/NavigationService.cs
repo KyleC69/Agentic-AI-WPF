@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         NavigationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 194533
+// Build Date: 2026/05/24
 
 
 
@@ -50,7 +49,7 @@ public sealed class NavigationService : INavigationService
 
     public bool CanGoBack
     {
-        get { return _frame.CanGoBack; }
+        get => _frame.CanGoBack;
     }
 
 
@@ -108,15 +107,6 @@ public sealed class NavigationService : INavigationService
 
 
 
-    public event EventHandler<string> Navigated;
-
-
-
-
-
-
-
-
     public bool NavigateTo(string pageKey, object parameter = null, bool clearNavigation = false)
     {
         Type pageType = _pageService.GetPageType(pageKey);
@@ -141,6 +131,15 @@ public sealed class NavigationService : INavigationService
 
         return false;
     }
+
+
+
+
+
+
+
+
+    public event EventHandler<string> Navigated;
 
 
 

@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         INavigationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 194528
+// Build Date: 2026/05/24
 
 
 
@@ -41,10 +40,10 @@ public interface INavigationService
     void Initialize(Frame shellFrame);
 
 
-    event EventHandler<string> Navigated;
-
-
     bool NavigateTo(string pageKey, object parameter = null, bool clearNavigation = false);
+
+
+    event EventHandler<string> Navigated;
 
 
     void UnsubscribeNavigation();

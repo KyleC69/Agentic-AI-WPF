@@ -1,13 +1,8 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Solution: AgenticAIWPF
+// Project:   AgentAILib
+// File:         WebSearchPlugin.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Date: 2026/05/24
 
 
 
@@ -30,7 +25,6 @@ namespace AgentAILib.ToolFunctions.General;
 public sealed class WebSearchPlugin
 {
     private readonly HttpClient _httpClient;
-
 
     private static readonly JsonSerializerOptions WriteOptions = new() { PropertyNameCaseInsensitive = true, WriteIndented = true };
 

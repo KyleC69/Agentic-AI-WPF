@@ -1,17 +1,16 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         TokenAccountingMiddleware.cs
 // Author: Kyle L. Crowder
-// Build Num: 194443
+// Build Date: 2026/05/24
 
 
 
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Net.Http;
 
 using AgentAILib.Models;
 
@@ -33,12 +32,12 @@ namespace AgentAILib.Agents;
 public sealed class TokenAccountingMiddleware : DelegatingChatClient
 {
     private readonly ILogger<TokenAccountingMiddleware> _logger;
+    private readonly Uri? _providerBaseUri;
 
     private readonly Action<TokenUsageSnapshot>? _tokenSnapshotSink;
-    private readonly Uri? _providerBaseUri;
     private const int CHARS_PER_TOKEN = 4;
-    private const int MAX_JSON_DEPTH = 32;
     private const int CONNECTION_GATE_TIMEOUT_SECONDS = 3;
+    private const int MAX_JSON_DEPTH = 32;
 
     private static readonly object CategoryEventsGate = new();
     private static readonly HttpClient ConnectivityHttpClient = new() { Timeout = TimeSpan.FromSeconds(CONNECTION_GATE_TIMEOUT_SECONDS) };
@@ -73,7 +72,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
     public override async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         MiddlewareRequestContext requestContext = await OnRequestAsync(messages, cancellationToken).ConfigureAwait(false);
-        (bool isReachable, string? failureReason) = await CheckProviderReachabilityAsync(cancellationToken).ConfigureAwait(false);
+        var (isReachable, failureReason) = await CheckProviderReachabilityAsync(cancellationToken).ConfigureAwait(false);
         if (!isReachable)
         {
             throw new TimeoutException($"Model endpoint is unavailable before request execution. {failureReason}");
@@ -96,7 +95,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         MiddlewareRequestContext requestContext = await OnRequestAsync(messages, cancellationToken).ConfigureAwait(false);
-        (bool isReachable, string? failureReason) = await CheckProviderReachabilityAsync(cancellationToken).ConfigureAwait(false);
+        var (isReachable, failureReason) = await CheckProviderReachabilityAsync(cancellationToken).ConfigureAwait(false);
         if (!isReachable)
         {
             throw new TimeoutException($"Model endpoint is unavailable before streaming request execution. {failureReason}");
@@ -136,6 +135,44 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
 
 
+    private async Task<(bool IsReachable, string? FailureReason)> CheckProviderReachabilityAsync(CancellationToken cancellationToken)
+    {
+        if (_providerBaseUri is null)
+        {
+            return (true, null);
+        }
+
+        try
+        {
+            using HttpRequestMessage request = new(HttpMethod.Get, new Uri(_providerBaseUri, "/api/tags"));
+            using HttpResponseMessage response = await ConnectivityHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, null);
+            }
+
+            var reason = $"Status code {(int)response.StatusCode} ({response.StatusCode}) from {_providerBaseUri}.";
+            _logger.LogWarning("Model endpoint gate failed before request execution. {Reason}", reason);
+            return (false, reason);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Model endpoint gate failed before request execution. Endpoint: {Endpoint}", _providerBaseUri);
+            return (false, $"Endpoint {_providerBaseUri} is unreachable.");
+        }
+    }
+
+
+
+
+
+
+
+
     private static int ClampToInt(long value)
     {
         return value <= 0 ? 0 : value >= int.MaxValue ? int.MaxValue : (int)value;
@@ -161,7 +198,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
             var role = message.Role.Value;
             AgentRequestMessageSourceType sourceType = ChatMessageExtensions.GetAgentRequestMessageSourceType(message);
 
-            if (sourceType == Microsoft.Agents.AI.AgentRequestMessageSourceType.AIContextProvider)
+            if (sourceType == AgentRequestMessageSourceType.AIContextProvider)
             {
                 ragTokens += tokenCount;
                 continue;
@@ -202,7 +239,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
         var capturedMessages = messages as IReadOnlyList<ChatMessage> ?? [.. messages];
         ContextBuckets buckets = ClassifyContextBuckets(capturedMessages);
 
-        Dictionary<string, long> additionalCounts = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase)
+        var additionalCounts = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase)
         {
                 ["turn_model_call_count"] = 0,
                 ["turn_nested_model_call_count"] = 0,
@@ -217,11 +254,23 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
                 ["usage_system_tokens"] = 0
         };
 
-        TokenUsageSnapshot snapshot = new TokenUsageSnapshot(TotalTokens: buckets.Total, SessionTokens: buckets.Session, RagTokens: buckets.Rag, ToolTokens: buckets.Tool, SystemTokens: buckets.System, InputTokens: 0, OutputTokens: 0, CachedInputTokens: 0, ReasoningTokens: 0, Source: source, UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
+        TokenUsageSnapshot snapshot = new(TotalTokens: buckets.Total, SessionTokens: buckets.Session, RagTokens: buckets.Rag, ToolTokens: buckets.Tool, SystemTokens: buckets.System, InputTokens: 0, OutputTokens: 0, CachedInputTokens: 0, ReasoningTokens: 0, Source: source, UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
 
         PublishCategoryEvents(snapshot);
 
         return snapshot;
+    }
+
+
+
+
+
+
+
+
+    private static int EstimateMessageTokens(ChatMessage message)
+    {
+        return EstimateSerializedTokens(message);
     }
 
 
@@ -246,28 +295,6 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
 
 
-    private static int EstimateMessageTokens(ChatMessage message)
-    {
-        return EstimateSerializedTokens(message);
-    }
-
-
-
-
-
-
-
-
-    private static int EstimateStreamingUpdateTokens(ChatResponseUpdate update)
-    {
-        return EstimateSerializedTokens(update);
-    }
-
-
-
-
-
-
     private static int EstimateSerializedTokens<T>(T value)
     {
         try
@@ -284,6 +311,18 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
         {
             return 1;
         }
+    }
+
+
+
+
+
+
+
+
+    private static int EstimateStreamingUpdateTokens(ChatResponseUpdate update)
+    {
+        return EstimateSerializedTokens(update);
     }
 
 
@@ -323,7 +362,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
             return 0;
         }
 
-        HashSet<string> keySet = new HashSet<string>(keys, StringComparer.OrdinalIgnoreCase);
+        var keySet = new HashSet<string>(keys, StringComparer.OrdinalIgnoreCase);
         long total = 0;
 
         foreach (var (key, value) in usageDetails.AdditionalCounts)
@@ -391,7 +430,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
 
         var estimatedInputTokens = EstimateMessagesTokens(capturedMessages);
 
-        MiddlewareRequestContext requestContext = new MiddlewareRequestContext(capturedMessages, estimatedInputTokens);
+        MiddlewareRequestContext requestContext = new(capturedMessages, estimatedInputTokens);
         return Task.FromResult(requestContext);
     }
 
@@ -410,7 +449,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
         var totalTokens = ClampToInt(usage.TotalTokenCount ?? 0);
 
         ContextBuckets contextBuckets = ClassifyContextBuckets(requestContext.Messages);
-        Dictionary<string, long> additionalCounts = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase)
+        var additionalCounts = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase)
         {
                 ["turn_model_call_count"] = 1,
                 ["turn_nested_model_call_count"] = 0,
@@ -430,47 +469,12 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
                 ["usage_system_tokens"] = GetAdditionalCount(usage, "usage_system_tokens", "system_tokens")
         };
 
-        TokenUsageSnapshot snapshot = new TokenUsageSnapshot(TotalTokens: totalTokens, SessionTokens: contextBuckets.Session, RagTokens: contextBuckets.Rag, ToolTokens: contextBuckets.Tool, SystemTokens: contextBuckets.System, InputTokens: ClampToInt(usage.InputTokenCount ?? 0), OutputTokens: ClampToInt(usage.OutputTokenCount ?? 0), CachedInputTokens: ClampToInt(usage.CachedInputTokenCount ?? 0), ReasoningTokens: ClampToInt(usage.ReasoningTokenCount ?? 0), Source: "middleware.response", UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
+        TokenUsageSnapshot snapshot = new(TotalTokens: totalTokens, SessionTokens: contextBuckets.Session, RagTokens: contextBuckets.Rag, ToolTokens: contextBuckets.Tool, SystemTokens: contextBuckets.System, InputTokens: ClampToInt(usage.InputTokenCount ?? 0), OutputTokens: ClampToInt(usage.OutputTokenCount ?? 0), CachedInputTokens: ClampToInt(usage.CachedInputTokenCount ?? 0), ReasoningTokens: ClampToInt(usage.ReasoningTokenCount ?? 0), Source: "middleware.response", UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
 
         _tokenSnapshotSink?.Invoke(snapshot);
         PublishCategoryEvents(snapshot);
 
         return Task.CompletedTask;
-    }
-
-
-
-
-
-    private async Task<(bool IsReachable, string? FailureReason)> CheckProviderReachabilityAsync(CancellationToken cancellationToken)
-    {
-        if (_providerBaseUri is null)
-        {
-            return (true, null);
-        }
-
-        try
-        {
-            using HttpRequestMessage request = new(HttpMethod.Get, new Uri(_providerBaseUri, "/api/tags"));
-            using HttpResponseMessage response = await ConnectivityHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
-            {
-                return (true, null);
-            }
-
-            var reason = $"Status code {(int)response.StatusCode} ({response.StatusCode}) from {_providerBaseUri}.";
-            _logger.LogWarning("Model endpoint gate failed before request execution. {Reason}", reason);
-            return (false, reason);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Model endpoint gate failed before request execution. Endpoint: {Endpoint}", _providerBaseUri);
-            return (false, $"Endpoint {_providerBaseUri} is unreachable.");
-        }
     }
 
 
@@ -492,7 +496,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
         var reasoningTokens = ClampToInt(usage?.ReasoningTokenCount ?? 0);
         var totalTokens = ClampToInt(usage?.TotalTokenCount ?? inputTokens + outputTokens);
 
-        Dictionary<string, long> additionalCounts = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase)
+        var additionalCounts = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase)
         {
                 ["turn_model_call_count"] = 1,
                 ["turn_nested_model_call_count"] = 0,
@@ -512,7 +516,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
                 ["usage_system_tokens"] = usage is null ? 0 : GetAdditionalCount(usage, "usage_system_tokens", "system_tokens")
         };
 
-        TokenUsageSnapshot snapshot = new TokenUsageSnapshot(TotalTokens: totalTokens, SessionTokens: contextBuckets.Session, RagTokens: contextBuckets.Rag, ToolTokens: contextBuckets.Tool, SystemTokens: contextBuckets.System, InputTokens: inputTokens, OutputTokens: outputTokens, CachedInputTokens: cachedInputTokens, ReasoningTokens: reasoningTokens, Source: "middleware.streaming_response", UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
+        TokenUsageSnapshot snapshot = new(TotalTokens: totalTokens, SessionTokens: contextBuckets.Session, RagTokens: contextBuckets.Rag, ToolTokens: contextBuckets.Tool, SystemTokens: contextBuckets.System, InputTokens: inputTokens, OutputTokens: outputTokens, CachedInputTokens: cachedInputTokens, ReasoningTokens: reasoningTokens, Source: "middleware.streaming_response", UpdatedAtUtc: DateTimeOffset.UtcNow, AdditionalCounts: additionalCounts);
 
         _tokenSnapshotSink?.Invoke(snapshot);
         PublishCategoryEvents(snapshot);
@@ -580,7 +584,7 @@ public sealed class TokenAccountingMiddleware : DelegatingChatClient
             return;
         }
 
-        TokenCategoryChangedEventArgs args = new TokenCategoryChangedEventArgs(category, previousValue, currentValue, source, updatedAtUtc);
+        TokenCategoryChangedEventArgs args = new(category, previousValue, currentValue, source, updatedAtUtc);
         categoryHandler?.Invoke(null, args);
     }
 

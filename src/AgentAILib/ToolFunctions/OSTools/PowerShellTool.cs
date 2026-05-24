@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         PowerShellTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 194515
+// Build Date: 2026/05/24
 
 
 
@@ -37,12 +36,6 @@ public sealed class PowerShellTool
     private const int MAX_TIMEOUT_SECONDS = 30;
 
     private const int MIN_TIMEOUT_SECONDS = 1;
-
-    // Captures the verb of any Verb-Noun cmdlet pattern (e.g. "Get" from "Get-Process").
-    private static readonly Regex _cmdletVerbPattern = new(@"\b([A-Za-z][A-Za-z0-9]*)(?=-[A-Za-z])", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
-    // Captures full Verb-Noun cmdlet names (e.g. "Format-Volume") for blocklist checks.
-    private static readonly Regex _fullCmdletPattern = new(@"\b([A-Za-z][A-Za-z0-9]+-[A-Za-z][A-Za-z0-9]*)\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     /// <summary>
     ///     Verbs whose cmdlets are considered non-destructive and safe for agent diagnostics.
@@ -107,6 +100,12 @@ public sealed class PowerShellTool
             "clp", // Clear-ItemProperty
             "sc" // Set-Content / Windows service control
     };
+
+    // Captures the verb of any Verb-Noun cmdlet pattern (e.g. "Get" from "Get-Process").
+    private static readonly Regex _cmdletVerbPattern = new(@"\b([A-Za-z][A-Za-z0-9]*)(?=-[A-Za-z])", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    // Captures full Verb-Noun cmdlet names (e.g. "Format-Volume") for blocklist checks.
+    private static readonly Regex _fullCmdletPattern = new(@"\b([A-Za-z][A-Za-z0-9]+-[A-Za-z][A-Za-z0-9]*)\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
 
 

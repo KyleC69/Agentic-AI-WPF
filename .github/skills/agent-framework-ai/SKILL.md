@@ -1,7 +1,6 @@
----
+﻿---
 name: agent-workflow-ai
 description: Generates, enhances, develops, and deploys AI agent applications and workflows using Microsoft Agent Framework. Use when user asks to create, scaffold, build, modify, fix, trace, monitor, debug, evaluate, measure, or deploy AI apps, agents, or workflows.
-
 ---
 
 # Building AI Agent / Workflow
@@ -90,11 +89,13 @@ Creation Progress:
 Call tools from the **Toolbelt**. For standard new agent requests:
 
 **Required tools**:
+
 - `aitk-get_agent_model_code_sample` - can call multiple times for different intents
 - `aitk-agent_as_server` and `aitk-add_agent_debug` - for production and debug patterns
 - `aitk-get_ai_model_guidance` and `aitk-list_foundry_models` - for model selection
 
 **Recommended tools**:
+
 - `githubRepo` - search for advanced patterns: MCP, Multimodal, Assistants API, Responses API, Copilot Studio, Anthropic, Reflection, Switch-Case, Fan-out/Fan-in, Loop, Human-in-Loop
 
 **Step 2: Create implementation plan**
@@ -108,7 +109,7 @@ Before coding, think through a detailed step-by-step implementation plan. Output
 If user has not specified a model, transition to **Model Selection** capability.
 
 - **Config**: Create/update `.env` (ensure not to overwrite existing variables), like:
-  ```
+  ```text
   FOUNDRY_PROJECT_ENDPOINT=<project-endpoint>
   FOUNDRY_MODEL_DEPLOYMENT_NAME=<model-deployment-name>
   ```
@@ -135,6 +136,7 @@ Enter a run-fix loop: run → [if unexpected error] fix → rerun → repeat unt
 3. **If startup succeeds**: Stop server immediately.
 
 **Guardrails**:
+
 - **DO** perform a real run to catch startup errors early (static syntax check is NOT enough)
 - **DO** cleanup after verification. If you started the HTTP server, you MUST stop it
 - **DO** ignore environment/auth/connection/timeout errors. Focus ONLY on startup/init errors
@@ -170,9 +172,11 @@ Enter a run-fix loop: run → [if unexpected error] fix → rerun → repeat unt
 **When to use**: User asks to "configure", "change", or "recommend" a model, or asks "which model" to use. Also triggered automatically during Agent Creation.
 
 **What to do**: Use `aitk-get_ai_model_guidance` and `aitk-list_foundry_models`.
+
 - For production-quality agents/workflows, recommend Foundry model(s).
 
 **Important considerations**:
+
 - User's existing model deployment is a quick start, but NOT necessarily the best choice. Recommend based on user intent and model capabilities.
 - Always output clear explanation of your recommendation and show alternatives even if not deployed.
 - If no Foundry project/model is available, recommend creating one via Foundry extension.
@@ -188,6 +192,7 @@ Enter a run-fix loop: run → [if unexpected error] fix → rerun → repeat unt
 **When to use**: User asks to "improve performance", "measure", or "evaluate" the agent.
 
 **What to do**:
+
 - **Planning First**: Use `aitk-evaluation_planner` to clarify metrics, test dataset, and runtime.
 - **Runner**: Use `aitk-evaluation_agent_runner_best_practices` for collecting responses from test datasets.
 - **Code**: Use `aitk-get_evaluation_code_gen_best_practices` for evaluation code generation.
@@ -197,5 +202,6 @@ Enter a run-fix loop: run → [if unexpected error] fix → rerun → repeat unt
 **When to use**: User asks to "deploy", "publish", or "go production" the agent.
 
 **What to do**:
+
 1. Ensure the app is wrapped as HTTP server (if not, use `aitk-agent_as_server` first).
 2. Execute VS Code command: [Microsoft Foundry: Deploy Hosted Agent](azure-ai-foundry.commandPalette.deployWorkflow).

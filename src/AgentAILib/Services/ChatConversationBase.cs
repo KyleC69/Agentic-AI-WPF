@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         ChatConversationBase.cs
 // Author: Kyle L. Crowder
-// Build Num: 194501
+// Build Date: 2026/05/24
 
 
 
@@ -29,8 +28,8 @@ public class ChatConversationBase
     protected IAgentFactory? _agentFactory;
     protected AgentSession? _agentSession;
     protected IHistoryIdentityService? _historyIdentityService;
-    protected readonly SemaphoreSlim _initializeGate = new(1, 1);
     protected string? _initialUserId;
+    protected readonly SemaphoreSlim _initializeGate = new(1, 1);
     protected ILogger<ChatConversationService>? _logger;
     protected RagDataService? _ragDataService;
     protected ProviderSessionState<HistoryIdentity> _sessionStateHelper = null!;

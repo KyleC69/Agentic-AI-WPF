@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         SqlChatHistoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 194500
+// Build Date: 2026/05/24
 
 
 
@@ -41,7 +40,6 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
     private const int CHARS_PER_TOKEN = 4;
     private const int MAX_JSON_DEPTH = 32;
-
     private static readonly JsonSerializerOptions StrictJsonOptions = new() { MaxDepth = MAX_JSON_DEPTH, WriteIndented = true, IndentSize = 2 };
     private static readonly JsonSerializerOptions CycleSafeJsonOptions = new() { MaxDepth = MAX_JSON_DEPTH, WriteIndented = true, IndentSize = 2, ReferenceHandler = ReferenceHandler.IgnoreCycles };
 
@@ -283,20 +281,15 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider
 
 
 
+
+
     private string? SerializeMetadataFallback(IReadOnlyDictionary<string, object?> additionalProperties)
     {
         try
         {
-            Dictionary<string, object?> safeMetadata = new(StringComparer.OrdinalIgnoreCase)
-            {
-                    ["_serializationWarning"] = "CycleOrDepthDetected",
-                    ["_propertyCount"] = additionalProperties.Count
-            };
+            Dictionary<string, object?> safeMetadata = new(StringComparer.OrdinalIgnoreCase) { ["_serializationWarning"] = "CycleOrDepthDetected", ["_propertyCount"] = additionalProperties.Count };
 
-            foreach (KeyValuePair<string, object?> property in additionalProperties)
-            {
-                safeMetadata[property.Key] = property.Value?.ToString();
-            }
+            foreach (var property in additionalProperties) safeMetadata[property.Key] = property.Value?.ToString();
 
             return JsonSerializer.Serialize(safeMetadata, CycleSafeJsonOptions);
         }

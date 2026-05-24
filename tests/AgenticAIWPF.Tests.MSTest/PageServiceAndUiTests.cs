@@ -24,9 +24,11 @@ namespace AgenticAIWPF.Tests.MSTest;
 
 
 
+
 [TestClass]
 public class PageServiceAndUiTests
 {
+
 
 
 
@@ -53,9 +55,6 @@ public class PageServiceAndUiTests
 
 
 
-
-
-
     [TestMethod]
     public void GetPageThrowsWhenServiceProviderCannotResolvePage()
     {
@@ -64,9 +63,6 @@ public class PageServiceAndUiTests
 
         Assert.ThrowsExactly<InvalidOperationException>(() => service.GetPage(key));
     }
-
-
-
 
 
 
@@ -86,9 +82,6 @@ public class PageServiceAndUiTests
 
 
 
-
-
-
     [TestMethod]
     public void GetPageTypeWithUnknownKeyThrowsArgumentException()
     {
@@ -96,4 +89,12 @@ public class PageServiceAndUiTests
 
         Assert.ThrowsExactly<ArgumentException>(() => service.GetPageType("unknown"));
     }
+}
+
+public class DataGridViewModel
+{
+}
+
+public class DataGridPage
+{
 }

@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         ChatMessageDisplayItem.cs
 // Author: Kyle L. Crowder
-// Build Num: 194531
+// Build Date: 2026/05/24
 
 
 
@@ -26,8 +25,15 @@ public sealed record ChatMessageDisplayItem(string Text, string Role, DateTime C
 {
     public bool IsUser
     {
-        get { return string.Equals(Role, ChatRole.User.ToString(), StringComparison.OrdinalIgnoreCase); }
+        get => string.Equals(Role, ChatRole.User.ToString(), StringComparison.OrdinalIgnoreCase);
     }
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Creates a display item from an AI chat role and message text so the UI can bind to stable, presentation-focused

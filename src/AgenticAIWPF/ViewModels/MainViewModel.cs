@@ -1,16 +1,12 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         MainViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 194540
+// Build Date: 2026/05/24
 
 
 
 using System.Collections.ObjectModel;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -256,6 +252,32 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
+    private void AddMessage(ChatMessage chatMessage)
+    {
+        ArgumentNullException.ThrowIfNull(chatMessage);
+
+        Messages.Add(ChatMessageDisplayItem.Create(chatMessage.Role, chatMessage.Text ?? string.Empty, DateTime.Now));
+    }
+
+
+
+
+
+
+
+
+    private void AddMessage(ChatRole role, string text)
+    {
+        Messages.Add(ChatMessageDisplayItem.Create(role, text, DateTime.Now));
+    }
+
+
+
+
+
+
+
+
     private async Task ApplyModelChangeAsync(AIModelDescriptor descriptor)
     {
         try
@@ -287,9 +309,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    private void CancelMessage()
+    private bool CanSendMessage()
     {
-        _tokenSource?.Cancel();
+        return !IsBusy && !string.IsNullOrWhiteSpace(MessageInput);
     }
 
 
@@ -299,9 +321,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    private bool CanSendMessage()
+    private void CancelMessage()
     {
-        return !IsBusy && !string.IsNullOrWhiteSpace(MessageInput);
+        _tokenSource?.Cancel();
     }
 
 
@@ -463,12 +485,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-
-
-
-
-
-
     private static void RunOnUiThread(Action updateAction)
     {
         ArgumentNullException.ThrowIfNull(updateAction);
@@ -481,18 +497,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         }
 
         _ = dispatcher.InvokeAsync(updateAction);
-    }
-
-    private void AddMessage(ChatMessage chatMessage)
-    {
-        ArgumentNullException.ThrowIfNull(chatMessage);
-
-        Messages.Add(ChatMessageDisplayItem.Create(chatMessage.Role, chatMessage.Text ?? string.Empty, DateTime.Now));
-    }
-
-    private void AddMessage(ChatRole role, string text)
-    {
-        Messages.Add(ChatMessageDisplayItem.Create(role, text, DateTime.Now));
     }
 
 

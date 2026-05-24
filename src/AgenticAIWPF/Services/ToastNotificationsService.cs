@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         ToastNotificationsService.cs
 // Author: Kyle L. Crowder
-// Build Num: 194536
+// Build Date: 2026/05/24
 
 
 
@@ -36,22 +35,11 @@ public sealed partial class ToastNotificationsService : IToastNotificationsServi
 
 
 
+
+
     public void ShowToastNotification(string title, string message)
     {
-        ToastContent content = new()
-        {
-            Visual = new ToastVisual
-            {
-                BindingGeneric = new ToastBindingGeneric
-                {
-                    Children =
-                    {
-                        new AdaptiveText { Text = title },
-                        new AdaptiveText { Text = message }
-                    }
-                }
-            }
-        };
+        ToastContent content = new() { Visual = new ToastVisual { BindingGeneric = new ToastBindingGeneric { Children = { new AdaptiveText { Text = title }, new AdaptiveText { Text = message } } } } };
 
         XmlDocument document = new();
         document.LoadXml(content.GetContent());

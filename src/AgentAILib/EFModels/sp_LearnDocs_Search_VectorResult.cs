@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         sp_LearnDocs_Search_VectorResult.cs
 // Author: Kyle L. Crowder
-// Build Num: 194453
+// Build Date: 2026/05/24
 
 
 

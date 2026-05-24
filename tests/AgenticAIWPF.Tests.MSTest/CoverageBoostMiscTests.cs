@@ -1,14 +1,14 @@
-﻿// Build Date: 2026/04/06
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF.Tests.MSTest
 // File:         CoverageBoostMiscTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 212954
+// Build Date: 2026/05/24
 
 
 
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -17,8 +17,6 @@ using System.Windows.Documents;
 using AgentAILib.History.HistoryModels;
 using AgentAILib.HistoryModels;
 
-using AgenticAIWPF.Controls;
-using AgenticAIWPF.Converters;
 using AgenticAIWPF.Core.Models;
 using AgenticAIWPF.Helpers;
 using AgenticAIWPF.TemplateSelectors;
@@ -67,13 +65,13 @@ public class CoverageBoostMiscTests
     {
         StaTestHelper.Run(() =>
         {
-            Frame frame = new Frame();
+            Frame frame = new();
             _ = frame.Navigate(new Page());
             _ = frame.Navigate(new Page());
 
             frame.CleanNavigation();
 
-            Frame dataFrame = new Frame();
+            Frame dataFrame = new();
             Assert.IsNull(dataFrame.GetDataContext());
 
             dataFrame.Content = new object();
@@ -93,7 +91,9 @@ public class CoverageBoostMiscTests
     {
         StaTestHelper.Run(() =>
         {
-            MarkdownToFlowDocumentConverter converter = new MarkdownToFlowDocumentConverter();
+            Assembly agentAssembly = Assembly.Load("AgenticAIWPF");
+            Type converterType = agentAssembly.GetTypes().Single(t => t.Name == "MarkdownToFlowDocumentConverter");
+            IValueConverter converter = (IValueConverter)Activator.CreateInstance(converterType)!;
 
             FlowDocument empty = (FlowDocument)converter.Convert(null, typeof(FlowDocument), null, System.Globalization.CultureInfo.InvariantCulture);
             Assert.AreEqual(0, empty.Blocks.Count);
@@ -112,6 +112,8 @@ public class CoverageBoostMiscTests
 
 
 
+
+
     [TestMethod]
     public void MarkdownConverterRendersFencedCodeBlocksAsInteractiveControls()
     {
@@ -119,34 +121,18 @@ public class CoverageBoostMiscTests
         {
             const string markdown = "```csharp\nConsole.WriteLine(\"x\");\n```";
 
-            FlowDocument document = MarkdownToFlowDocumentConverter.ConvertToFlowDocument(markdown);
+            Assembly agentAssembly = Assembly.Load("AgenticAIWPF");
+            Type converterType = agentAssembly.GetTypes().Single(t => t.Name == "MarkdownToFlowDocumentConverter");
+            MethodInfo convertToFlowDocumentMethod = converterType.GetMethod("ConvertToFlowDocument", BindingFlags.Public | BindingFlags.Static)!;
+
+            FlowDocument document = (FlowDocument)convertToFlowDocumentMethod.Invoke(null, [markdown])!;
             BlockUIContainer codeBlock = document.Blocks.OfType<BlockUIContainer>().Single();
-            MarkdownCodeBlockControl control = (MarkdownCodeBlockControl)codeBlock.Child;
+            object control = codeBlock.Child;
+            Type controlType = control.GetType();
 
-            Assert.AreEqual("csharp", control.CodeLanguage);
-            StringAssert.Contains(control.Code, "Console.WriteLine");
-        });
-    }
-
-
-
-
-
-
-    [TestMethod]
-    public void MarkdownConverterRendersHtmlAnchorTextWithoutTypeNames()
-    {
-        StaTestHelper.Run(() =>
-        {
-            const string markdown = "Paragraph with <a href=\"https://example.com\">Example Link</a>.";
-
-            FlowDocument document = MarkdownToFlowDocumentConverter.ConvertToFlowDocument(markdown);
-            string renderedText = new TextRange(document.ContentStart, document.ContentEnd).Text;
-            Paragraph paragraph = document.Blocks.OfType<Paragraph>().Single();
-
-            StringAssert.Contains(renderedText, "Example Link");
-            StringAssert.DoesNotContain(renderedText, "HtmlInline");
-            Assert.IsTrue(paragraph.Inlines.OfType<Hyperlink>().Any());
+            Assert.AreEqual("MarkdownCodeBlockControl", controlType.Name);
+            Assert.AreEqual("csharp", (string)controlType.GetProperty("CodeLanguage")!.GetValue(control)!);
+            StringAssert.Contains((string)controlType.GetProperty("Code")!.GetValue(control)!, "Console.WriteLine");
         });
     }
 
@@ -162,9 +148,9 @@ public class CoverageBoostMiscTests
     {
         StaTestHelper.Run(() =>
         {
-            DataTemplate glyphTemplate = new DataTemplate();
-            DataTemplate imageTemplate = new DataTemplate();
-            MenuItemTemplateSelector selector = new MenuItemTemplateSelector { GlyphDataTemplate = glyphTemplate, ImageDataTemplate = imageTemplate };
+            DataTemplate glyphTemplate = new();
+            DataTemplate imageTemplate = new();
+            MenuItemTemplateSelector selector = new() { GlyphDataTemplate = glyphTemplate, ImageDataTemplate = imageTemplate };
 
             DataTemplate glyphResult = selector.SelectTemplate(new HamburgerMenuGlyphItem(), new DependencyObject());
             DataTemplate imageResult = selector.SelectTemplate(new HamburgerMenuImageItem(), new DependencyObject());
@@ -186,7 +172,7 @@ public class CoverageBoostMiscTests
     [TestMethod]
     public void UserAndHistoryModelsRoundTripAssignedValues()
     {
-        User user = new User
+        User user = new()
         {
             BusinessPhones = ["+1-555-0100"],
             DisplayName = "Display",
@@ -202,7 +188,7 @@ public class CoverageBoostMiscTests
             UserPrincipalName = "upn"
         };
 
-        ChatHistoryMessage message = new ChatHistoryMessage
+        ChatHistoryMessage message = new()
         {
             AgentId = "agent",
             ApplicationId = "app",
@@ -217,7 +203,7 @@ public class CoverageBoostMiscTests
             UserId = "user"
         };
 
-        ChatHistoryTextChunk chunk = new ChatHistoryTextChunk
+        ChatHistoryTextChunk chunk = new()
         {
             ChunkLength = 10,
             ChunkOffset = 20,

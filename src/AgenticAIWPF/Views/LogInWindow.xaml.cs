@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         LogInWindow.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 194547
+// Build Date: 2026/05/24
 
 
 

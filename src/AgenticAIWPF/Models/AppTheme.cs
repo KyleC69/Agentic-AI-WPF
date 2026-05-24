@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         AppTheme.cs
 // Author: Kyle L. Crowder
-// Build Num: 194531
+// Build Date: 2026/05/24
 
 
 

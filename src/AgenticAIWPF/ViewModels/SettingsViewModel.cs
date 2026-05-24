@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         SettingsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 194542
+// Build Date: 2026/05/24
 
 
 
@@ -87,47 +86,47 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
 
     public IReadOnlyList<OrchestrationMode> AvailableOrchestrationModes
     {
-        get { return Enum.GetValues<OrchestrationMode>(); }
+        get => Enum.GetValues<OrchestrationMode>();
     }
 
     public static string ChatHistoryContextEnabledLabelText
     {
-        get { return GetResourceString(SettingsPageChatHistoryContextEnabledLabelKey, "Enable Chat History Context Injection"); }
+        get => GetResourceString(SettingsPageChatHistoryContextEnabledLabelKey, "Enable Chat History Context Injection");
     }
 
     public static string ChatHistorySaveStatusText
     {
-        get { return GetResourceString(SettingsPageChatHistorySaveStatusKey, "Chat history settings saved."); }
+        get => GetResourceString(SettingsPageChatHistorySaveStatusKey, "Chat history settings saved.");
     }
 
     public static string ChatHistoryTitleText
     {
-        get { return GetResourceString(SettingsPageChatHistoryTitleKey, "Chat History"); }
+        get => GetResourceString(SettingsPageChatHistoryTitleKey, "Chat History");
     }
 
     public static string ChatModelLabelText
     {
-        get { return GetResourceString(SettingsPageChatModelLabelKey, "Chat Model"); }
+        get => GetResourceString(SettingsPageChatModelLabelKey, "Chat Model");
     }
 
     public static string ConnectionStringLabelText
     {
-        get { return GetResourceString(SettingsPageConnectionStringLabelKey, "Connection String"); }
+        get => GetResourceString(SettingsPageConnectionStringLabelKey, "Connection String");
     }
 
     public static string EmbeddingsModelLabelText
     {
-        get { return GetResourceString(SettingsPageEmbeddingsModelLabelKey, "Embeddings Model"); }
+        get => GetResourceString(SettingsPageEmbeddingsModelLabelKey, "Embeddings Model");
     }
 
     public static string MaxContextMessagesLabelText
     {
-        get { return GetResourceString(SettingsPageMaxContextMessagesLabelKey, "Max Context Messages"); }
+        get => GetResourceString(SettingsPageMaxContextMessagesLabelKey, "Max Context Messages");
     }
 
     public static string MaxContextTokensLabelText
     {
-        get { return GetResourceString(SettingsPageMaxContextTokensLabelKey, "Max Context Tokens"); }
+        get => GetResourceString(SettingsPageMaxContextTokensLabelKey, "Max Context Tokens");
     }
 
     public ICommand PrivacyStatementCommand
@@ -137,7 +136,7 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
 
     public static string RagKnowledgeEnabledLabelText
     {
-        get { return GetResourceString(SettingsPageRagKnowledgeEnabledLabelKey, "Enable RAG Knowledge Context Injection"); }
+        get => GetResourceString(SettingsPageRagKnowledgeEnabledLabelKey, "Enable RAG Knowledge Context Injection");
     }
 
     public ICommand RenewApplicationIdCommand
@@ -147,7 +146,7 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
 
     public static string SaveChatHistoryButtonText
     {
-        get { return GetResourceString(SettingsPageSaveChatHistoryButtonTextKey, "Save Chat History Settings"); }
+        get => GetResourceString(SettingsPageSaveChatHistoryButtonTextKey, "Save Chat History Settings");
     }
 
     public ICommand SaveChatHistorySettingsCommand
@@ -242,6 +241,18 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
 
 
 
+    private string GetAppSetting(string key, string fallback)
+    {
+        return _runtimeSettings.GetValue(key, fallback);
+    }
+
+
+
+
+
+
+
+
     private Guid GetApplicationId()
     {
         var raw = _runtimeSettings.GetValue("ApplicationId", string.Empty);
@@ -253,18 +264,6 @@ public sealed partial class SettingsViewModel(ISystemService systemService, IApp
         Guid created = Guid.NewGuid();
         _runtimeSettings.SetValue("ApplicationId", created.ToString("D"));
         return created;
-    }
-
-
-
-
-
-
-
-
-    private string GetAppSetting(string key, string fallback)
-    {
-        return _runtimeSettings.GetValue(key, fallback);
     }
 
 

@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         IChatHistoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 194446
+// Build Date: 2026/05/24
 
 // Build Date: 2026/04/03
 // Solution: RAGDataIngestionWPF

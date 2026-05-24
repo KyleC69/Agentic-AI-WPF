@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         ChatHistoryMessageExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: 194453
+// Build Date: 2026/05/24
 
 
 

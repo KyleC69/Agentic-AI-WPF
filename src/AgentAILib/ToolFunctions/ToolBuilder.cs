@@ -1,13 +1,8 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Solution: AgenticAIWPF
+// Project:   AgentAILib
+// File:         ToolBuilder.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Date: 2026/05/24
 
 
 
@@ -133,7 +128,7 @@ public sealed class ToolBuilder : IAIToolCatalog
 
     public IList<AITool> GetAiTools()
     {
-        return this.GetReadOnlyAiTools();
+        return GetReadOnlyAiTools();
     }
 
 

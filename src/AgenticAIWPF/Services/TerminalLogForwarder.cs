@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/29
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         TerminalLogForwarder.cs
 // Author: Kyle L. Crowder
-// Build Num: 010000
+// Build Date: 2026/05/24
 
 
 
@@ -15,7 +14,10 @@ using Microsoft.Extensions.Logging;
 
 
 
+
 namespace AgenticAIWPF.Services;
+
+
 
 
 
@@ -23,11 +25,20 @@ namespace AgenticAIWPF.Services;
 
 
 
+
+
 internal sealed class TerminalLogForwarder : IDisposable
 {
-    private readonly object _syncRoot = new();
     private readonly Process? _process;
+    private readonly object _syncRoot = new();
     private readonly StreamWriter? _writer;
+
+
+
+
+
+
+
 
     public TerminalLogForwarder(string appLocation)
     {
@@ -41,17 +52,7 @@ internal sealed class TerminalLogForwarder : IDisposable
 
         try
         {
-            _process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = consolePath,
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    CreateNoWindow = false,
-                },
-                EnableRaisingEvents = false,
-            };
+            _process = new Process { StartInfo = new ProcessStartInfo { FileName = consolePath, UseShellExecute = false, RedirectStandardInput = true, CreateNoWindow = false }, EnableRaisingEvents = false };
 
             _process.Start();
             _writer = _process.StandardInput;
@@ -63,6 +64,29 @@ internal sealed class TerminalLogForwarder : IDisposable
             _process = null;
         }
     }
+
+
+
+
+
+
+
+
+    public void Dispose()
+    {
+        lock (_syncRoot)
+        {
+            _writer?.Dispose();
+            _process?.Dispose();
+        }
+    }
+
+
+
+
+
+
+
 
     public void WriteLine(string message)
     {
@@ -87,16 +111,9 @@ internal sealed class TerminalLogForwarder : IDisposable
             }
         }
     }
-
-    public void Dispose()
-    {
-        lock (_syncRoot)
-        {
-            _writer?.Dispose();
-            _process?.Dispose();
-        }
-    }
 }
+
+
 
 
 
@@ -104,15 +121,31 @@ internal sealed class TerminalLoggerProvider(TerminalLogForwarder forwarder) : I
 {
     private readonly TerminalLogForwarder _forwarder = forwarder;
 
+
+
+
+
+
+
+
     public ILogger CreateLogger(string categoryName)
     {
         return new TerminalLogger(categoryName, _forwarder);
     }
 
+
+
+
+
+
+
+
     public void Dispose()
     {
     }
 }
+
+
 
 
 
@@ -121,16 +154,36 @@ internal sealed class TerminalLogger(string categoryName, TerminalLogForwarder f
     private readonly string _categoryName = categoryName;
     private readonly TerminalLogForwarder _forwarder = forwarder;
 
-    public IDisposable? BeginScope<TState>(TState state)
-        where TState : notnull
+
+
+
+
+
+
+
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
         return null;
     }
+
+
+
+
+
+
+
 
     public bool IsEnabled(LogLevel logLevel)
     {
         return true;
     }
+
+
+
+
+
+
+
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {

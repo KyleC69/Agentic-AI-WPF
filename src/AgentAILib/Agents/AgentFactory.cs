@@ -1,13 +1,8 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Solution: AgenticAIWPF
+// Project:   AgentAILib
+// File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Date: 2026/05/24
 
 
 
@@ -121,28 +116,28 @@ public class AgentFactory : IAgentFactory
 
         Guard.IsNotNullOrWhiteSpace(agentId);
         HistoryMemoryProvider _window = new(_historyIdentity);
-        IList<AITool> safeTools = GetSafeReadOnlyTools();
+        var safeTools = GetSafeReadOnlyTools();
 
 
         ChatClientAgent outer = client.AsAIAgent(new ChatClientAgentOptions
         {
-            Id = agentId,
-            Name = name,
-            Description = agentDescription,
-            ChatOptions = new ChatOptions
-            {
-                Instructions = instructions ?? GetModelInstructions(),
-                Temperature = 0.7f,
-                MaxOutputTokens = 10000,
-                AllowMultipleToolCalls = safeTools.Count > 0,
-                Tools = safeTools
-            },
-            ChatHistoryProvider = _chatHistoryProvider,
-            AIContextProviders = [_window, _ragContextInjector!],
-            WarnOnChatHistoryProviderConflict = true,
-            ThrowOnChatHistoryProviderConflict = true
+                Id = agentId,
+                Name = name,
+                Description = agentDescription,
+                ChatOptions = new ChatOptions
+                {
+                        Instructions = instructions ?? GetModelInstructions(),
+                        Temperature = 0.7f,
+                        MaxOutputTokens = 10000,
+                        AllowMultipleToolCalls = safeTools.Count > 0,
+                        Tools = safeTools
+                },
+                ChatHistoryProvider = _chatHistoryProvider,
+                AIContextProviders = [_window, _ragContextInjector!],
+                WarnOnChatHistoryProviderConflict = true,
+                ThrowOnChatHistoryProviderConflict = true
         });
-        return outer.AsBuilder().Use(this.ExceptionHandlingMiddleware, null).UseLogging(_factory).Build();
+        return outer.AsBuilder().Use(ExceptionHandlingMiddleware, null).UseLogging(_factory).Build();
 
     }
 
@@ -155,25 +150,25 @@ public class AgentFactory : IAgentFactory
 
     public AIAgent BuildBasicAgent(IChatClient client, string agentId, string name, string agentDescription = "", string? instructions = null)
     {
-        IList<AITool> safeTools = GetSafeReadOnlyTools();
+        var safeTools = GetSafeReadOnlyTools();
 
 
 
         ChatClientAgent outer = client.AsAIAgent(new ChatClientAgentOptions
         {
-            Id = agentId,
-            Name = name,
-            Description = agentDescription,
-            ChatOptions = new ChatOptions
-            {
-                Instructions = instructions ?? GetModelInstructions(),
-                Temperature = 0.7f,
-                MaxOutputTokens = 10000,
-                AllowMultipleToolCalls = safeTools.Count > 0,
-                Tools = safeTools
-            }
+                Id = agentId,
+                Name = name,
+                Description = agentDescription,
+                ChatOptions = new ChatOptions
+                {
+                        Instructions = instructions ?? GetModelInstructions(),
+                        Temperature = 0.7f,
+                        MaxOutputTokens = 10000,
+                        AllowMultipleToolCalls = safeTools.Count > 0,
+                        Tools = safeTools
+                }
         });
-        return outer.AsBuilder().Use(this.ExceptionHandlingMiddleware, null).UseLogging(_factory).Build();
+        return outer.AsBuilder().Use(ExceptionHandlingMiddleware, null).UseLogging(_factory).Build();
 
 
 
@@ -208,7 +203,7 @@ public class AgentFactory : IAgentFactory
     public IChatClient GetChatClient(AIModelDescriptor descriptor)
     {
         Guard.IsNotNull(descriptor);
-        return this.GetChatClient(descriptor.ModelId);
+        return GetChatClient(descriptor.ModelId);
     }
 
 
@@ -276,35 +271,6 @@ public class AgentFactory : IAgentFactory
 
 
 
-    private IList<AITool> GetSafeReadOnlyTools()
-    {
-        IList<AITool>? configuredTools = _toolCatalog.GetReadOnlyAiTools();
-        if (configuredTools is null)
-        {
-            _logger.LogWarning("Tool catalog returned null for read-only tools. Falling back to an empty tool list.");
-            return [];
-        }
-
-        List<AITool> safeTools = [];
-        foreach (AITool? tool in configuredTools)
-        {
-            if (tool is null)
-            {
-                _logger.LogWarning("Tool catalog contained a null tool entry. The entry will be skipped.");
-                continue;
-            }
-
-            safeTools.Add(tool);
-        }
-
-        return safeTools;
-    }
-
-
-
-
-
-
 
 
     private static string GetModelInstructions()
@@ -350,5 +316,36 @@ public class AgentFactory : IAgentFactory
                - When diagnosing issues, always use the tools at your disposal to gather information about the system and the issue at hand. If you are unable to gather the necessary information, explain what you attempted and why it was unsuccessful. Do not speculate or make assumptions about the issue without sufficient information.
                - Do not make assumptions about a tools capabilities, they are under development and are subject to change. If a tool fails to provide information, report the failure and the reason for the failure. Provide what you were attempting to do, the tool you used, and the reason for the failure. Do not attempt to work around tool constraints by fabricating information or making assumptions.
                """;
+    }
+
+
+
+
+
+
+
+
+    private IList<AITool> GetSafeReadOnlyTools()
+    {
+        var configuredTools = _toolCatalog.GetReadOnlyAiTools();
+        if (configuredTools is null)
+        {
+            _logger.LogWarning("Tool catalog returned null for read-only tools. Falling back to an empty tool list.");
+            return [];
+        }
+
+        List<AITool> safeTools = [];
+        foreach (AITool? tool in configuredTools)
+        {
+            if (tool is null)
+            {
+                _logger.LogWarning("Tool catalog contained a null tool entry. The entry will be skipped.");
+                continue;
+            }
+
+            safeTools.Add(tool);
+        }
+
+        return safeTools;
     }
 }

@@ -1,13 +1,8 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Solution: AgenticAIWPF
+// Project:   AgentAILib
+// File:         WindowsEventChannelReaderTool.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
-//
-//
-//
+// Build Date: 2026/05/24
 
 
 
@@ -96,12 +91,12 @@ public sealed class WindowsEventChannelReaderTool
                 {
                     entries.Add(new WindowsEventChannelEntryDto
                     {
-                        EventId = record.Id,
-                        Level = record.LevelDisplayName ?? record.Level?.ToString() ?? "Unknown",
-                        LogName = availableChannel,
-                        Message = Truncate(TryFormatMessage(record)),
-                        ProviderName = Truncate(record.ProviderName ?? string.Empty, 128),
-                        TimeCreated = record.TimeCreated
+                            EventId = record.Id,
+                            Level = record.LevelDisplayName ?? record.Level?.ToString() ?? "Unknown",
+                            LogName = availableChannel,
+                            Message = Truncate(TryFormatMessage(record)),
+                            ProviderName = Truncate(record.ProviderName ?? string.Empty, 128),
+                            TimeCreated = record.TimeCreated
                     });
                 }
             }

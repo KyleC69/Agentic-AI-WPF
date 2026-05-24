@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         PathResolver.cs
 // Author: Kyle L. Crowder
-// Build Num: 194521
+// Build Date: 2026/05/24
 
 
 

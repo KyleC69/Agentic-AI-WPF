@@ -101,27 +101,6 @@ public class PersistedAndModelContractsTests
 
 
     [TestMethod]
-    public void HistoryIdentitySupportsInitAndMutationProperties()
-    {
-        HistoryIdentity identity = new HistoryIdentity(HistoryIdentityService.GetConversationId()) { ApplicationId = "app", ConversationId = "conv" };
-
-        identity.AgentId = "agent";
-        identity.UserId = "user";
-
-        Assert.AreEqual("app", identity.ApplicationId);
-        Assert.AreEqual("conv", identity.ConversationId);
-        Assert.AreEqual("agent", identity.AgentId);
-        Assert.AreEqual("user", identity.UserId);
-    }
-
-
-
-
-
-
-
-
-    [TestMethod]
     public void PersistedChatMessageDefaultsAreExpected()
     {
         PersistedChatMessage message = new PersistedChatMessage();

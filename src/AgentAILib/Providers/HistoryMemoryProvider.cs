@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgentAILib
 // File:         HistoryMemoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 194458
+// Build Date: 2026/05/24
 
 
 
@@ -32,6 +31,7 @@ namespace AgentAILib.Providers;
 /// <remarks></remarks>
 public sealed class HistoryMemoryProvider : AIContextProvider
 {
+    private readonly Dictionary<string, string> Messages = new();
 
     private readonly Dictionary<string, List<ChatMessage>> _conversationWindows = new(StringComparer.OrdinalIgnoreCase);
     private int _currentTokenCount;
@@ -39,7 +39,6 @@ public sealed class HistoryMemoryProvider : AIContextProvider
     private readonly ProviderSessionState<HistoryIdentity> _sessionState;
     private readonly Lock _windowLock = new();
     private readonly int _windowSize;
-    private readonly Dictionary<string, string> Messages = new();
     private const int DEFAULT_WINDOW_SIZE = 100_000;
 
 

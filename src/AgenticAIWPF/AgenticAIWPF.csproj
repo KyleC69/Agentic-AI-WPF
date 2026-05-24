@@ -13,15 +13,15 @@
 		<EnableNETAnalyzers>True</EnableNETAnalyzers>
 		<RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
 		<DefineConstants>$(DefineConstants);SQL</DefineConstants>
-        <ReleaseCopyOutputDir>E:\Released\</ReleaseCopyOutputDir>
-        <ApplicationIcon>Assets\app-icon.ico</ApplicationIcon>
-        <PackageIcon>app-icon.png</PackageIcon>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <NeutralLanguage>en</NeutralLanguage>
+		<ReleaseCopyOutputDir>E:\Released\</ReleaseCopyOutputDir>
+		<ApplicationIcon>Assets\app-icon.ico</ApplicationIcon>
+		<PackageIcon>app-icon.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<NeutralLanguage>en</NeutralLanguage>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Include="Assets\app-icon.ico" />
+		<Content Include="Assets\app-icon.ico" />
 	</ItemGroup>
 
 
@@ -29,16 +29,15 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
 		<PackageReference Include="MahApps.Metro" Version="3.0.0-rc0529" />
 		<PackageReference Include="MarkdownViewer.Wpf" Version="1.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />
 		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
 	</ItemGroup>
 
 
 	<ItemGroup>
-	  <ProjectReference Include="..\AgentAILib\AgentAILib.csproj" />
-	  <ProjectReference Include="..\AgenticAIWPF.Core\AgenticAIWPF.Core.csproj" />
-      <ProjectReference Include="..\..\AgentConsole\AgentConsole.csproj" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\AgentAILib\AgentAILib.csproj" />
+		<ProjectReference Include="..\AgenticAIWPF.Core\AgenticAIWPF.Core.csproj" />
+		<ProjectReference Include="..\..\AgentConsole\AgentConsole.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 	<ItemGroup>
 		<Resource Include="Assets\DefaultIcon.png" />
@@ -66,8 +65,8 @@
 
 	<ItemGroup>
 		<None Update="Assets\app-icon.png">
-		  <Pack>True</Pack>
-		  <PackagePath>\</PackagePath>
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
 		</None>
 		<None Update="Properties\Settings.settings">
 			<Generator>PublicSettingsSingleFileGenerator</Generator>
@@ -82,13 +81,13 @@
 
 		<MakeDir Directories="$(ReleaseCopyOutputDir)" />
 		<Copy SourceFiles="@(BuildOutputFiles)" DestinationFiles="@(BuildOutputFiles->'$(ReleaseCopyOutputDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-		<Message Text="Build output copied to $(ReleaseCopyOutputDir)" Importance="High" />	
+		<Message Text="Build output copied to $(ReleaseCopyOutputDir)" Importance="High" />
 	</Target>
 
 	<Target Name="CopyAgentConsoleToOutput" AfterTargets="Build" DependsOnTargets="ResolveReferences">
 		<PropertyGroup>
 			<AgentConsoleProjectPath>$(MSBuildProjectDirectory)\..\..\AgentConsole\AgentConsole.csproj</AgentConsoleProjectPath>
-            <AgentConsoleOutputDir>$(MSBuildProjectDirectory)\..\..\AgentConsole\bin\$(Configuration)\net10.0\</AgentConsoleOutputDir>
+			<AgentConsoleOutputDir>$(MSBuildProjectDirectory)\..\..\AgentConsole\bin\$(Configuration)\net10.0\</AgentConsoleOutputDir>
 		</PropertyGroup>
 
 		<ItemGroup>
@@ -97,10 +96,8 @@
 
 		<MSBuild Projects="$(AgentConsoleProjectPath)" Targets="Build" Properties="Configuration=$(Configuration)" />
 
-     <Copy SourceFiles="@(AgentConsoleOutputFiles)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(AgentConsoleOutputFiles)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
 	</Target>
-
-
 
 
 </Project>

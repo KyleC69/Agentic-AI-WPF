@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         MessageDisplay.cs
 // Author: Kyle L. Crowder
-// Build Num: 194531
+// Build Date: 2026/05/24
 
 
 
@@ -23,7 +22,7 @@ public class MessageDisplay
 
     public bool IsUser
     {
-        get { return Role == ChatRole.User; }
+        get => Role == ChatRole.User;
     }
 
     public ChatMessage Message { get; set; }

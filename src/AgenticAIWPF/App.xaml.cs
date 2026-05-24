@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/29
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 002916
+// Build Date: 2026/05/24
 
 
 
@@ -74,6 +73,7 @@ public sealed partial class App : Application
                     {
                         ILoggingBuilder unused0 = logging.AddProvider(new TerminalLoggerProvider(_terminalLogForwarder));
                     }
+
                     // Set the host-level minimum to Trace so every message reaches
                     // the dynamic filter below. The LoggingLevelSwitch controls the
                     // effective minimum at runtime and is user-configurable from the

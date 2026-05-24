@@ -4,7 +4,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:properties="clr-namespace:AgenticAIWPF.Properties"
-    xmlns:md="MarkdownViewer.Wpf;assembly=MarkdownViewer"
     xmlns:models="clr-namespace:AgenticAIWPF.Models"
     xmlns:Models1="clr-namespace:AgentAILib.Models;assembly=AgentAILib"
     xmlns:wpf="clr-namespace:MarkdownViewer.Wpf;assembly=MarkdownViewer.Wpf"
@@ -142,8 +141,7 @@
                                         HorizontalAlignment="Stretch"
                                         Foreground="DimGray"
                                         Markdown="{Binding Text}"
-                                        PreviewMouseWheel="OnPreviewMouseWheel"
-                                          />
+                                        PreviewMouseWheel="OnPreviewMouseWheel" />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

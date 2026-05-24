@@ -1,9 +1,8 @@
-﻿// Build Date: 2026/04/14
-// Solution: AgenticAIWPF
+﻿// Solution: AgenticAIWPF
 // Project:   AgenticAIWPF
 // File:         UserViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 194544
+// Build Date: 2026/05/24
 
 
 
