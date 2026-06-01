@@ -1,0 +1,3 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/CodeEditing/Localization/Localizable/@EntryValue">No</s:String>
+	<s:Boolean x:Key="/Default/Housekeeping/ProjectModelSynchronizer/DontUseRoslynToObtainReferences/=0F30885F7F5138CB1F1C8B08FB9EE0F9/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

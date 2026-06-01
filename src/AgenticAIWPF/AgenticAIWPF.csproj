@@ -28,7 +28,7 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
 		<PackageReference Include="MahApps.Metro" Version="3.0.0-rc0529" />
-		<PackageReference Include="MarkdownViewer.Wpf" Version="1.0.0" />
+		<PackageReference Include="MarkdownViewer.Wpf" Version="1.0.2920" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />
 		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
 	</ItemGroup>

@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>Disable</ImplicitUsings>
+	</PropertyGroup>
+
+
+	<PropertyGroup>
+		<IsPackable>false</IsPackable>
+		<IsPublishable>false</IsPublishable>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+
+	</PropertyGroup>
+
+
+	<ItemGroup>
+
+		<None Include="..\docs\**\*.*" Link="docs\%(RecursiveDir)%(Filename)%(Extension)" />
+		<None Include="..\.github\**\*.*" Link=".github\%(RecursiveDir)%(Filename)%(Extension)" />
+		<None Include="..\sql\**\*.*" Link="sql\%(RecursiveDir)%(Filename)%(Extension)" />
+
+
+
+
+	</ItemGroup>
+
+</Project>
