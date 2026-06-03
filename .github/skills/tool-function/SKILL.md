@@ -1,9 +1,8 @@
-
 ---
-name: ToolFunctions
+name: tool-function
 description: This skill defines the architectural, safety, and behavioral rules for all tool entry points implemented under the `\ToolFunctions` namespace. All tools must follow these conventions to ensure deterministic behavior, safe execution, and model‑friendly error surfaces.
-author: Kyle Crowder
-
+user-invocable: false
+compatibility: ToolFunctions namespace
 ---
 
 # ✅ **Skill File: ToolFunctions.Skill.md**
