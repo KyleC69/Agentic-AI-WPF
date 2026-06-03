@@ -367,3 +367,9 @@ FodyWeavers.xsd
 **/appsettings.Development.json
 /src/DataIngestionLib/efpt.config.json
 /SolutionFix/SolutionFix.csproj
+/.github/FUNDING.yml
+/src/AgenticAIWPF/Properties/launchSettings.json
+/SolutionFix/SolutionFix.csproj.DotSettings
+/SolutionFix/SolutionFix.csproj.DotSettings
+/src/AgenticAIWPF/Properties/launchSettings.json
+/.vscode/settings.json

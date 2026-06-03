@@ -1,6 +1,0 @@
-{
-    "github.copilot.chat.agent.autoFix": true,
-    "github.copilot.chat.claudeAgent.enabled": false,
-    "github.copilot.chat.reviewSelection.enabled": false,
-    "github.copilot.chat.workspace.codeSearchExternalIngest.enabled": false
-}
