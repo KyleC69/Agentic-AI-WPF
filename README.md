@@ -1,24 +1,24 @@
-
 # Agentic-AI-WPF
 
-## **STATUS:** I am currently replacing ad-hoc routines with the new Agent Framework patterns and features. This project was started before the framework was completed and patterns developed. I am looking for a few volunteers to help with the UI work on this project and the new next-generation Agentic project codename: SentinelCore. If you are interested in contributing to either project please reach out to me on GitHub or email me directly at kcrowdergoog@gmail.com. I am also looking for feedback on the current implementation, I will continue to fix any bugs in this version but new features will not be added without some justification. I am trying to focus on SentinelCore. If you have any questions about the current implementation or how to use it, please don't hesitate to ask
+**STATUS:** I am currently replacing ad-hoc routines with the new Agent Framework patterns and features. This project was started before the framework was completed and patterns developed. I am looking for a few volunteers to help with the UI work on this project and the new next-generation agentic project codename: SentinelCore. If you are interested in contributing to either project please reach out to me on GitHub or email me directly at <kcrowdergoog@gmail.com>. I am also looking for feedback on the current implementation, I will continue to fix any bugs in this version but new features will not be added without some justification.
+
+The next evolution of this project is the SentinelCore project featuring agent swarms and dynamic agent generation.
 
 Last Update: 5/22/2026
 
 ## Introduction
 
-    This is a WPF desktop application and chat library demonstrating the versatility and power of Microsoft's Agent Framework. The framework is desinged to be lightweight, but the flexibilty in agent creation and orchestration makes this extremely powerfull. Some of the features demonstrated here include SQL Server backed chat history, Context enrichment through middleware. I am using ollama as the inference provider and use both local models or cloud based with a control in the UI to select a different model for every task round. I have also tested preview model capabilities in Sql Server with fantastic results. I sent the model calls from SQL to reverse proxy, to ollama client on different machine and off to the model. Current features in SQL are small but the possibilities are very promising.
+This is a WPF desktop application and chat library demonstrating the versatility and power of Microsoft's Agent Framework. The framework is desinged to be lightweight, but the flexibilty in agent creation and orchestration makes this extremely powerfull. Some of the features demonstrated here include SQL Server backed chat history, Context enrichment through middleware. I am using ollama as the inference provider and use both local models or cloud based with a control in the UI to select a different model for every task round. I have also tested preview model capabilities in Sql Server with fantastic results. I sent the model calls from SQL to reverse proxy, to ollama client on different machine and off to the model. Current features in SQL are small but the possibilities are very promising.
 
-    The default agent was designed to be a Windows System expert to investigate and identify system anomalies. The tools are sets of readonly diagnostic tools, and a set of more powerful tools that can modify the system state. This application was started before the agent framework was completed so some of the patterns used may no longer be valid or greatly expanded upon. To say the team has been working night and day doesn't quite tell the whole story, 20 or more comits a day is hard to keep up with. They just released version 1.00 of the framework, I urge anyone interested in creating their own AI app, whether for fun or for production to take the time and read the docs on the framework.
-    
-    **Warning** DO NOT enable potentially destructive tools without understanding the risks involved. This system lacks many of the safegaurds and recovery options built into mainstream AI Assistants. Use at your own risk, I accept no responsibility for stupidity.
+The default agent was designed to be a Windows System expert to identify and investigate system anomalies. During development of this application I implemented a domain specific RAG injector tied directly to the MAF repo to keep my coding agents grounded to the actual framework surface as it was being developed. Documentation and samples were non-existant, it was the only way to keep current on every change being made. That AIContext enricher is not included in this repo, it is out of the scope of this project, it evolved into a beastly data ingestion store with semantic/temporal tracking layers and on the fly Roslyn AST generation. But it does highlight the raw power that the framework has when applied with a bit of imagination and purpose.
 
+This project can be easily adapted to be proactive and monitor a system for alerts from any subsytem. It could also be used inline as an investigator before alerting an administrator as needed. The possibilities are immense. The tools are sets of readonly specifically targeted diagnostic tools, with a few more powerful tools that can modify the system state.
 
+**Warning** DO NOT enable potentially destructive tools without understanding the risks involved. This system lacks many of the safegaurds and recovery options built into mainstream AI Assistants. Use at your own risk, I accept no responsibility for stupidity.
 
 ---
 
 ![Agentic Chat](src/AgenticAIWPF/Assets/AgenticChat.png)
----
 
 ## Table of Contents
 
@@ -37,16 +37,16 @@ Last Update: 5/22/2026
 
 ## Project Purpose
 
-`AgenticAIWPF` currently contains:
+`AgenticAIWPF` is currently purposed as a Windows Operating System investigation tool and features:
 
-- a WPF composition root in `src/AgenticAIWPF`
-- a UI-agnostic agent, ingestion, history, and tool library in `src/AgentAILib`
-- shared UI infrastructure in `src/AgenticAIWPF.Core`
-- an MSTest suite in `tests/AgenticAIWPF.Tests.MSTest`
+- A WPF composition root in `src/AgenticAIWPF`
+- A UI-agnostic agent, enrichment, history, and tool library in `src/AgentAILib`
+- Shared UI infrastructure in `src/AgenticAIWPF.Core`
+- MSTest suite in `tests/AgenticAIWPF.Tests.MSTest`
 
 ## Quick Start
 
-This project has gated features and experimental attributes enforcing the acknowledgement of potentially unreliable results or destructive tool functions. To get started with the core agent read the section on experimental features in this document.[Experimental Features](#experimental-features)
+This project has gated features that are enable/disabled with an environment variable. Ensure you are in the correct mode before running application. I have added experimental attributes enforcing the acknowledgement of potentially unreliable results or destructive tool functions. To get started with the core agent read the section on experimental features in this document.[Experimental Features](#experimental-features)
 
 ## Documentation
 
@@ -57,7 +57,6 @@ The `docs` folder currently contains these developer-facing entry points:
 - [`/docs/Components.md`](/docs/Components.md) - component inventory across the solution
 - [`/docs/ContextManagement.md`](/docs/ContextManagement.md) - context, history, and RAG state model
 - [`/docs/ChangeLog.md`](/docs/ChangeLog.md) - narrative change log for notable repository updates
-- [`/docs/RAG Search Strategy.md`](/docs/RAG%20Search%20Strategy.md) - repository notes about retrieval strategy
 
 The `sql` folder contains SQL scripts used to set up the database components of the solution, including stored procedures, triggers, and table definitions.
 
@@ -69,10 +68,9 @@ Start with the manifest if you want the quickest route to the right document.
 
 This repository includes features that are in active development and may produce unreliable results or have destructive capabilities. These features are gated behind clearly marked constants and configuration settings to prevent accidental use. When working with or testing these features, please review the relevant documentation and code comments to understand the potential risks and limitations.
 
-| Diagnostic Code | Description | Location |
-| --- | --- | --- |
-| KC00101 | Method uses preview features of SQL Server 2025 and has produced unreliable results in some test runs. Cause: VECTOR_DISTANCE - Workaround has not yet been discovered, Exception references score column but documentation states it was removed and Stored Proc does not use it. Suspected reaction to unexpected floats in embeddings either in sql source or generated.| AIContextRAGInjector.cs  |
-| --- | --- | --- |
+| Diagnostic Code | Description                                     | Location                |
+| --------------- | ----------------------------------------------- | ----------------------- |
+| KC00101         | Method uses preview features of SQL Server 2025 | AIContextRAGInjector.cs |
 
 ## Solution Structure
 
@@ -90,12 +88,12 @@ AgenticAIWPF/
 
 ### Current Projects
 
-| Project | Current role |
-| --- | --- |
-| `src/AgenticAIWPF` | WPF app, host startup, views, view models, navigation, theming, and application orchestration |
-| `src/AgentAILib` | AI agent composition, contracts, services, providers, ingestion workflows, models, and agent-visible tools |
-| `src/AgenticAIWPF.Core` | Shared UI-supporting contracts, helpers, models, and services |
-| `tests/AgenticAIWPF.Tests.MSTest` | MSTest coverage for library, UI-supporting services, and integration slices |
+| Project                           | Current role                                                                                               |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `src/AgenticAIWPF`                | WPF app, host startup, views, view models, navigation, theming, and application orchestration              |
+| `src/AgentAILib`                  | AI agent composition, contracts, services, providers, ingestion workflows, models, and agent-visible tools |
+| `src/AgenticAIWPF.Core`           | Shared UI-supporting contracts, helpers, models, and services                                              |
+| `tests/AgenticAIWPF.Tests.MSTest` | MSTest coverage for library, UI-supporting services, and integration slices                                |
 
 ## Current Implementation Highlights
 
@@ -112,20 +110,20 @@ The repository currently includes the following observable implementation areas:
 
 ## Technology Stack
 
-| Component | Package / Version |
-| --- | --- |
-| AI Agent Framework | `Microsoft.Agents.AI` 1.0.0 |
-| Agent Builder | `Microsoft.Agents.Builder` 1.5.60-beta |
-| AI Abstractions | `Microsoft.Extensions.AI` 10.4.1 |
-| LLM Provider | [OllamaSharp](https://github.com/awaescher/OllamaSharp) 5.4.24 |
-| ORM | EF Core 10.0.3 (`Microsoft.EntityFrameworkCore.SqlServer`) |
+| Component             | Package / Version                                                    |
+| --------------------- | -------------------------------------------------------------------- |
+| AI Agent Framework    | `Microsoft.Agents.AI` 1.0.0                                          |
+| Agent Builder         | `Microsoft.Agents.Builder` 1.5.60-beta                               |
+| AI Abstractions       | `Microsoft.Extensions.AI` 10.4.1                                     |
+| LLM Provider          | [OllamaSharp](https://github.com/awaescher/OllamaSharp) 5.4.24       |
+| ORM                   | EF Core 10.0.3 (`Microsoft.EntityFrameworkCore.SqlServer`)           |
 | Database integrations | SQL Server-oriented history and retrieval components in `AgentAILib` |
-| UI Framework | WPF on .NET 10 Preview |
-| UI Theming | MahApps.Metro 3.0.0-rc0529 |
-| Hosting / logging | Microsoft.Extensions.Hosting 10.0.5 |
-| MVVM Toolkit | CommunityToolkit.Mvvm 8.4.0 |
-| Notifications | Microsoft.Toolkit.Uwp.Notifications 7.1.3 |
-| Testing | MSTest 4.1.0 + Moq 4.20.72 |
+| UI Framework          | WPF on .NET 10 Preview                                               |
+| UI Theming            | MahApps.Metro 3.0.0-rc0529                                           |
+| Hosting / logging     | Microsoft.Extensions.Hosting 10.0.5                                  |
+| MVVM Toolkit          | CommunityToolkit.Mvvm 8.4.0                                          |
+| Notifications         | Microsoft.Toolkit.Uwp.Notifications 7.1.3                            |
+| Testing               | MSTest 4.1.0 + Moq 4.20.72                                           |
 
 ## SQL Server 2025 Dependency
 
@@ -186,8 +184,8 @@ The repository does not currently expose an `appsettings.json`-based configurati
 
 ### Environment Variables
 
-| Variable | Required | Description |
-| --- | --- | --- |
+| Variable      | Required | Description                         |
+| ------------- | -------- | ----------------------------------- |
 | `LANGAPI_KEY` | Optional | API key used by the web-search tool |
 
 ## Running Tests
@@ -210,10 +208,6 @@ Run only the integration-tagged tests with:
 
 dotnet test tests/AgenticAIWPF.Tests.MSTest/AgenticAIWPF.Tests.MSTest.csproj --filter "TestCategory=Integration"
 ```
-
-## Changelog
-
-See [ChangeLog](CHANGELOG.md) for a detailed list of changes and updates to the project.
 
 ## Feedback
 
